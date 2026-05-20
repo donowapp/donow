@@ -68,7 +68,7 @@ export default function CreateDonationPage() {
     if (!formData.description.trim()) errors.description = 'Description is required';
     if (!formData.address.trim()) errors.address = 'Pickup address is required';
     if (!formData.city.trim()) errors.city = 'City is required';
-    if (images.length === 0) errors.images = 'Add at least one image';
+    // Remove this line - images are now optional
 
     setValidationErrors(errors);
     return Object.keys(errors).length === 0;
@@ -245,7 +245,7 @@ export default function CreateDonationPage() {
 
           <div className="mb-5">
             <label className="mb-2 block text-sm font-semibold text-gray-700">
-              Images<span className="text-red-500">*</span>
+              Images
             </label>
             <input
               type="file"

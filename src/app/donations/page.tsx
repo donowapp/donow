@@ -221,7 +221,14 @@ export default function DonationsPage() {
                   </p>
                   <div className="mt-4 flex items-center justify-between text-sm text-gray-500">
                     <span>{donation.location.city}</span>
-                    <span>{donation.viewCount} views</span>
+                    <div className="flex gap-3">
+                      <span>{donation.viewCount} views</span>
+                      {donation.interestedUsers.length > 0 && (
+                        <span className="text-teal-600 font-medium">
+                          {donation.interestedUsers.length} interested
+                        </span>
+                      )}
+                    </div>
                   </div>
                 </div>
               </Link>

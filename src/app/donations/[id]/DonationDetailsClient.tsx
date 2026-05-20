@@ -2,9 +2,12 @@
 
 import { useEffect, useMemo, useState } from 'react';
 import Link from 'next/link';
+import { useRouter } from 'next/navigation';
 import { Button } from '@/components/common/Button';
 import { CATEGORIES } from '@/constants/config';
-import { getDonationById, getDonorById } from '@/lib/donations';
+import { getDonationById, getDonorById, toggleInterest } from '@/lib/donations';
+import { getOrCreateConversation } from '@/lib/messages';
+import { useAuth } from '@/hooks/useAuth';
 import { Donation, User } from '@/types';
 
 interface DonationDetailsClientProps {
@@ -45,11 +48,15 @@ function getContactHref(donation: Donation, donor: User | null) {
 export default function DonationDetailsClient({
   donationId,
 }: DonationDetailsClientProps) {
+  const router = useRouter();
+  const { user } = useAuth();
   const [donation, setDonation] = useState<Donation | null>(null);
   const [donor, setDonor] = useState<User | null>(null);
   const [selectedImage, setSelectedImage] = useState('');
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
+  const [startingChat, setStartingChat] = useState(false);
+  const [togglingInterest, setTogglingInterest] = useState(false);
 
   useEffect(() => {
     let isMounted = true;
@@ -92,6 +99,45 @@ export default function DonationDetailsClient({
     () => (donation ? getContactHref(donation, donor) : null),
     [donation, donor]
   );
+
+  const handleToggleInterest = async () => {
+    if (!user || !donation) return;
+    const isInterested = donation.interestedUsers.includes(user.uid);
+    setTogglingInterest(true);
+    try {
+      await toggleInterest(donation.id, user.uid, !isInterested);
+      setDonation((prev) =>
+        prev
+          ? {
+              ...prev,
+              interestedUsers: isInterested
+                ? prev.interestedUsers.filter((id) => id !== user.uid)
+                : [...prev.interestedUsers, user.uid],
+            }
+          : prev
+      );
+    } finally {
+      setTogglingInterest(false);
+    }
+  };
+
+  const handleMessageDonor = async () => {
+    if (!user || !donation || !donor) return;
+    setStartingChat(true);
+    try {
+      const convId = await getOrCreateConversation(
+        donation.id,
+        donation.userId,
+        user.uid,
+        donor.name || 'Donor',
+        user.name || 'User',
+        donation.title
+      );
+      router.push(`/messages/${convId}`);
+    } catch {
+      setStartingChat(false);
+    }
+  };
 
   if (loading) {
     return (
@@ -227,14 +273,37 @@ export default function DonationDetailsClient({
                 </p>
               )}
 
-              {contactHref ? (
-                <a href={contactHref} className="mt-5 block">
-                  <Button className="w-full">Contact Donor</Button>
-                </a>
-              ) : (
-                <Button disabled className="mt-5 w-full">
-                  Contact Unavailable
+              {user && user.uid !== donation.userId && donation.status === 'active' && (
+                <Button
+                  variant={donation.interestedUsers.includes(user.uid) ? 'outline' : 'secondary'}
+                  className="mt-5 w-full"
+                  disabled={togglingInterest}
+                  onClick={handleToggleInterest}
+                >
+                  {togglingInterest
+                    ? '...'
+                    : donation.interestedUsers.includes(user.uid)
+                    ? `✓ Interested (${donation.interestedUsers.length})`
+                    : `Show Interest (${donation.interestedUsers.length})`}
                 </Button>
+              )}
+
+              {user && user.uid === donation.userId ? (
+                <Link href="/my-donations" className="mt-5 block">
+                  <Button variant="outline" className="w-full">Manage Your Donation</Button>
+                </Link>
+              ) : user ? (
+                <Button
+                  className="mt-5 w-full"
+                  disabled={startingChat}
+                  onClick={handleMessageDonor}
+                >
+                  {startingChat ? 'Opening chat…' : 'Message Donor'}
+                </Button>
+              ) : (
+                <Link href="/login" className="mt-5 block">
+                  <Button className="w-full">Login to Message</Button>
+                </Link>
               )}
             </div>
           </aside>

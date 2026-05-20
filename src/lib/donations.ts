@@ -7,7 +7,10 @@ import { Donation, User } from '@/types';
 import { db, storage } from './firebase';
 import {
   addDoc,
+  arrayRemove,
+  arrayUnion,
   collection,
+  deleteDoc,
   doc,
   getDoc,
   getDocs,
@@ -98,13 +101,13 @@ async function uploadDonationImages(userId: string, images: File[]) {
       const imageRef = ref(storage, filePath);
       await withTimeout(
         uploadBytes(imageRef, image),
-        30000,
-        'Image upload timed out. Check Firebase Storage rules and CORS settings.'
+        15000,
+        'Image upload timed out — Firebase Storage CORS is likely not configured for this domain.'
       );
       return withTimeout(
         getDownloadURL(imageRef),
         10000,
-        'Could not read uploaded image URL.'
+        'Could not get image URL after upload.'
       );
     })
   );
@@ -163,6 +166,35 @@ export async function getDonationById(id: string) {
   });
 
   return normalizeDonation(snapshot.id, snapshot.data() as Partial<Donation>);
+}
+
+export async function getMyDonations(userId: string) {
+  const donationsQuery = query(
+    collection(db, 'donations'),
+    where('userId', '==', userId)
+  );
+  const snapshot = await getDocs(donationsQuery);
+  return snapshot.docs
+    .map((d) => normalizeDonation(d.id, d.data() as Partial<Donation>))
+    .sort((a, b) => b.createdAt.getTime() - a.createdAt.getTime());
+}
+
+export async function markDonationCompleted(id: string) {
+  await updateDoc(doc(db, 'donations', id), {
+    status: 'completed',
+    updatedAt: new Date(),
+  });
+}
+
+export async function deleteDonation(id: string) {
+  await deleteDoc(doc(db, 'donations', id));
+}
+
+export async function toggleInterest(donationId: string, userId: string, interested: boolean) {
+  await updateDoc(doc(db, 'donations', donationId), {
+    interestedUsers: interested ? arrayUnion(userId) : arrayRemove(userId),
+    updatedAt: new Date(),
+  });
 }
 
 export async function getDonorById(userId: string) {
