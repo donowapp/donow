@@ -74,6 +74,21 @@ function sanitizeFileName(fileName: string) {
   return fileName.replace(/[^a-zA-Z0-9._-]/g, '-');
 }
 
+function withTimeout<T>(
+  promise: Promise<T>,
+  milliseconds: number,
+  message: string
+) {
+  return Promise.race([
+    promise,
+    new Promise<T>((_, reject) => {
+      window.setTimeout(() => {
+        reject(new Error(message));
+      }, milliseconds);
+    }),
+  ]);
+}
+
 async function uploadDonationImages(userId: string, images: File[]) {
   return Promise.all(
     images.map(async (image, index) => {
@@ -81,8 +96,16 @@ async function uploadDonationImages(userId: string, images: File[]) {
         image.name
       )}`;
       const imageRef = ref(storage, filePath);
-      await uploadBytes(imageRef, image);
-      return getDownloadURL(imageRef);
+      await withTimeout(
+        uploadBytes(imageRef, image),
+        30000,
+        'Image upload timed out. Check Firebase Storage rules and CORS settings.'
+      );
+      return withTimeout(
+        getDownloadURL(imageRef),
+        10000,
+        'Could not read uploaded image URL.'
+      );
     })
   );
 }

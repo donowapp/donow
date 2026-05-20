@@ -5,8 +5,10 @@
 
 import {
   createUserWithEmailAndPassword,
+  onAuthStateChanged,
   signInWithEmailAndPassword,
   signOut,
+  User as FirebaseUser,
 } from 'firebase/auth';
 import { doc, setDoc, getDoc } from 'firebase/firestore';
 import { auth, db } from './firebase';
@@ -37,6 +39,35 @@ function createFallbackUser(
     createdAt: userData.createdAt ?? now,
     updatedAt: now,
   };
+}
+
+function getFirebaseCurrentUser() {
+  if (auth.currentUser) return Promise.resolve(auth.currentUser);
+
+  return new Promise<FirebaseUser | null>((resolve) => {
+    const unsubscribe = onAuthStateChanged(
+      auth,
+      (user) => {
+        unsubscribe();
+        resolve(user);
+      },
+      () => {
+        unsubscribe();
+        resolve(null);
+      }
+    );
+  });
+}
+
+function withTimeout<T>(promise: Promise<T>, milliseconds: number) {
+  return Promise.race([
+    promise,
+    new Promise<T>((_, reject) => {
+      window.setTimeout(() => {
+        reject(new Error('Request timed out'));
+      }, milliseconds);
+    }),
+  ]);
 }
 
 /**
@@ -82,15 +113,20 @@ export async function logout() {
  * Get current user data from Firestore
  */
 export async function getCurrentUser() {
-  if (!auth.currentUser) return null;
+  const firebaseUser = await getFirebaseCurrentUser();
+
+  if (!firebaseUser) return null;
 
   const fallbackUser = createFallbackUser(
-    auth.currentUser.uid,
-    auth.currentUser.email ?? ''
+    firebaseUser.uid,
+    firebaseUser.email ?? ''
   );
 
   try {
-    const userDoc = await getDoc(doc(db, 'users', auth.currentUser.uid));
+    const userDoc = await withTimeout(
+      getDoc(doc(db, 'users', firebaseUser.uid)),
+      6000
+    );
     return userDoc.exists() ? (userDoc.data() as User) : fallbackUser;
   } catch (error) {
     console.error('Failed to load user profile:', error);

@@ -6,6 +6,7 @@
 'use client';
 
 import { useEffect } from 'react';
+import { useState } from 'react';
 import { useRouter } from 'next/navigation';
 import { useAuth } from '@/hooks/useAuth';
 import { Button } from '@/components/common/Button';
@@ -13,21 +14,34 @@ import Link from 'next/link';
 
 export default function DashboardPage() {
   const router = useRouter();
-  const { user, loading, logout } = useAuth();
+  const { user, loading, logout, checkAuth } = useAuth();
+  const [checkingAuth, setCheckingAuth] = useState(true);
 
   // Check auth on mount
   useEffect(() => {
-    if (!loading && !user) {
+    let isMounted = true;
+
+    checkAuth().finally(() => {
+      if (isMounted) setCheckingAuth(false);
+    });
+
+    return () => {
+      isMounted = false;
+    };
+  }, [checkAuth]);
+
+  useEffect(() => {
+    if (!checkingAuth && !loading && !user) {
       router.push('/login');
     }
-  }, [user, loading, router]);
+  }, [checkingAuth, loading, router, user]);
 
   const handleLogout = async () => {
     await logout();
     router.push('/');
   };
 
-  if (loading) {
+  if (checkingAuth || loading) {
     return (
       <div className="flex items-center justify-center min-h-screen">
         <div className="text-center">
