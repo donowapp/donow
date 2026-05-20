@@ -1,4 +1,5 @@
 import { db } from './firebase';
+import { createNotification } from './notifications';
 import {
   addDoc,
   collection,
@@ -161,6 +162,15 @@ export async function sendMessage(
     lastMessageAt: new Date(),
     [`unreadCount.${receiverId}`]: increment(1),
   });
+
+  createNotification({
+    userId: receiverId,
+    type: 'message',
+    title: 'New message',
+    body: trimmed.slice(0, 100),
+    conversationId: convId,
+    donationId,
+  }).catch(() => {});
 }
 
 export async function markConversationRead(

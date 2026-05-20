@@ -12,6 +12,7 @@ import {
   collection,
   deleteDoc,
   doc,
+  documentId,
   getDoc,
   getDocs,
   increment,
@@ -195,6 +196,39 @@ export async function toggleInterest(donationId: string, userId: string, interes
     interestedUsers: interested ? arrayUnion(userId) : arrayRemove(userId),
     updatedAt: new Date(),
   });
+}
+
+export async function getFeaturedDonations(limit = 6): Promise<Donation[]> {
+  const q = query(collection(db, 'donations'), where('status', '==', 'active'));
+  const snap = await getDocs(q);
+  return snap.docs
+    .map((d) => normalizeDonation(d.id, d.data() as Partial<Donation>))
+    .sort((a, b) => b.viewCount - a.viewCount || b.createdAt.getTime() - a.createdAt.getTime())
+    .slice(0, limit);
+}
+
+export async function toggleSavedDonation(
+  userId: string,
+  donationId: string,
+  save: boolean
+): Promise<void> {
+  await updateDoc(doc(db, 'users', userId), {
+    savedDonations: save ? arrayUnion(donationId) : arrayRemove(donationId),
+  });
+}
+
+export async function getSavedDonationsByIds(ids: string[]): Promise<Donation[]> {
+  if (ids.length === 0) return [];
+  const chunks: string[][] = [];
+  for (let i = 0; i < ids.length; i += 10) chunks.push(ids.slice(i, i + 10));
+  const results = await Promise.all(
+    chunks.map(async (chunk) => {
+      const q = query(collection(db, 'donations'), where(documentId(), 'in', chunk));
+      const snap = await getDocs(q);
+      return snap.docs.map((d) => normalizeDonation(d.id, d.data() as Partial<Donation>));
+    })
+  );
+  return results.flat().sort((a, b) => b.createdAt.getTime() - a.createdAt.getTime());
 }
 
 export async function getDonorById(userId: string) {

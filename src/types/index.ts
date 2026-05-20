@@ -14,6 +14,7 @@ export interface User {
   state: string;
   pincode: string;
   bio?: string;
+  savedDonations?: string[];
   isVerified: boolean;
   donationCount: number;
   receivedCount: number;
@@ -61,6 +62,29 @@ export interface Message {
   donationId: string;
   content: string;
   isRead: boolean;
+  createdAt: Date;
+}
+
+export interface Review {
+  id: string;
+  donationId: string;
+  reviewerId: string;
+  reviewerName: string;
+  revieweeId: string;
+  rating: number;
+  comment: string;
+  createdAt: Date;
+}
+
+export interface Notification {
+  id: string;
+  userId: string;
+  type: 'message' | 'interest' | 'review';
+  title: string;
+  body: string;
+  isRead: boolean;
+  donationId?: string;
+  conversationId?: string;
   createdAt: Date;
 }
 

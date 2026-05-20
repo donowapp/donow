@@ -5,6 +5,7 @@ import Link from 'next/link';
 import { usePathname, useRouter } from 'next/navigation';
 import { useAuth } from '@/hooks/useAuth';
 import { subscribeToConversations } from '@/lib/messages';
+import { subscribeToNotifications } from '@/lib/notifications';
 
 export default function Navbar() {
   const pathname = usePathname();
@@ -12,6 +13,7 @@ export default function Navbar() {
   const { user, logout } = useAuth();
   const [menuOpen, setMenuOpen] = useState(false);
   const [totalUnread, setTotalUnread] = useState(0);
+  const [unreadNotifications, setUnreadNotifications] = useState(0);
 
   useEffect(() => {
     if (!user) { setTotalUnread(0); return; }
@@ -21,7 +23,14 @@ export default function Navbar() {
     return unsub;
   }, [user]);
 
-  // Close mobile menu on route change
+  useEffect(() => {
+    if (!user) { setUnreadNotifications(0); return; }
+    const unsub = subscribeToNotifications(user.uid, (notifs) => {
+      setUnreadNotifications(notifs.filter((n) => !n.isRead).length);
+    });
+    return unsub;
+  }, [user]);
+
   useEffect(() => { setMenuOpen(false); }, [pathname]);
 
   const handleLogout = async () => {
@@ -34,9 +43,7 @@ export default function Navbar() {
     return (
       <Link
         href={href}
-        className={`transition-colors ${
-          active ? 'text-white font-bold underline underline-offset-4' : 'text-teal-100 hover:text-white'
-        }`}
+        className={`transition-colors ${active ? 'text-white font-bold underline underline-offset-4' : 'text-teal-100 hover:text-white'}`}
       >
         {label}
       </Link>
@@ -54,18 +61,25 @@ export default function Navbar() {
     </span>
   );
 
+  const notificationsLabel = (
+    <span className="relative inline-flex items-center">
+      🔔
+      {unreadNotifications > 0 && (
+        <span className="ml-1 flex h-4 w-4 items-center justify-center rounded-full bg-red-500 text-[10px] font-bold text-white">
+          {unreadNotifications > 9 ? '9+' : unreadNotifications}
+        </span>
+      )}
+    </span>
+  );
+
   return (
     <nav className="bg-teal-600 text-white shadow">
       <div className="container mx-auto px-4 py-3">
         <div className="flex items-center justify-between">
           {/* Brand */}
           <Link href="/" className="group">
-            <span className="text-xl font-extrabold tracking-tight group-hover:text-teal-100">
-              Donow
-            </span>
-            <span className="ml-2 hidden text-xs text-teal-200 sm:inline">
-              Donate. Help. Make Impact.
-            </span>
+            <span className="text-xl font-extrabold tracking-tight group-hover:text-teal-100">Donow</span>
+            <span className="ml-2 hidden text-xs text-teal-200 sm:inline">Donate. Help. Make Impact.</span>
           </Link>
 
           {/* Desktop nav */}
@@ -75,15 +89,18 @@ export default function Navbar() {
             {user && (
               <>
                 {navLink('/my-donations', 'My Donations')}
+                {navLink('/saved', 'Saved')}
                 <Link
                   href="/messages"
-                  className={`transition-colors ${
-                    pathname.startsWith('/messages')
-                      ? 'text-white font-bold underline underline-offset-4'
-                      : 'text-teal-100 hover:text-white'
-                  }`}
+                  className={`transition-colors ${pathname.startsWith('/messages') ? 'text-white font-bold underline underline-offset-4' : 'text-teal-100 hover:text-white'}`}
                 >
                   {messagesLabel}
+                </Link>
+                <Link
+                  href="/notifications"
+                  className={`transition-colors ${pathname === '/notifications' ? 'text-white font-bold underline underline-offset-4' : 'text-teal-100 hover:text-white'}`}
+                >
+                  {notificationsLabel}
                 </Link>
               </>
             )}
@@ -99,16 +116,11 @@ export default function Navbar() {
               <div className="flex items-center gap-3">
                 <Link
                   href="/dashboard"
-                  className={`transition-colors ${
-                    pathname === '/dashboard' ? 'text-white font-bold underline underline-offset-4' : 'text-teal-100 hover:text-white'
-                  }`}
+                  className={`transition-colors ${pathname === '/dashboard' ? 'text-white font-bold underline underline-offset-4' : 'text-teal-100 hover:text-white'}`}
                 >
                   {user.name.split(' ')[0]}
                 </Link>
-                <button
-                  onClick={handleLogout}
-                  className="text-xs text-teal-200 underline hover:text-white"
-                >
+                <button onClick={handleLogout} className="text-xs text-teal-200 underline hover:text-white">
                   Logout
                 </button>
               </div>
@@ -144,11 +156,22 @@ export default function Navbar() {
                 <Link href="/my-donations" className={pathname === '/my-donations' ? 'text-white font-bold' : 'text-teal-100'}>
                   My Donations
                 </Link>
+                <Link href="/saved" className={pathname === '/saved' ? 'text-white font-bold' : 'text-teal-100'}>
+                  Saved
+                </Link>
                 <Link href="/messages" className={`flex items-center gap-1 ${pathname.startsWith('/messages') ? 'text-white font-bold' : 'text-teal-100'}`}>
                   Messages
                   {totalUnread > 0 && (
                     <span className="rounded-full bg-red-500 px-1.5 py-0.5 text-[10px] font-bold text-white">
                       {totalUnread}
+                    </span>
+                  )}
+                </Link>
+                <Link href="/notifications" className={`flex items-center gap-1 ${pathname === '/notifications' ? 'text-white font-bold' : 'text-teal-100'}`}>
+                  Notifications
+                  {unreadNotifications > 0 && (
+                    <span className="rounded-full bg-red-500 px-1.5 py-0.5 text-[10px] font-bold text-white">
+                      {unreadNotifications}
                     </span>
                   )}
                 </Link>
