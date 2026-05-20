@@ -35,11 +35,11 @@ export const useAuth = create<AuthStore>((set) => ({
   signup: async (email, password, userData) => {
     set({ loading: true, error: null });
     try {
-      await authLib.signupWithEmail(email, password, userData);
-      const user = await authLib.getCurrentUser();
+      const user = await authLib.signupWithEmail(email, password, userData);
       set({ user, loading: false });
     } catch (error: unknown) {
       set({ error: getErrorMessage(error), loading: false });
+      throw error;
     }
   },
 
@@ -51,6 +51,7 @@ export const useAuth = create<AuthStore>((set) => ({
       set({ user, loading: false });
     } catch (error: unknown) {
       set({ error: getErrorMessage(error), loading: false });
+      throw error;
     }
   },
 
@@ -61,6 +62,7 @@ export const useAuth = create<AuthStore>((set) => ({
       set({ user: null, loading: false });
     } catch (error: unknown) {
       set({ error: getErrorMessage(error), loading: false });
+      throw error;
     }
   },
 

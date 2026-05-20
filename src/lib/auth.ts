@@ -27,22 +27,31 @@ export async function signupWithEmail(
     password
   );
   const user = userCredential.user;
+  const now = new Date();
 
-  await setDoc(doc(db, 'users', user.uid), {
+  const profile: User = {
     uid: user.uid,
-    email,
+    email: user.email ?? email,
     ...userData,
+    phone: userData.phone ?? '',
+    name: userData.name ?? '',
+    address: userData.address ?? '',
+    city: userData.city ?? '',
+    state: userData.state ?? '',
+    pincode: userData.pincode ?? '',
     isVerified: false,
     donationCount: 0,
     receivedCount: 0,
     rating: 0,
     role: 'user',
     status: 'active',
-    createdAt: new Date(),
-    updatedAt: new Date(),
-  });
+    createdAt: now,
+    updatedAt: now,
+  };
 
-  return user;
+  await setDoc(doc(db, 'users', user.uid), profile);
+
+  return profile;
 }
 
 /**
@@ -67,5 +76,5 @@ export async function getCurrentUser() {
   if (!auth.currentUser) return null;
 
   const userDoc = await getDoc(doc(db, 'users', auth.currentUser.uid));
-  return userDoc.data() as User | undefined;
+  return userDoc.exists() ? (userDoc.data() as User) : null;
 }
