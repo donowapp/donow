@@ -121,9 +121,9 @@ export default function DashboardPage() {
 
         {/* Action Buttons */}
         <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-          <Link href="/my-donations">
+          <Link href="/donations">
             <Button className="w-full bg-teal-600 hover:bg-teal-700">
-              My Donations
+              Browse Donations
             </Button>
           </Link>
           <Link href="/create-donation">
