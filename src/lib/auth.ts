@@ -12,6 +12,33 @@ import { doc, setDoc, getDoc } from 'firebase/firestore';
 import { auth, db } from './firebase';
 import { User } from '@/types';
 
+function createFallbackUser(
+  uid: string,
+  email: string,
+  userData: Partial<User> = {}
+): User {
+  const now = new Date();
+
+  return {
+    uid,
+    email,
+    phone: userData.phone ?? '',
+    name: userData.name ?? email.split('@')[0],
+    address: userData.address ?? '',
+    city: userData.city ?? '',
+    state: userData.state ?? '',
+    pincode: userData.pincode ?? '',
+    isVerified: userData.isVerified ?? false,
+    donationCount: userData.donationCount ?? 0,
+    receivedCount: userData.receivedCount ?? 0,
+    rating: userData.rating ?? 0,
+    role: userData.role ?? 'user',
+    status: userData.status ?? 'active',
+    createdAt: userData.createdAt ?? now,
+    updatedAt: now,
+  };
+}
+
 /**
  * Sign up a new user with email and password
  * Creates user in Firebase Auth and stores user data in Firestore
@@ -27,29 +54,11 @@ export async function signupWithEmail(
     password
   );
   const user = userCredential.user;
-  const now = new Date();
+  const profile = createFallbackUser(user.uid, user.email ?? email, userData);
 
-  const profile: User = {
-    uid: user.uid,
-    email: user.email ?? email,
-    ...userData,
-    phone: userData.phone ?? '',
-    name: userData.name ?? '',
-    address: userData.address ?? '',
-    city: userData.city ?? '',
-    state: userData.state ?? '',
-    pincode: userData.pincode ?? '',
-    isVerified: false,
-    donationCount: 0,
-    receivedCount: 0,
-    rating: 0,
-    role: 'user',
-    status: 'active',
-    createdAt: now,
-    updatedAt: now,
-  };
-
-  await setDoc(doc(db, 'users', user.uid), profile);
+  setDoc(doc(db, 'users', user.uid), profile).catch((error) => {
+    console.error('Failed to save user profile:', error);
+  });
 
   return profile;
 }
@@ -75,6 +84,16 @@ export async function logout() {
 export async function getCurrentUser() {
   if (!auth.currentUser) return null;
 
-  const userDoc = await getDoc(doc(db, 'users', auth.currentUser.uid));
-  return userDoc.exists() ? (userDoc.data() as User) : null;
+  const fallbackUser = createFallbackUser(
+    auth.currentUser.uid,
+    auth.currentUser.email ?? ''
+  );
+
+  try {
+    const userDoc = await getDoc(doc(db, 'users', auth.currentUser.uid));
+    return userDoc.exists() ? (userDoc.data() as User) : fallbackUser;
+  } catch (error) {
+    console.error('Failed to load user profile:', error);
+    return fallbackUser;
+  }
 }
