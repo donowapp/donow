@@ -170,59 +170,112 @@ export default function Navbar() {
 
         {/* Mobile menu */}
         {menuOpen && (
-          <div className="mt-3 flex flex-col gap-3 border-t border-teal-500 pt-3 text-sm font-medium">
-            <Link href="/donations" className={pathname === '/donations' ? 'text-white font-bold' : 'text-teal-100'}>
-              Browse
-            </Link>
-
-            {user && (
+          <div className="mt-3 flex flex-col gap-2 border-t border-teal-500 pt-4 text-sm font-medium">
+            {user ? (
               <>
-                <Link href="/my-donations" className={pathname === '/my-donations' ? 'text-white font-bold' : 'text-teal-100'}>
-                  My Donations
+                {/* User identity */}
+                <Link
+                  href="/profile"
+                  className="flex items-center gap-3 rounded-lg px-3 py-2 hover:bg-teal-700 transition"
+                >
+                  {user.profileImage ? (
+                    // eslint-disable-next-line @next/next/no-img-element
+                    <img src={user.profileImage} alt={user.name} className="w-8 h-8 rounded-full object-cover border-2 border-teal-300 flex-shrink-0" />
+                  ) : (
+                    <span className="flex h-8 w-8 flex-shrink-0 items-center justify-center rounded-full bg-teal-800 text-sm font-bold text-white">
+                      {(user.name || 'U').charAt(0).toUpperCase()}
+                    </span>
+                  )}
+                  <span className="font-semibold text-white">{user.name.split(' ')[0]}</span>
                 </Link>
-                <Link href="/saved" className={pathname === '/saved' ? 'text-white font-bold' : 'text-teal-100'}>
-                  Saved
-                </Link>
-                <Link href="/messages" className={`flex items-center gap-1 ${pathname.startsWith('/messages') ? 'text-white font-bold' : 'text-teal-100'}`}>
-                  Messages
+
+                <div className="my-1 border-t border-teal-500/50" />
+
+                {[
+                  { href: '/donations', label: 'Browse Donations' },
+                  { href: '/my-donations', label: 'My Donations' },
+                  { href: '/saved', label: 'Saved' },
+                  { href: '/dashboard', label: 'Dashboard' },
+                ].map(({ href, label }) => (
+                  <Link
+                    key={href}
+                    href={href}
+                    className={`rounded-lg px-3 py-2.5 transition hover:bg-teal-700 ${pathname === href || (href !== '/donations' && pathname.startsWith(href + '/')) ? 'bg-teal-700 text-white font-bold' : 'text-teal-100'}`}
+                  >
+                    {label}
+                  </Link>
+                ))}
+
+                <Link
+                  href="/messages"
+                  className={`flex items-center justify-between rounded-lg px-3 py-2.5 transition hover:bg-teal-700 ${pathname.startsWith('/messages') ? 'bg-teal-700 text-white font-bold' : 'text-teal-100'}`}
+                >
+                  <span>Messages</span>
                   {totalUnread > 0 && (
-                    <span className="rounded-full bg-red-500 px-1.5 py-0.5 text-[10px] font-bold text-white">
-                      {totalUnread}
+                    <span className="rounded-full bg-red-500 px-2 py-0.5 text-[10px] font-bold text-white">
+                      {totalUnread > 9 ? '9+' : totalUnread}
                     </span>
                   )}
                 </Link>
-                <Link href="/notifications" className={`flex items-center gap-1 ${pathname === '/notifications' ? 'text-white font-bold' : 'text-teal-100'}`}>
-                  Notifications
+
+                <Link
+                  href="/notifications"
+                  className={`flex items-center justify-between rounded-lg px-3 py-2.5 transition hover:bg-teal-700 ${pathname === '/notifications' ? 'bg-teal-700 text-white font-bold' : 'text-teal-100'}`}
+                >
+                  <span>Notifications</span>
                   {unreadNotifications > 0 && (
-                    <span className="rounded-full bg-red-500 px-1.5 py-0.5 text-[10px] font-bold text-white">
-                      {unreadNotifications}
+                    <span className="rounded-full bg-red-500 px-2 py-0.5 text-[10px] font-bold text-white">
+                      {unreadNotifications > 9 ? '9+' : unreadNotifications}
                     </span>
                   )}
                 </Link>
-                <Link href="/dashboard" className={pathname === '/dashboard' ? 'text-white font-bold' : 'text-teal-100'}>
-                  {user.name.split(' ')[0]} (Dashboard)
-                </Link>
+
                 {user.role === 'admin' && (
-                  <Link href="/admin" className={pathname === '/admin' ? 'text-white font-bold' : 'text-teal-100'}>
+                  <Link
+                    href="/admin"
+                    className={`rounded-lg px-3 py-2.5 transition hover:bg-teal-700 ${pathname === '/admin' ? 'bg-teal-700 text-white font-bold' : 'text-teal-100'}`}
+                  >
                     Admin Panel
                   </Link>
                 )}
-                <button onClick={handleLogout} className="text-left text-teal-200 hover:text-white">
+
+                <div className="my-1 border-t border-teal-500/50" />
+
+                <Link
+                  href="/create-donation"
+                  className="rounded-lg bg-white px-3 py-2.5 text-center font-semibold text-teal-700 hover:bg-teal-50 transition"
+                >
+                  + Donate
+                </Link>
+                <button
+                  onClick={handleLogout}
+                  className="rounded-lg px-3 py-2.5 text-left text-teal-200 hover:bg-teal-700 hover:text-white transition"
+                >
                   Logout
                 </button>
               </>
+            ) : (
+              <>
+                <Link
+                  href="/donations"
+                  className={`rounded-lg px-3 py-2.5 text-center transition hover:bg-teal-700 ${pathname === '/donations' ? 'bg-teal-700 text-white font-bold' : 'text-teal-100'}`}
+                >
+                  Browse Donations
+                </Link>
+                <Link
+                  href="/create-donation"
+                  className="rounded-lg bg-white px-3 py-2.5 text-center font-semibold text-teal-700 hover:bg-teal-50 transition"
+                >
+                  + Donate
+                </Link>
+                <Link
+                  href="/login"
+                  className="rounded-lg border border-teal-300 px-3 py-2.5 text-center font-semibold text-white hover:bg-teal-700 transition"
+                >
+                  Login
+                </Link>
+              </>
             )}
-
-            {!user && (
-              <Link href="/login" className="text-teal-100">Login</Link>
-            )}
-
-            <Link
-              href="/create-donation"
-              className="mt-1 rounded-lg bg-white px-3 py-2 text-center font-semibold text-teal-700"
-            >
-              + Donate
-            </Link>
           </div>
         )}
       </div>
