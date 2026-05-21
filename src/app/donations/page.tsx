@@ -1,6 +1,6 @@
 'use client';
 
-import { useEffect, useMemo, useState } from 'react';
+import { Suspense, useEffect, useMemo, useState } from 'react';
 import Link from 'next/link';
 import { useSearchParams } from 'next/navigation';
 import { Button } from '@/components/common/Button';
@@ -13,7 +13,7 @@ function getCategoryName(categoryId: Donation['category']) {
   return CATEGORIES.find((c) => c.id === categoryId)?.name ?? 'Other';
 }
 
-export default function DonationsPage() {
+function DonationsContent() {
   const { user } = useAuth();
   const searchParams = useSearchParams();
   const [donations, setDonations] = useState<Donation[]>([]);
@@ -211,5 +211,17 @@ export default function DonationsPage() {
         )}
       </div>
     </div>
+  );
+}
+
+export default function DonationsPage() {
+  return (
+    <Suspense fallback={
+      <div className="min-h-[60vh] flex items-center justify-center">
+        <div className="inline-block animate-spin rounded-full h-10 w-10 border-b-2 border-teal-600" />
+      </div>
+    }>
+      <DonationsContent />
+    </Suspense>
   );
 }
