@@ -162,6 +162,11 @@ export default function MyDonationsPage() {
                       <Button variant="outline" size="sm">View</Button>
                     </Link>
                     {donation.status === 'active' && (
+                      <Link href={`/my-donations/${donation.id}/edit`}>
+                        <Button variant="outline" size="sm">Edit</Button>
+                      </Link>
+                    )}
+                    {donation.status === 'active' && (
                       <Button
                         variant="outline"
                         size="sm"

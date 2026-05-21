@@ -2,6 +2,7 @@
 
 import { useEffect, useMemo, useState } from 'react';
 import Link from 'next/link';
+import { useSearchParams } from 'next/navigation';
 import { Button } from '@/components/common/Button';
 import { CATEGORIES, CONDITIONS } from '@/constants/config';
 import { getActiveDonations, toggleSavedDonation } from '@/lib/donations';
@@ -14,11 +15,12 @@ function getCategoryName(categoryId: Donation['category']) {
 
 export default function DonationsPage() {
   const { user } = useAuth();
+  const searchParams = useSearchParams();
   const [donations, setDonations] = useState<Donation[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [search, setSearch] = useState('');
-  const [category, setCategory] = useState('all');
+  const [category, setCategory] = useState(searchParams.get('category') ?? 'all');
   const [city, setCity] = useState('all');
   const [condition, setCondition] = useState('all');
   const [savedIds, setSavedIds] = useState<Set<string>>(new Set());

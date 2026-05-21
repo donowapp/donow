@@ -6,6 +6,8 @@
 import {
   createUserWithEmailAndPassword,
   onAuthStateChanged,
+  sendEmailVerification,
+  sendPasswordResetEmail,
   signInWithEmailAndPassword,
   signOut,
   User as FirebaseUser,
@@ -87,6 +89,7 @@ export async function signupWithEmail(
   const user = userCredential.user;
   const profile = createFallbackUser(user.uid, user.email ?? email, userData);
 
+  sendEmailVerification(user).catch(() => {});
   setDoc(doc(db, 'users', user.uid), profile).catch((error) => {
     console.error('Failed to save user profile:', error);
   });
@@ -109,6 +112,16 @@ export async function logout() {
   await signOut(auth);
 }
 
+export async function resetPassword(email: string) {
+  await sendPasswordResetEmail(auth, email);
+}
+
+export async function resendVerificationEmail() {
+  if (auth.currentUser && !auth.currentUser.emailVerified) {
+    await sendEmailVerification(auth.currentUser);
+  }
+}
+
 /**
  * Get current user data from Firestore
  */
@@ -127,7 +140,9 @@ export async function getCurrentUser() {
       getDoc(doc(db, 'users', firebaseUser.uid)),
       6000
     );
-    return userDoc.exists() ? (userDoc.data() as User) : fallbackUser;
+    if (userDoc.exists()) return userDoc.data() as User;
+    setDoc(doc(db, 'users', firebaseUser.uid), fallbackUser).catch(() => {});
+    return fallbackUser;
   } catch (error) {
     console.error('Failed to load user profile:', error);
     return fallbackUser;

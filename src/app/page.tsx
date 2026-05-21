@@ -81,6 +81,25 @@ export default function Home() {
         </section>
       )}
 
+      {/* Browse by Category */}
+      <section className="border-t bg-gray-50 px-4 py-10">
+        <div className="mx-auto max-w-5xl">
+          <h2 className="mb-6 text-2xl font-bold text-gray-900">Browse by Category</h2>
+          <div className="grid grid-cols-2 gap-3 sm:grid-cols-3 md:grid-cols-5">
+            {CATEGORIES.map((cat) => (
+              <Link
+                key={cat.id}
+                href={`/donations?category=${cat.id}`}
+                className="flex flex-col items-center gap-2 rounded-xl border border-gray-200 bg-white p-4 text-center shadow-sm transition hover:-translate-y-0.5 hover:border-teal-300 hover:shadow-md"
+              >
+                <span className="text-3xl">{cat.icon}</span>
+                <span className="text-xs font-semibold text-gray-700">{cat.name}</span>
+              </Link>
+            ))}
+          </div>
+        </div>
+      </section>
+
       {/* How it works */}
       <section className="border-t bg-white px-4 py-10">
         <div className="mx-auto grid max-w-5xl grid-cols-1 gap-5 md:grid-cols-3">

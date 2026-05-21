@@ -64,6 +64,7 @@ export default function ProfilePage() {
         ...form,
         updatedAt: new Date(),
       });
+      await checkAuth();
       setSaved(true);
       setTimeout(() => setSaved(false), 3000);
     } catch {

@@ -5,6 +5,7 @@ import './globals.css';
 export const metadata: Metadata = {
   title: 'Donow - Free Donation Platform',
   description: 'Connect donors with people in need. Free donations for India.',
+  icons: { icon: '/icon', apple: '/apple-icon' },
 };
 
 export default function RootLayout({

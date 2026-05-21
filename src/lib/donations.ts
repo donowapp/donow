@@ -172,6 +172,29 @@ export async function getMyDonations(userId: string) {
     .sort((a, b) => b.createdAt.getTime() - a.createdAt.getTime());
 }
 
+export interface UpdateDonationData {
+  title: string;
+  description: string;
+  category: Donation['category'];
+  condition: Donation['condition'];
+  address: string;
+  city: string;
+}
+
+export async function updateDonation(id: string, data: UpdateDonationData) {
+  await updateDoc(doc(db, 'donations', id), {
+    title: data.title.trim(),
+    description: data.description.trim(),
+    category: data.category,
+    condition: data.condition,
+    location: {
+      address: data.address.trim(),
+      city: data.city.trim(),
+    },
+    updatedAt: new Date(),
+  });
+}
+
 export async function markDonationCompleted(id: string) {
   await updateDoc(doc(db, 'donations', id), {
     status: 'completed',

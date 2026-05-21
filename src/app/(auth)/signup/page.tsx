@@ -1,8 +1,3 @@
-/**
- * Signup/Register page
- * Users can create new accounts with email and password
- */
-
 'use client';
 
 import { useState } from 'react';
@@ -10,6 +5,7 @@ import { useRouter } from 'next/navigation';
 import { Button } from '@/components/common/Button';
 import { Input } from '@/components/common/Input';
 import { useAuth } from '@/hooks/useAuth';
+import { resendVerificationEmail } from '@/lib/auth';
 import Link from 'next/link';
 
 export default function SignupPage() {
@@ -29,8 +25,10 @@ export default function SignupPage() {
   });
 
   const [validationErrors, setValidationErrors] = useState<Record<string, string>>({});
+  const [verificationSent, setVerificationSent] = useState(false);
+  const [resendLoading, setResendLoading] = useState(false);
+  const [resendMessage, setResendMessage] = useState('');
 
-  // Validate form
   const validateForm = () => {
     const errors: Record<string, string> = {};
 
@@ -53,10 +51,8 @@ export default function SignupPage() {
     return Object.keys(errors).length === 0;
   };
 
-  // Handle signup
   const handleSignup = async (e: React.FormEvent) => {
     e.preventDefault();
-
     if (!validateForm()) return;
 
     try {
@@ -68,12 +64,61 @@ export default function SignupPage() {
         state: formData.state,
         pincode: formData.pincode,
       });
-
-      router.push('/dashboard');
+      setVerificationSent(true);
     } catch (err) {
       console.error('Signup error:', err);
     }
   };
+
+  const handleResend = async () => {
+    setResendLoading(true);
+    setResendMessage('');
+    try {
+      await resendVerificationEmail();
+      setResendMessage('Verification email sent again. Check your inbox.');
+    } catch {
+      setResendMessage('Could not resend. Please try again in a minute.');
+    } finally {
+      setResendLoading(false);
+    }
+  };
+
+  if (verificationSent) {
+    return (
+      <div className="min-h-screen bg-gradient-to-br from-teal-50 to-blue-50 py-12 px-4">
+        <div className="max-w-md mx-auto bg-white rounded-lg shadow-lg p-8 text-center">
+          <div className="mb-4 flex items-center justify-center">
+            <span className="text-5xl">📧</span>
+          </div>
+          <h1 className="text-2xl font-bold text-gray-900 mb-2">Check your email</h1>
+          <p className="text-gray-600 mb-1">
+            We sent a verification link to
+          </p>
+          <p className="font-semibold text-teal-600 mb-6">{formData.email}</p>
+          <p className="text-sm text-gray-500 mb-6">
+            Click the link in the email to verify your account. You can still use the app while waiting.
+          </p>
+
+          {resendMessage && (
+            <p className="mb-4 text-sm text-teal-700 bg-teal-50 rounded px-3 py-2">{resendMessage}</p>
+          )}
+
+          <div className="flex flex-col gap-3">
+            <Button onClick={() => router.push('/dashboard')} className="w-full">
+              Continue to Dashboard
+            </Button>
+            <button
+              onClick={handleResend}
+              disabled={resendLoading}
+              className="text-sm text-teal-600 hover:underline disabled:opacity-50"
+            >
+              {resendLoading ? 'Sending...' : "Didn't receive it? Resend email"}
+            </button>
+          </div>
+        </div>
+      </div>
+    );
+  }
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-teal-50 to-blue-50 py-12 px-4">
@@ -176,11 +221,7 @@ export default function SignupPage() {
             required
           />
 
-          <Button
-            type="submit"
-            disabled={loading}
-            className="w-full"
-          >
+          <Button type="submit" disabled={loading} className="w-full">
             {loading ? 'Creating account...' : 'Sign Up'}
           </Button>
         </form>
