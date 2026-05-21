@@ -39,6 +39,7 @@ export default function MyDonationsPage() {
 
   useEffect(() => {
     if (!user) return;
+    // eslint-disable-next-line react-hooks/set-state-in-effect
     setFetching(true);
     getMyDonations(user.uid)
       .then(setDonations)
@@ -125,6 +126,7 @@ export default function MyDonationsPage() {
                 {/* Thumbnail */}
                 <div className="hidden sm:block w-24 h-24 flex-shrink-0 overflow-hidden rounded-lg bg-gray-100">
                   {donation.images[0] ? (
+                    // eslint-disable-next-line @next/next/no-img-element
                     <img
                       src={donation.images[0]}
                       alt={donation.title}

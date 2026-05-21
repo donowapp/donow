@@ -34,6 +34,7 @@ export default function SavedPage() {
   useEffect(() => {
     if (!user) return;
     const ids = user.savedDonations ?? [];
+    // eslint-disable-next-line react-hooks/set-state-in-effect
     if (ids.length === 0) { setDonations([]); return; }
     setFetching(true);
     getSavedDonationsByIds(ids)

@@ -26,6 +26,7 @@ export default function LoginPage() {
 
     const saved = localStorage.getItem('emailForSignIn');
     if (saved) {
+      // eslint-disable-next-line react-hooks/set-state-in-effect
       setEmail(saved);
       setStep('completing');
       completeLogin(saved, window.location.href)
@@ -125,7 +126,7 @@ export default function LoginPage() {
     <div className="min-h-screen bg-gradient-to-br from-teal-50 to-blue-50 flex items-center justify-center py-12 px-4">
       <div className="max-w-md w-full bg-white rounded-lg shadow-lg p-8">
         <h1 className="text-3xl font-bold text-teal-600 mb-1">Welcome Back</h1>
-        <p className="text-gray-500 text-sm mb-6">Enter your email — we'll send you a login link</p>
+        <p className="text-gray-500 text-sm mb-6">Enter your email &mdash; we&apos;ll send you a login link</p>
 
         {error && (
           <div className="mb-4 rounded border border-red-200 bg-red-50 px-4 py-3 text-red-700 text-sm">{error}</div>

@@ -39,6 +39,7 @@ function DonationsContent() {
   }, []);
 
   useEffect(() => {
+    // eslint-disable-next-line react-hooks/set-state-in-effect
     setSavedIds(new Set(user?.savedDonations ?? []));
   }, [user]);
 
@@ -49,7 +50,7 @@ function DonationsContent() {
     const newSaved = !savedIds.has(id);
     setSavedIds((prev) => {
       const next = new Set(prev);
-      newSaved ? next.add(id) : next.delete(id);
+      if (newSaved) next.add(id); else next.delete(id);
       return next;
     });
     try {
@@ -57,7 +58,7 @@ function DonationsContent() {
     } catch {
       setSavedIds((prev) => {
         const next = new Set(prev);
-        newSaved ? next.delete(id) : next.add(id);
+        if (newSaved) next.delete(id); else next.add(id);
         return next;
       });
     }

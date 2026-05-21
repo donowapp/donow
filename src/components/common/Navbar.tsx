@@ -16,21 +16,22 @@ export default function Navbar() {
   const [unreadNotifications, setUnreadNotifications] = useState(0);
 
   useEffect(() => {
-    if (!user) { setTotalUnread(0); return; }
+    if (!user) return;
     const unsub = subscribeToConversations(user.uid, (convs) => {
       setTotalUnread(convs.reduce((sum, c) => sum + (c.unreadCount[user.uid] ?? 0), 0));
     });
-    return unsub;
+    return () => { unsub(); setTotalUnread(0); };
   }, [user]);
 
   useEffect(() => {
-    if (!user) { setUnreadNotifications(0); return; }
+    if (!user) return;
     const unsub = subscribeToNotifications(user.uid, (notifs) => {
       setUnreadNotifications(notifs.filter((n) => !n.isRead).length);
     });
-    return unsub;
+    return () => { unsub(); setUnreadNotifications(0); };
   }, [user]);
 
+  // eslint-disable-next-line react-hooks/set-state-in-effect
   useEffect(() => { setMenuOpen(false); }, [pathname]);
 
   const handleLogout = async () => {
@@ -128,6 +129,7 @@ export default function Navbar() {
                   className="flex items-center gap-2 text-teal-100 hover:text-white transition-colors"
                 >
                   {user.profileImage ? (
+                    // eslint-disable-next-line @next/next/no-img-element
                     <img
                       src={user.profileImage}
                       alt={user.name}

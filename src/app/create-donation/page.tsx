@@ -57,10 +57,7 @@ export default function CreateDonationPage() {
     }
   }, [checkingAuth, router, user]);
 
-  const hints = useMemo(
-    () => [...ALL_HINTS].sort(() => Math.random() - 0.5).slice(0, 8),
-    []
-  );
+  const [hints] = useState(() => [...ALL_HINTS].sort(() => Math.random() - 0.5).slice(0, 8));
 
   const imagePreviews = useMemo(
     () =>

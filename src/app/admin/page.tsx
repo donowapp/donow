@@ -54,6 +54,7 @@ export default function AdminPage() {
 
   useEffect(() => {
     if (!user || user.role !== 'admin' || dataLoaded) return;
+    // eslint-disable-next-line react-hooks/set-state-in-effect
     setDataLoading(true);
     Promise.all([getAllUsers(), getAllDonationsAdmin()])
       .then(([fetchedUsers, fetchedDonations]) => {
@@ -355,6 +356,7 @@ export default function AdminPage() {
               {filteredDonations.map((d) => (
                 <div key={d.id} className="flex items-start gap-4 p-4 hover:bg-gray-50">
                   {d.images[0] ? (
+                    // eslint-disable-next-line @next/next/no-img-element
                     <img src={d.images[0]} alt={d.title} className="h-14 w-14 flex-shrink-0 rounded-lg object-cover bg-gray-100" />
                   ) : (
                     <div className="h-14 w-14 flex-shrink-0 rounded-lg bg-gray-100 flex items-center justify-center text-2xl">📦</div>

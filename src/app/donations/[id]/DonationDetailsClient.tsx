@@ -80,6 +80,7 @@ export default function DonationDetailsClient({ donationId }: DonationDetailsCli
   }, [donationId]);
 
   useEffect(() => {
+    // eslint-disable-next-line react-hooks/set-state-in-effect
     if (user && donation) setIsSaved(user.savedDonations?.includes(donation.id) ?? false);
   }, [user, donation]);
 

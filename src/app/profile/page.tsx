@@ -60,6 +60,7 @@ export default function ProfilePage() {
 
   useEffect(() => {
     if (user) {
+      // eslint-disable-next-line react-hooks/set-state-in-effect
       setForm({
         name: user.name ?? '',
         phone: user.phone ?? '',
@@ -149,6 +150,7 @@ export default function ProfilePage() {
           <div className="flex flex-col items-center pb-2">
             <div className="relative">
               {avatarSrc ? (
+                // eslint-disable-next-line @next/next/no-img-element
                 <img
                   src={avatarSrc}
                   alt="Profile"
