@@ -69,8 +69,12 @@ function normalizeDonation(id: string, data: Partial<Donation>) {
 }
 
 async function uploadDonationImages(images: File[]): Promise<string[]> {
-  const cloudName = process.env.NEXT_PUBLIC_CLOUDINARY_CLOUD_NAME!;
-  const uploadPreset = process.env.NEXT_PUBLIC_CLOUDINARY_UPLOAD_PRESET!;
+  const cloudName = process.env.NEXT_PUBLIC_CLOUDINARY_CLOUD_NAME;
+  const uploadPreset = process.env.NEXT_PUBLIC_CLOUDINARY_UPLOAD_PRESET;
+
+  if (!cloudName || !uploadPreset) {
+    throw new Error('Image upload is not configured. Please contact support.');
+  }
 
   return Promise.all(
     images.map(async (image) => {
@@ -79,13 +83,25 @@ async function uploadDonationImages(images: File[]): Promise<string[]> {
       formData.append('upload_preset', uploadPreset);
       formData.append('folder', 'donow');
 
-      const res = await fetch(
-        `https://api.cloudinary.com/v1_1/${cloudName}/image/upload`,
-        { method: 'POST', body: formData }
-      );
-      const data = await res.json();
-      if (!res.ok) throw new Error(data?.error?.message || 'Image upload failed. Please try again.');
-      return data.secure_url as string;
+      const controller = new AbortController();
+      const timer = setTimeout(() => controller.abort(), 30000);
+
+      try {
+        const res = await fetch(
+          `https://api.cloudinary.com/v1_1/${cloudName}/image/upload`,
+          { method: 'POST', body: formData, signal: controller.signal }
+        );
+        clearTimeout(timer);
+        const data = await res.json();
+        if (!res.ok) throw new Error(data?.error?.message || 'Image upload failed. Please try again.');
+        return data.secure_url as string;
+      } catch (err) {
+        clearTimeout(timer);
+        if (err instanceof Error && err.name === 'AbortError') {
+          throw new Error('Image upload timed out. Check your connection and try again.');
+        }
+        throw err;
+      }
     })
   );
 }
