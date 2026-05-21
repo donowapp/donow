@@ -10,6 +10,7 @@ import { useAuth } from '@/hooks/useAuth';
 import { Donation } from '@/types';
 
 const MAX_IMAGES = 5;
+const MAX_FILE_SIZE_MB = 5;
 
 const ALL_HINTS = [
   'Winter jacket', 'Children\'s storybooks', 'Wheelchair', 'Study table',
@@ -90,11 +91,18 @@ export default function CreateDonationPage() {
   };
 
   const handleImageChange = (event: React.ChangeEvent<HTMLInputElement>) => {
-    const selectedImages = Array.from(event.target.files ?? [])
+    const selected = Array.from(event.target.files ?? [])
       .filter((file) => file.type.startsWith('image/'))
       .slice(0, MAX_IMAGES);
 
-    setImages(selectedImages);
+    const oversized = selected.filter((f) => f.size > MAX_FILE_SIZE_MB * 1024 * 1024);
+    if (oversized.length > 0) {
+      setError(`Each image must be under ${MAX_FILE_SIZE_MB}MB. Too large: ${oversized.map((f) => f.name).join(', ')}`);
+      event.target.value = '';
+      return;
+    }
+
+    setImages(selected);
   };
 
   const handleSubmit = async (event: React.FormEvent) => {

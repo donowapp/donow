@@ -1,6 +1,6 @@
 'use client';
 
-import { Suspense, useEffect, useMemo, useState } from 'react';
+import { Suspense, useEffect, useMemo, useRef, useState } from 'react';
 import Link from 'next/link';
 import { useSearchParams } from 'next/navigation';
 import { Button } from '@/components/common/Button';
@@ -19,7 +19,9 @@ function DonationsContent() {
   const [donations, setDonations] = useState<Donation[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
+  const [searchInput, setSearchInput] = useState('');
   const [search, setSearch] = useState('');
+  const searchDebounceRef = useRef<ReturnType<typeof setTimeout> | null>(null);
   const [category, setCategory] = useState(searchParams.get('category') ?? 'all');
   const [city, setCity] = useState('all');
   const [condition, setCondition] = useState('all');
@@ -61,6 +63,13 @@ function DonationsContent() {
     }
   };
 
+  const handleSearchChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const val = e.target.value;
+    setSearchInput(val);
+    if (searchDebounceRef.current) clearTimeout(searchDebounceRef.current);
+    searchDebounceRef.current = setTimeout(() => setSearch(val), 300);
+  };
+
   const cities = useMemo(
     () =>
       Array.from(new Set(donations.map((d) => d.location.city.trim()).filter(Boolean))).sort((a, b) =>
@@ -99,8 +108,8 @@ function DonationsContent() {
             <div>
               <label className="mb-2 block text-sm font-semibold text-gray-700">Search</label>
               <input
-                value={search}
-                onChange={(e) => setSearch(e.target.value)}
+                value={searchInput}
+                onChange={handleSearchChange}
                 placeholder="Title or description"
                 className="w-full rounded-lg border border-gray-300 px-4 py-2 outline-none transition focus:border-transparent focus:ring-2 focus:ring-teal-500"
               />

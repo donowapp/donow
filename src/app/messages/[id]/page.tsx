@@ -43,6 +43,8 @@ export default function ChatPage() {
   const [sending, setSending] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const bottomRef = useRef<HTMLDivElement>(null);
+  const lastSendRef = useRef<number>(0);
+  const MAX_MESSAGE_LENGTH = 1000;
 
   useEffect(() => {
     let isMounted = true;
@@ -78,14 +80,21 @@ export default function ChatPage() {
   }, [messages]);
 
   const handleSend = async () => {
-    if (!input.trim() || !user || !conversation) return;
+    const trimmed = input.trim();
+    if (!trimmed || !user || !conversation) return;
+    if (trimmed.length > MAX_MESSAGE_LENGTH) { setError(`Message too long (max ${MAX_MESSAGE_LENGTH} characters).`); return; }
+
+    const now = Date.now();
+    if (now - lastSendRef.current < 500) return;
+    lastSendRef.current = now;
+
     const receiverId = conversation.participantIds.find((id) => id !== user.uid);
     if (!receiverId) return;
 
     setSending(true);
     setError(null);
     try {
-      await sendMessage(convId, user.uid, receiverId, conversation.donationId, input);
+      await sendMessage(convId, user.uid, receiverId, conversation.donationId, trimmed);
       setInput('');
     } catch {
       setError('Failed to send message. Please try again.');
@@ -196,15 +205,22 @@ export default function ChatPage() {
           <p className="mb-2 text-xs text-red-500">{error}</p>
         )}
         <div className="flex items-end gap-2">
-          <textarea
-            value={input}
-            onChange={(e) => setInput(e.target.value)}
-            onKeyDown={handleKeyDown}
-            placeholder="Type a message… (Enter to send)"
-            rows={1}
-            className="flex-1 resize-none rounded-lg border border-gray-300 px-3 py-2 text-sm outline-none transition focus:border-transparent focus:ring-2 focus:ring-teal-500"
-            style={{ maxHeight: '120px' }}
-          />
+          <div className="flex-1 relative">
+            <textarea
+              value={input}
+              onChange={(e) => setInput(e.target.value.slice(0, MAX_MESSAGE_LENGTH))}
+              onKeyDown={handleKeyDown}
+              placeholder="Type a message… (Enter to send)"
+              rows={1}
+              className="w-full resize-none rounded-lg border border-gray-300 px-3 py-2 text-sm outline-none transition focus:border-transparent focus:ring-2 focus:ring-teal-500"
+              style={{ maxHeight: '120px' }}
+            />
+            {input.length > MAX_MESSAGE_LENGTH * 0.8 && (
+              <span className={`absolute bottom-2 right-2 text-[10px] ${input.length >= MAX_MESSAGE_LENGTH ? 'text-red-500' : 'text-gray-400'}`}>
+                {input.length}/{MAX_MESSAGE_LENGTH}
+              </span>
+            )}
+          </div>
           <button
             onClick={handleSend}
             disabled={sending || !input.trim()}

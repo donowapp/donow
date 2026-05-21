@@ -27,7 +27,7 @@ export default function SignupPage() {
     let ok = true;
     setNameError(''); setEmailError(''); setPasswordError('');
     if (!form.name.trim()) { setNameError('Name is required'); ok = false; }
-    if (!form.email.includes('@')) { setEmailError('Enter a valid email'); ok = false; }
+    if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(form.email)) { setEmailError('Enter a valid email address'); ok = false; }
     if (form.password.length < 6) { setPasswordError('Minimum 6 characters'); ok = false; }
     return ok;
   };

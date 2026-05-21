@@ -13,9 +13,13 @@ function getCategoryName(id: Donation['category']) {
 
 export default function Home() {
   const [featured, setFeatured] = useState<Donation[]>([]);
+  const [loadingFeatured, setLoadingFeatured] = useState(true);
 
   useEffect(() => {
-    getFeaturedDonations(8).then(setFeatured).catch(() => {});
+    getFeaturedDonations(8)
+      .then(setFeatured)
+      .catch(() => {})
+      .finally(() => setLoadingFeatured(false));
   }, []);
 
   return (
@@ -41,7 +45,7 @@ export default function Home() {
       </section>
 
       {/* Featured Donations Carousel */}
-      {featured.length > 0 && (
+      {(loadingFeatured || featured.length > 0) && (
         <section className="border-t bg-white px-4 py-10">
           <div className="mx-auto max-w-5xl">
             <div className="mb-5 flex items-center justify-between">
@@ -50,6 +54,20 @@ export default function Home() {
                 View all →
               </Link>
             </div>
+            {loadingFeatured ? (
+              <div className="flex gap-4 overflow-x-auto pb-3">
+                {Array.from({ length: 4 }).map((_, i) => (
+                  <div key={i} className="flex-shrink-0 w-56 rounded-lg border bg-gray-50 overflow-hidden animate-pulse">
+                    <div className="h-36 bg-gray-200" />
+                    <div className="p-3 space-y-2">
+                      <div className="h-3 w-16 rounded bg-gray-200" />
+                      <div className="h-4 w-full rounded bg-gray-200" />
+                      <div className="h-3 w-20 rounded bg-gray-200" />
+                    </div>
+                  </div>
+                ))}
+              </div>
+            ) : (
             <div
               className="flex gap-4 overflow-x-auto pb-3"
               style={{ scrollSnapType: 'x mandatory' }}
@@ -77,6 +95,7 @@ export default function Home() {
                 </Link>
               ))}
             </div>
+            )}
           </div>
         </section>
       )}
