@@ -5,9 +5,12 @@
 
 import {
   createUserWithEmailAndPassword,
+  isSignInWithEmailLink,
   onAuthStateChanged,
   sendEmailVerification,
   sendPasswordResetEmail,
+  sendSignInLinkToEmail,
+  signInWithEmailLink,
   signInWithEmailAndPassword,
   signOut,
   User as FirebaseUser,
@@ -114,6 +117,25 @@ export async function logout() {
 
 export async function resetPassword(email: string) {
   await sendPasswordResetEmail(auth, email);
+}
+
+export async function sendLoginLink(email: string) {
+  const actionCodeSettings = {
+    url: window.location.origin + '/login',
+    handleCodeInApp: true,
+  };
+  await sendSignInLinkToEmail(auth, email, actionCodeSettings);
+  localStorage.setItem('emailForSignIn', email);
+}
+
+export function isLoginLink(href: string) {
+  return isSignInWithEmailLink(auth, href);
+}
+
+export async function completeLoginWithLink(email: string, href: string) {
+  const credential = await signInWithEmailLink(auth, email, href);
+  localStorage.removeItem('emailForSignIn');
+  return credential.user;
 }
 
 export async function resendVerificationEmail() {

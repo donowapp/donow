@@ -115,10 +115,23 @@ export default function Navbar() {
             {user ? (
               <div className="flex items-center gap-3">
                 <Link
-                  href="/dashboard"
-                  className={`transition-colors ${pathname === '/dashboard' ? 'text-white font-bold underline underline-offset-4' : 'text-teal-100 hover:text-white'}`}
+                  href="/profile"
+                  className="flex items-center gap-2 text-teal-100 hover:text-white transition-colors"
                 >
-                  {user.name.split(' ')[0]}
+                  {user.profileImage ? (
+                    <img
+                      src={user.profileImage}
+                      alt={user.name}
+                      className="w-7 h-7 rounded-full object-cover border-2 border-teal-300"
+                    />
+                  ) : (
+                    <span className="flex h-7 w-7 items-center justify-center rounded-full bg-teal-800 text-xs font-bold text-white">
+                      {(user.name || 'U').charAt(0).toUpperCase()}
+                    </span>
+                  )}
+                  <span className={pathname === '/dashboard' || pathname === '/profile' ? 'font-bold text-white underline underline-offset-4' : ''}>
+                    {user.name.split(' ')[0]}
+                  </span>
                 </Link>
                 <button onClick={handleLogout} className="text-xs text-teal-200 underline hover:text-white">
                   Logout

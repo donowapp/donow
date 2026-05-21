@@ -11,6 +11,16 @@ import { Donation } from '@/types';
 
 const MAX_IMAGES = 5;
 
+const ALL_HINTS = [
+  'Winter jacket', 'Children\'s storybooks', 'Wheelchair', 'Study table',
+  'Rice (10 kg)', 'Old laptop', 'School bag', 'Unused medicines',
+  'Warm blanket', 'Bicycle', 'Toys for kids', 'Reading glasses',
+  'Baby clothes', 'Pressure cooker', 'First aid kit', 'Walking stick',
+  'Android phone', 'Class 10 textbooks', 'School uniform', 'BP monitor',
+  'Stroller', 'Cooking oil', 'Tiffin box', 'Ceiling fan',
+  'Cricket bat', 'Badminton racket', 'Board game', 'Stuffed animal',
+];
+
 export default function CreateDonationPage() {
   const router = useRouter();
   const { user, loading, checkAuth } = useAuth();
@@ -45,6 +55,11 @@ export default function CreateDonationPage() {
       router.push('/login');
     }
   }, [checkingAuth, router, user]);
+
+  const hints = useMemo(
+    () => [...ALL_HINTS].sort(() => Math.random() - 0.5).slice(0, 8),
+    []
+  );
 
   const imagePreviews = useMemo(
     () =>
@@ -150,10 +165,25 @@ export default function CreateDonationPage() {
             onChange={(event) =>
               setFormData({ ...formData, title: event.target.value })
             }
-            placeholder="Wooden study table"
+            placeholder="What are you donating?"
             error={validationErrors.title}
             required
           />
+          <div className="mb-2 -mt-2">
+            <p className="mb-1.5 text-xs text-gray-400">Suggestions — tap to fill:</p>
+            <div className="flex flex-wrap gap-1.5">
+              {hints.map((hint) => (
+                <button
+                  key={hint}
+                  type="button"
+                  onClick={() => setFormData((f) => ({ ...f, title: hint }))}
+                  className="rounded-full border border-teal-200 bg-teal-50 px-3 py-1 text-xs font-medium text-teal-700 transition hover:bg-teal-100"
+                >
+                  {hint}
+                </button>
+              ))}
+            </div>
+          </div>
 
           <div className="mb-4">
             <label className="mb-2 block text-sm font-semibold text-gray-700">
