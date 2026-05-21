@@ -106,8 +106,9 @@ function DonationsContent() {
         <div className="mb-6 rounded-lg bg-white p-4 shadow">
           <div className="grid grid-cols-1 gap-4 md:grid-cols-4">
             <div>
-              <label className="mb-2 block text-sm font-semibold text-gray-700">Search</label>
+              <label htmlFor="filter-search" className="mb-2 block text-sm font-semibold text-gray-700">Search</label>
               <input
+                id="filter-search"
                 value={searchInput}
                 onChange={handleSearchChange}
                 placeholder="Title or description"
@@ -115,8 +116,9 @@ function DonationsContent() {
               />
             </div>
             <div>
-              <label className="mb-2 block text-sm font-semibold text-gray-700">Category</label>
+              <label htmlFor="filter-category" className="mb-2 block text-sm font-semibold text-gray-700">Category</label>
               <select
+                id="filter-category"
                 value={category}
                 onChange={(e) => setCategory(e.target.value)}
                 className="w-full rounded-lg border border-gray-300 px-4 py-2 outline-none transition focus:border-transparent focus:ring-2 focus:ring-teal-500"
@@ -126,8 +128,9 @@ function DonationsContent() {
               </select>
             </div>
             <div>
-              <label className="mb-2 block text-sm font-semibold text-gray-700">City</label>
+              <label htmlFor="filter-city" className="mb-2 block text-sm font-semibold text-gray-700">City</label>
               <select
+                id="filter-city"
                 value={city}
                 onChange={(e) => setCity(e.target.value)}
                 className="w-full rounded-lg border border-gray-300 px-4 py-2 outline-none transition focus:border-transparent focus:ring-2 focus:ring-teal-500"
@@ -137,8 +140,9 @@ function DonationsContent() {
               </select>
             </div>
             <div>
-              <label className="mb-2 block text-sm font-semibold text-gray-700">Condition</label>
+              <label htmlFor="filter-condition" className="mb-2 block text-sm font-semibold text-gray-700">Condition</label>
               <select
+                id="filter-condition"
                 value={condition}
                 onChange={(e) => setCondition(e.target.value)}
                 className="w-full rounded-lg border border-gray-300 px-4 py-2 capitalize outline-none transition focus:border-transparent focus:ring-2 focus:ring-teal-500"

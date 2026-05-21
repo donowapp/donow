@@ -40,7 +40,7 @@ export default function LoginPage() {
   const handleSend = async (e: React.FormEvent) => {
     e.preventDefault();
     setEmailError('');
-    if (!email.includes('@')) { setEmailError('Enter a valid email address'); return; }
+    if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) { setEmailError('Enter a valid email address'); return; }
     try {
       await sendLoginLink(email);
       setStep('sent');
@@ -51,7 +51,7 @@ export default function LoginPage() {
 
   const handleConfirmEmail = async (e: React.FormEvent) => {
     e.preventDefault();
-    if (!confirmEmail.includes('@')) { setEmailError('Enter your email'); return; }
+    if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(confirmEmail)) { setEmailError('Enter your email'); return; }
     setStep('completing');
     completeLogin(confirmEmail, window.location.href)
       .then(() => router.push('/dashboard'))
