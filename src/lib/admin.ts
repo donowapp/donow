@@ -1,12 +1,15 @@
 import { db } from './firebase';
 import {
+  addDoc,
   collection,
   deleteDoc,
   doc,
+  getDoc,
   getDocs,
+  setDoc,
   updateDoc,
 } from 'firebase/firestore';
-import { Donation, User } from '@/types';
+import { AdminLog, Donation, PlatformSettings, User } from '@/types';
 
 type FirestoreTimestamp = { toDate: () => Date };
 
@@ -81,6 +84,8 @@ export async function getAllDonationsAdmin(): Promise<Donation[]> {
         },
         status: data.status ?? 'active',
         featured: data.featured ?? false,
+        flagged: data.flagged ?? false,
+        flagReason: data.flagReason ?? '',
         viewCount: data.viewCount ?? 0,
         interestedUsers: data.interestedUsers ?? [],
         createdAt: normalizeDate(data.createdAt),
@@ -103,4 +108,77 @@ export async function adminDeleteDonation(id: string): Promise<void> {
 
 export async function setDonationFeatured(id: string, featured: boolean): Promise<void> {
   await updateDoc(doc(db, 'donations', id), { featured, updatedAt: new Date() });
+}
+
+export async function flagDonation(id: string, reason: string): Promise<void> {
+  await updateDoc(doc(db, 'donations', id), { flagged: true, flagReason: reason, updatedAt: new Date() });
+}
+
+export async function unflagDonation(id: string): Promise<void> {
+  await updateDoc(doc(db, 'donations', id), { flagged: false, flagReason: '', updatedAt: new Date() });
+}
+
+export async function logAdminAction(
+  adminId: string,
+  adminName: string,
+  action: string,
+  targetType: AdminLog['targetType'],
+  targetId: string,
+  details: string
+): Promise<void> {
+  await addDoc(collection(db, 'adminLogs'), {
+    adminId,
+    adminName,
+    action,
+    targetType,
+    targetId,
+    details,
+    createdAt: new Date(),
+  });
+}
+
+export async function getAdminLogs(): Promise<AdminLog[]> {
+  const snap = await getDocs(collection(db, 'adminLogs'));
+  return snap.docs
+    .map((d) => {
+      const data = d.data();
+      return {
+        id: d.id,
+        adminId: data.adminId ?? '',
+        adminName: data.adminName ?? '',
+        action: data.action ?? '',
+        targetType: (data.targetType ?? 'user') as AdminLog['targetType'],
+        targetId: data.targetId ?? '',
+        details: data.details ?? '',
+        createdAt: normalizeDate(data.createdAt),
+      } satisfies AdminLog;
+    })
+    .sort((a, b) => b.createdAt.getTime() - a.createdAt.getTime());
+}
+
+const DEFAULT_SETTINGS: PlatformSettings = {
+  platformName: 'Donow',
+  tagline: 'Give More. Waste Less.',
+  supportEmail: 'help.donow@gmail.com',
+  messagingEnabled: true,
+  requireVerificationForPosting: false,
+  maxDonationsPerDay: 5,
+};
+
+export async function getPlatformSettings(): Promise<PlatformSettings> {
+  const snap = await getDoc(doc(db, 'settings', 'platform'));
+  if (!snap.exists()) return DEFAULT_SETTINGS;
+  const data = snap.data();
+  return {
+    platformName: data.platformName ?? DEFAULT_SETTINGS.platformName,
+    tagline: data.tagline ?? DEFAULT_SETTINGS.tagline,
+    supportEmail: data.supportEmail ?? DEFAULT_SETTINGS.supportEmail,
+    messagingEnabled: data.messagingEnabled ?? true,
+    requireVerificationForPosting: data.requireVerificationForPosting ?? false,
+    maxDonationsPerDay: data.maxDonationsPerDay ?? 5,
+  };
+}
+
+export async function updatePlatformSettings(settings: PlatformSettings): Promise<void> {
+  await setDoc(doc(db, 'settings', 'platform'), settings);
 }

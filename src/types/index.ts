@@ -50,6 +50,8 @@ export interface Donation {
   };
   status: 'active' | 'completed' | 'rejected';
   featured?: boolean;
+  flagged?: boolean;
+  flagReason?: string;
   viewCount: number;
   interestedUsers: string[];
   createdAt: Date;
@@ -87,6 +89,26 @@ export interface Notification {
   donationId?: string;
   conversationId?: string;
   createdAt: Date;
+}
+
+export interface AdminLog {
+  id: string;
+  adminId: string;
+  adminName: string;
+  action: string;
+  targetType: 'user' | 'donation' | 'settings';
+  targetId: string;
+  details: string;
+  createdAt: Date;
+}
+
+export interface PlatformSettings {
+  platformName: string;
+  tagline: string;
+  supportEmail: string;
+  messagingEnabled: boolean;
+  requireVerificationForPosting: boolean;
+  maxDonationsPerDay: number;
 }
 
 export interface Fundraiser {

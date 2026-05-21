@@ -10,25 +10,30 @@ service cloud.firestore {
       return isAuth() && request.auth.uid == userId;
     }
 
-    // Users: readable by any logged-in user; writable only by the owner
+    function isAdmin() {
+      return isAuth() &&
+        get(/databases/$(database)/documents/users/$(request.auth.uid)).data.role == 'admin';
+    }
+
+    // Users: readable by any logged-in user; writable by owner or admin
     match /users/{userId} {
       allow read: if isAuth();
       allow create: if isOwner(userId);
-      allow update: if isOwner(userId);
-      allow delete: if false;
+      allow update: if isOwner(userId) || isAdmin();
+      allow delete: if isAdmin();
     }
 
-    // Donations: publicly readable; create requires auth; update restricted to owner
-    // (interested users and viewCount can be updated by any authenticated user)
+    // Donations: publicly readable; create requires auth; update by owner, admin, or limited fields
     match /donations/{donationId} {
       allow read: if true;
       allow create: if isAuth();
       allow update: if isAuth() && (
         resource.data.userId == request.auth.uid ||
+        isAdmin() ||
         request.resource.data.diff(resource.data).affectedKeys()
           .hasOnly(['interestedUsers', 'viewCount', 'updatedAt'])
       );
-      allow delete: if isAuth() && resource.data.userId == request.auth.uid;
+      allow delete: if isAuth() && (resource.data.userId == request.auth.uid || isAdmin());
     }
 
     // Conversations: participants only
@@ -54,11 +59,22 @@ service cloud.firestore {
       allow delete: if isAuth() && request.auth.uid == resource.data.userId;
     }
 
-    // Reviews: publicly readable; create by authenticated users only; immutable after creation
+    // Reviews: publicly readable; create by authenticated users only; immutable
     match /reviews/{reviewId} {
       allow read: if true;
       allow create: if isAuth() && request.auth.uid == request.resource.data.reviewerId;
       allow update, delete: if false;
+    }
+
+    // Admin action logs: admins only
+    match /adminLogs/{logId} {
+      allow read, write: if isAdmin();
+    }
+
+    // Platform settings: any auth user can read; admins can write
+    match /settings/{docId} {
+      allow read: if isAuth();
+      allow write: if isAdmin();
     }
   }
 }
