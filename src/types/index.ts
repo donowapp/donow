@@ -49,6 +49,7 @@ export interface Donation {
     coordinates?: { lat: number; lng: number };
   };
   status: 'active' | 'completed' | 'rejected';
+  featured?: boolean;
   viewCount: number;
   interestedUsers: string[];
   createdAt: Date;

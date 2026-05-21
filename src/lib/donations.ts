@@ -61,6 +61,7 @@ function normalizeDonation(id: string, data: Partial<Donation>) {
       coordinates: data.location?.coordinates,
     },
     status: data.status ?? 'active',
+    featured: data.featured ?? false,
     viewCount: data.viewCount ?? 0,
     interestedUsers: data.interestedUsers ?? [],
     createdAt: normalizeDate(data.createdAt),
@@ -216,10 +217,12 @@ export async function toggleInterest(donationId: string, userId: string, interes
 export async function getFeaturedDonations(limit = 6): Promise<Donation[]> {
   const q = query(collection(db, 'donations'), where('status', '==', 'active'));
   const snap = await getDocs(q);
-  return snap.docs
-    .map((d) => normalizeDonation(d.id, d.data() as Partial<Donation>))
-    .sort((a, b) => b.viewCount - a.viewCount || b.createdAt.getTime() - a.createdAt.getTime())
-    .slice(0, limit);
+  const all = snap.docs.map((d) => normalizeDonation(d.id, d.data() as Partial<Donation>));
+  const pinned = all.filter((d) => d.featured);
+  const rest = all.filter((d) => !d.featured).sort(
+    (a, b) => b.viewCount - a.viewCount || b.createdAt.getTime() - a.createdAt.getTime()
+  );
+  return [...pinned, ...rest].slice(0, limit);
 }
 
 export async function toggleSavedDonation(

@@ -8,6 +8,7 @@ import {
   adminDeleteDonation,
   getAllDonationsAdmin,
   getAllUsers,
+  setDonationFeatured,
   setDonationStatus,
   setUserRole,
   setUserStatus,
@@ -15,7 +16,7 @@ import {
 import { CATEGORIES } from '@/constants/config';
 import { Donation, User } from '@/types';
 
-type Tab = 'overview' | 'users' | 'donations';
+type Tab = 'overview' | 'users' | 'donations' | 'featured' | 'analytics';
 
 function getCategoryName(id: Donation['category']) {
   return CATEGORIES.find((c) => c.id === id)?.name ?? 'Other';
@@ -96,6 +97,16 @@ export default function AdminPage() {
     }
   };
 
+  const handleToggleFeatured = async (id: string, current: boolean) => {
+    setActionPending(id + '-feat');
+    try {
+      await setDonationFeatured(id, !current);
+      setDonations((prev) => prev.map((d) => (d.id === id ? { ...d, featured: !current } : d)));
+    } finally {
+      setActionPending(null);
+    }
+  };
+
   const handleDeleteDonation = async (id: string) => {
     if (!confirm('Permanently delete this donation? This cannot be undone.')) return;
     setActionPending(id + '-del');
@@ -163,7 +174,7 @@ export default function AdminPage() {
         </div>
 
         {/* Tabs */}
-        <div className="mb-6 flex gap-2">
+        <div className="mb-6 flex flex-wrap gap-2">
           <button className={tabClass('overview')} onClick={() => setTab('overview')}>Overview</button>
           <button className={tabClass('users')} onClick={() => setTab('users')}>
             Users {users.length > 0 && <span className="ml-1 text-xs">({users.length})</span>}
@@ -171,6 +182,10 @@ export default function AdminPage() {
           <button className={tabClass('donations')} onClick={() => setTab('donations')}>
             Donations {donations.length > 0 && <span className="ml-1 text-xs">({donations.length})</span>}
           </button>
+          <button className={tabClass('featured')} onClick={() => setTab('featured')}>
+            ⭐ Featured {donations.filter((d) => d.featured).length > 0 && <span className="ml-1 text-xs">({donations.filter((d) => d.featured).length})</span>}
+          </button>
+          <button className={tabClass('analytics')} onClick={() => setTab('analytics')}>📊 Analytics</button>
         </div>
 
         {dataLoading && (
@@ -332,6 +347,172 @@ export default function AdminPage() {
                   )}
                 </tbody>
               </table>
+            </div>
+          </div>
+        )}
+
+        {!dataLoading && tab === 'featured' && (
+          <div className="space-y-4">
+            <div className="rounded-lg bg-white p-4 shadow">
+              <p className="text-sm text-gray-500">
+                Pinned donations always appear first in the homepage &ldquo;Featured Donations&rdquo; section.
+                Unpin to let high-view donations take their place automatically.
+              </p>
+            </div>
+            {donations.filter((d) => d.status === 'active').length === 0 ? (
+              <div className="rounded-lg bg-white py-16 shadow text-center text-gray-400">No active donations yet.</div>
+            ) : (
+              <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-3">
+                {donations
+                  .filter((d) => d.status === 'active')
+                  .sort((a, b) => (b.featured ? 1 : 0) - (a.featured ? 1 : 0) || b.viewCount - a.viewCount)
+                  .map((d) => (
+                    <div
+                      key={d.id}
+                      className={`rounded-lg bg-white shadow overflow-hidden transition ${d.featured ? 'ring-2 ring-yellow-400' : ''}`}
+                    >
+                      <div
+                        className="h-36 bg-gray-100 bg-cover bg-center relative"
+                        style={{ backgroundImage: d.images[0] ? `url(${d.images[0]})` : undefined }}
+                      >
+                        {d.featured && (
+                          <span className="absolute top-2 left-2 rounded-full bg-yellow-400 px-2 py-0.5 text-xs font-bold text-yellow-900">
+                            ⭐ Featured
+                          </span>
+                        )}
+                        <span className="absolute top-2 right-2 rounded bg-black/50 px-2 py-0.5 text-[10px] text-white">
+                          {d.viewCount} views
+                        </span>
+                      </div>
+                      <div className="p-3">
+                        <p className="truncate font-semibold text-gray-900 text-sm">{d.title}</p>
+                        <p className="text-xs text-gray-500">{getCategoryName(d.category)} · {d.location.city}</p>
+                        <div className="mt-3 flex gap-2">
+                          <button
+                            onClick={() => handleToggleFeatured(d.id, d.featured ?? false)}
+                            disabled={actionPending === d.id + '-feat'}
+                            className={`flex-1 rounded px-2 py-1.5 text-xs font-semibold transition disabled:opacity-40 ${
+                              d.featured
+                                ? 'bg-yellow-100 text-yellow-800 hover:bg-yellow-200'
+                                : 'bg-gray-100 text-gray-700 hover:bg-gray-200'
+                            }`}
+                          >
+                            {actionPending === d.id + '-feat' ? '…' : d.featured ? 'Unpin' : '⭐ Pin to Featured'}
+                          </button>
+                          <Link
+                            href={`/donations/${d.id}`}
+                            className="rounded bg-teal-50 px-2 py-1.5 text-xs font-semibold text-teal-700 hover:bg-teal-100 transition"
+                          >
+                            View
+                          </Link>
+                        </div>
+                      </div>
+                    </div>
+                  ))}
+              </div>
+            )}
+          </div>
+        )}
+
+        {!dataLoading && tab === 'analytics' && (
+          <div className="space-y-6">
+            {/* Category breakdown */}
+            <div className="rounded-lg bg-white p-5 shadow">
+              <h2 className="mb-4 font-semibold text-gray-800">Donations by Category</h2>
+              {(() => {
+                const counts: Record<string, number> = {};
+                donations.forEach((d) => { counts[getCategoryName(d.category)] = (counts[getCategoryName(d.category)] ?? 0) + 1; });
+                const sorted = Object.entries(counts).sort((a, b) => b[1] - a[1]);
+                const max = sorted[0]?.[1] ?? 1;
+                return sorted.length === 0 ? (
+                  <p className="text-sm text-gray-400">No data yet.</p>
+                ) : (
+                  <div className="space-y-2">
+                    {sorted.map(([cat, count]) => (
+                      <div key={cat} className="flex items-center gap-3">
+                        <span className="w-28 flex-shrink-0 text-right text-xs text-gray-600">{cat}</span>
+                        <div className="flex-1 rounded-full bg-gray-100 h-4 overflow-hidden">
+                          <div
+                            className="h-full rounded-full bg-teal-500 transition-all"
+                            style={{ width: `${(count / max) * 100}%` }}
+                          />
+                        </div>
+                        <span className="w-6 text-xs font-semibold text-gray-700">{count}</span>
+                      </div>
+                    ))}
+                  </div>
+                );
+              })()}
+            </div>
+
+            {/* Status breakdown */}
+            <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
+              <div className="rounded-lg bg-white p-5 shadow">
+                <h2 className="mb-4 font-semibold text-gray-800">Donations by Status</h2>
+                {(['active', 'completed', 'rejected'] as const).map((s) => {
+                  const count = donations.filter((d) => d.status === s).length;
+                  const pct = donations.length ? Math.round((count / donations.length) * 100) : 0;
+                  const colors: Record<string, string> = { active: 'bg-green-500', completed: 'bg-blue-500', rejected: 'bg-red-400' };
+                  return (
+                    <div key={s} className="mb-2 flex items-center gap-3">
+                      <span className="w-20 flex-shrink-0 text-right text-xs capitalize text-gray-600">{s}</span>
+                      <div className="flex-1 rounded-full bg-gray-100 h-4 overflow-hidden">
+                        <div className={`h-full rounded-full transition-all ${colors[s]}`} style={{ width: `${pct}%` }} />
+                      </div>
+                      <span className="w-10 text-xs font-semibold text-gray-700">{count} ({pct}%)</span>
+                    </div>
+                  );
+                })}
+              </div>
+
+              {/* Top cities */}
+              <div className="rounded-lg bg-white p-5 shadow">
+                <h2 className="mb-4 font-semibold text-gray-800">Top Cities (Donations)</h2>
+                {(() => {
+                  const counts: Record<string, number> = {};
+                  donations.forEach((d) => {
+                    const city = d.location.city || 'Unknown';
+                    counts[city] = (counts[city] ?? 0) + 1;
+                  });
+                  const sorted = Object.entries(counts).sort((a, b) => b[1] - a[1]).slice(0, 6);
+                  const max = sorted[0]?.[1] ?? 1;
+                  return sorted.length === 0 ? (
+                    <p className="text-sm text-gray-400">No data yet.</p>
+                  ) : (
+                    <div className="space-y-2">
+                      {sorted.map(([city, count]) => (
+                        <div key={city} className="flex items-center gap-3">
+                          <span className="w-24 flex-shrink-0 truncate text-right text-xs text-gray-600">{city}</span>
+                          <div className="flex-1 rounded-full bg-gray-100 h-4 overflow-hidden">
+                            <div className="h-full rounded-full bg-indigo-400 transition-all" style={{ width: `${(count / max) * 100}%` }} />
+                          </div>
+                          <span className="w-6 text-xs font-semibold text-gray-700">{count}</span>
+                        </div>
+                      ))}
+                    </div>
+                  );
+                })()}
+              </div>
+            </div>
+
+            {/* User growth */}
+            <div className="rounded-lg bg-white p-5 shadow">
+              <h2 className="mb-4 font-semibold text-gray-800">Users by Role</h2>
+              <div className="flex gap-6">
+                {(['user', 'admin'] as const).map((r) => {
+                  const count = users.filter((u) => u.role === r).length;
+                  return (
+                    <div key={r} className="rounded-lg bg-gray-50 px-6 py-4 text-center">
+                      <p className="text-2xl font-bold text-gray-900">{count}</p>
+                      <p className="mt-1 text-xs capitalize text-gray-500">{r === 'admin' ? 'Admins' : 'Regular Users'}</p>
+                    </div>
+                  );
+                })}
+                <div className="rounded-lg bg-gray-50 px-6 py-4 text-center">
+                  <p className="text-2xl font-bold text-gray-900">{users.filter((u) => u.status !== 'active').length}</p>
+                  <p className="mt-1 text-xs text-gray-500">Suspended/Banned</p>
+                </div>
+              </div>
             </div>
           </div>
         )}

@@ -80,6 +80,7 @@ export async function getAllDonationsAdmin(): Promise<Donation[]> {
           coordinates: data.location?.coordinates,
         },
         status: data.status ?? 'active',
+        featured: data.featured ?? false,
         viewCount: data.viewCount ?? 0,
         interestedUsers: data.interestedUsers ?? [],
         createdAt: normalizeDate(data.createdAt),
@@ -98,4 +99,8 @@ export async function setDonationStatus(
 
 export async function adminDeleteDonation(id: string): Promise<void> {
   await deleteDoc(doc(db, 'donations', id));
+}
+
+export async function setDonationFeatured(id: string, featured: boolean): Promise<void> {
+  await updateDoc(doc(db, 'donations', id), { featured, updatedAt: new Date() });
 }
