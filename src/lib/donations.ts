@@ -83,8 +83,8 @@ async function uploadDonationImages(images: File[]): Promise<string[]> {
         `https://api.cloudinary.com/v1_1/${cloudName}/image/upload`,
         { method: 'POST', body: formData }
       );
-      if (!res.ok) throw new Error('Image upload failed. Please try again.');
       const data = await res.json();
+      if (!res.ok) throw new Error(data?.error?.message || 'Image upload failed. Please try again.');
       return data.secure_url as string;
     })
   );
