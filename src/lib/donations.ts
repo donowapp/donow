@@ -1,10 +1,5 @@
-/**
- * Donation data access helpers
- * Handles Firestore donation records and Firebase Storage uploads.
- */
-
 import { Donation, User } from '@/types';
-import { db, storage } from './firebase';
+import { db } from './firebase';
 import {
   addDoc,
   arrayRemove,
@@ -20,7 +15,6 @@ import {
   updateDoc,
   where,
 } from 'firebase/firestore';
-import { getDownloadURL, ref, uploadBytes } from 'firebase/storage';
 
 export interface CreateDonationData {
   userId: string;
@@ -74,48 +68,30 @@ function normalizeDonation(id: string, data: Partial<Donation>) {
   } satisfies Donation;
 }
 
-function sanitizeFileName(fileName: string) {
-  return fileName.replace(/[^a-zA-Z0-9._-]/g, '-');
-}
+async function uploadDonationImages(images: File[]): Promise<string[]> {
+  const cloudName = process.env.NEXT_PUBLIC_CLOUDINARY_CLOUD_NAME!;
+  const uploadPreset = process.env.NEXT_PUBLIC_CLOUDINARY_UPLOAD_PRESET!;
 
-function withTimeout<T>(
-  promise: Promise<T>,
-  milliseconds: number,
-  message: string
-) {
-  return Promise.race([
-    promise,
-    new Promise<T>((_, reject) => {
-      window.setTimeout(() => {
-        reject(new Error(message));
-      }, milliseconds);
-    }),
-  ]);
-}
-
-async function uploadDonationImages(userId: string, images: File[]) {
   return Promise.all(
-    images.map(async (image, index) => {
-      const filePath = `donations/${userId}/${Date.now()}-${index}-${sanitizeFileName(
-        image.name
-      )}`;
-      const imageRef = ref(storage, filePath);
-      await withTimeout(
-        uploadBytes(imageRef, image),
-        15000,
-        'Image upload timed out — Firebase Storage CORS is likely not configured for this domain.'
+    images.map(async (image) => {
+      const formData = new FormData();
+      formData.append('file', image);
+      formData.append('upload_preset', uploadPreset);
+      formData.append('folder', 'donow');
+
+      const res = await fetch(
+        `https://api.cloudinary.com/v1_1/${cloudName}/image/upload`,
+        { method: 'POST', body: formData }
       );
-      return withTimeout(
-        getDownloadURL(imageRef),
-        10000,
-        'Could not get image URL after upload.'
-      );
+      if (!res.ok) throw new Error('Image upload failed. Please try again.');
+      const data = await res.json();
+      return data.secure_url as string;
     })
   );
 }
 
 export async function createDonation(data: CreateDonationData) {
-  const imageUrls = await uploadDonationImages(data.userId, data.images);
+  const imageUrls = await uploadDonationImages(data.images);
   const now = new Date();
 
   const donation = {
