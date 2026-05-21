@@ -112,6 +112,15 @@ export default function Navbar() {
               + Donate
             </Link>
 
+            {user?.role === 'admin' && (
+              <Link
+                href="/admin"
+                className={`rounded px-2 py-1 text-xs font-bold transition ${pathname === '/admin' ? 'bg-white text-teal-700' : 'bg-teal-700 text-teal-100 hover:bg-teal-800'}`}
+              >
+                Admin
+              </Link>
+            )}
+
             {user ? (
               <div className="flex items-center gap-3">
                 <Link
@@ -191,6 +200,11 @@ export default function Navbar() {
                 <Link href="/dashboard" className={pathname === '/dashboard' ? 'text-white font-bold' : 'text-teal-100'}>
                   {user.name.split(' ')[0]} (Dashboard)
                 </Link>
+                {user.role === 'admin' && (
+                  <Link href="/admin" className={pathname === '/admin' ? 'text-white font-bold' : 'text-teal-100'}>
+                    Admin Panel
+                  </Link>
+                )}
                 <button onClick={handleLogout} className="text-left text-teal-200 hover:text-white">
                   Logout
                 </button>

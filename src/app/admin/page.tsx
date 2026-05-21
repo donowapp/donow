@@ -2,12 +2,45 @@
 
 import { useEffect, useState } from 'react';
 import { useRouter } from 'next/navigation';
+import Link from 'next/link';
 import { useAuth } from '@/hooks/useAuth';
+import {
+  adminDeleteDonation,
+  getAllDonationsAdmin,
+  getAllUsers,
+  setDonationStatus,
+  setUserRole,
+  setUserStatus,
+} from '@/lib/admin';
+import { CATEGORIES } from '@/constants/config';
+import { Donation, User } from '@/types';
+
+type Tab = 'overview' | 'users' | 'donations';
+
+function getCategoryName(id: Donation['category']) {
+  return CATEGORIES.find((c) => c.id === id)?.name ?? 'Other';
+}
+
+const STATUS_BADGE: Record<string, string> = {
+  active: 'bg-green-100 text-green-700',
+  completed: 'bg-blue-100 text-blue-700',
+  rejected: 'bg-red-100 text-red-700',
+  suspended: 'bg-yellow-100 text-yellow-800',
+  banned: 'bg-red-100 text-red-700',
+};
 
 export default function AdminPage() {
   const router = useRouter();
   const { user, loading, checkAuth } = useAuth();
   const [checkingAuth, setCheckingAuth] = useState(true);
+  const [tab, setTab] = useState<Tab>('overview');
+  const [users, setUsers] = useState<User[]>([]);
+  const [donations, setDonations] = useState<Donation[]>([]);
+  const [dataLoading, setDataLoading] = useState(false);
+  const [dataLoaded, setDataLoaded] = useState(false);
+  const [userSearch, setUserSearch] = useState('');
+  const [donationFilter, setDonationFilter] = useState<'all' | Donation['status']>('all');
+  const [actionPending, setActionPending] = useState<string | null>(null);
 
   useEffect(() => {
     let isMounted = true;
@@ -18,6 +51,60 @@ export default function AdminPage() {
   useEffect(() => {
     if (!checkingAuth && !loading && !user) router.push('/login');
   }, [checkingAuth, loading, router, user]);
+
+  useEffect(() => {
+    if (!user || user.role !== 'admin' || dataLoaded) return;
+    setDataLoading(true);
+    Promise.all([getAllUsers(), getAllDonationsAdmin()])
+      .then(([fetchedUsers, fetchedDonations]) => {
+        setUsers(fetchedUsers);
+        setDonations(fetchedDonations);
+        setDataLoaded(true);
+      })
+      .catch(() => {})
+      .finally(() => setDataLoading(false));
+  }, [user, dataLoaded]);
+
+  const handleUserStatus = async (uid: string, status: User['status']) => {
+    setActionPending(uid);
+    try {
+      await setUserStatus(uid, status);
+      setUsers((prev) => prev.map((u) => (u.uid === uid ? { ...u, status } : u)));
+    } finally {
+      setActionPending(null);
+    }
+  };
+
+  const handleUserRole = async (uid: string, role: User['role']) => {
+    setActionPending(uid + '-role');
+    try {
+      await setUserRole(uid, role);
+      setUsers((prev) => prev.map((u) => (u.uid === uid ? { ...u, role } : u)));
+    } finally {
+      setActionPending(null);
+    }
+  };
+
+  const handleDonationStatus = async (id: string, status: Donation['status']) => {
+    setActionPending(id);
+    try {
+      await setDonationStatus(id, status);
+      setDonations((prev) => prev.map((d) => (d.id === id ? { ...d, status } : d)));
+    } finally {
+      setActionPending(null);
+    }
+  };
+
+  const handleDeleteDonation = async (id: string) => {
+    if (!confirm('Permanently delete this donation? This cannot be undone.')) return;
+    setActionPending(id + '-del');
+    try {
+      await adminDeleteDonation(id);
+      setDonations((prev) => prev.filter((d) => d.id !== id));
+    } finally {
+      setActionPending(null);
+    }
+  };
 
   if (checkingAuth || loading) {
     return (
@@ -41,11 +128,286 @@ export default function AdminPage() {
     );
   }
 
+  const stats = {
+    totalUsers: users.length,
+    activeUsers: users.filter((u) => u.status === 'active').length,
+    bannedUsers: users.filter((u) => u.status === 'banned' || u.status === 'suspended').length,
+    totalDonations: donations.length,
+    activeDonations: donations.filter((d) => d.status === 'active').length,
+    completedDonations: donations.filter((d) => d.status === 'completed').length,
+    rejectedDonations: donations.filter((d) => d.status === 'rejected').length,
+  };
+
+  const filteredUsers = users.filter((u) => {
+    const q = userSearch.toLowerCase();
+    return !q || u.name.toLowerCase().includes(q) || u.email.toLowerCase().includes(q) || u.city.toLowerCase().includes(q);
+  });
+
+  const filteredDonations = donations.filter(
+    (d) => donationFilter === 'all' || d.status === donationFilter
+  );
+
+  const tabClass = (t: Tab) =>
+    `px-4 py-2 text-sm font-semibold rounded-lg transition ${
+      tab === t ? 'bg-teal-600 text-white' : 'text-gray-600 hover:bg-gray-100'
+    }`;
+
   return (
     <div className="bg-gray-50 min-h-screen px-4 py-8">
-      <div className="mx-auto max-w-5xl">
-        <h1 className="text-3xl font-bold text-gray-900">Admin Dashboard</h1>
-        <p className="mt-2 text-gray-500">Manage donations, users, and reports.</p>
+      <div className="mx-auto max-w-6xl">
+        {/* Header */}
+        <div className="mb-6">
+          <h1 className="text-3xl font-bold text-gray-900">Admin Dashboard</h1>
+          <p className="mt-1 text-gray-500">Manage users, donations, and platform activity.</p>
+        </div>
+
+        {/* Tabs */}
+        <div className="mb-6 flex gap-2">
+          <button className={tabClass('overview')} onClick={() => setTab('overview')}>Overview</button>
+          <button className={tabClass('users')} onClick={() => setTab('users')}>
+            Users {users.length > 0 && <span className="ml-1 text-xs">({users.length})</span>}
+          </button>
+          <button className={tabClass('donations')} onClick={() => setTab('donations')}>
+            Donations {donations.length > 0 && <span className="ml-1 text-xs">({donations.length})</span>}
+          </button>
+        </div>
+
+        {dataLoading && (
+          <div className="flex justify-center py-20">
+            <div className="inline-block animate-spin rounded-full h-10 w-10 border-b-2 border-teal-600" />
+          </div>
+        )}
+
+        {!dataLoading && tab === 'overview' && (
+          <div className="space-y-6">
+            <div className="grid grid-cols-2 gap-4 sm:grid-cols-4">
+              {[
+                { label: 'Total Users', value: stats.totalUsers, color: 'text-teal-600' },
+                { label: 'Active Users', value: stats.activeUsers, color: 'text-green-600' },
+                { label: 'Suspended/Banned', value: stats.bannedUsers, color: 'text-red-600' },
+                { label: 'Total Donations', value: stats.totalDonations, color: 'text-teal-600' },
+              ].map((s) => (
+                <div key={s.label} className="rounded-lg bg-white p-5 shadow text-center">
+                  <p className={`text-3xl font-bold ${s.color}`}>{s.value}</p>
+                  <p className="mt-1 text-sm text-gray-500">{s.label}</p>
+                </div>
+              ))}
+            </div>
+            <div className="grid grid-cols-1 gap-4 sm:grid-cols-3">
+              {[
+                { label: 'Active Donations', value: stats.activeDonations, color: 'text-green-600' },
+                { label: 'Completed', value: stats.completedDonations, color: 'text-blue-600' },
+                { label: 'Rejected', value: stats.rejectedDonations, color: 'text-red-600' },
+              ].map((s) => (
+                <div key={s.label} className="rounded-lg bg-white p-5 shadow text-center">
+                  <p className={`text-3xl font-bold ${s.color}`}>{s.value}</p>
+                  <p className="mt-1 text-sm text-gray-500">{s.label}</p>
+                </div>
+              ))}
+            </div>
+            <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
+              <div className="rounded-lg bg-white p-5 shadow">
+                <h2 className="mb-3 font-semibold text-gray-800">Recent Users</h2>
+                {users.slice(0, 5).map((u) => (
+                  <div key={u.uid} className="flex items-center justify-between py-2 border-b last:border-0">
+                    <div>
+                      <p className="text-sm font-semibold text-gray-800">{u.name}</p>
+                      <p className="text-xs text-gray-500">{u.email}</p>
+                    </div>
+                    <span className={`rounded px-2 py-0.5 text-xs font-semibold capitalize ${STATUS_BADGE[u.status] ?? ''}`}>
+                      {u.status}
+                    </span>
+                  </div>
+                ))}
+              </div>
+              <div className="rounded-lg bg-white p-5 shadow">
+                <h2 className="mb-3 font-semibold text-gray-800">Recent Donations</h2>
+                {donations.slice(0, 5).map((d) => (
+                  <div key={d.id} className="flex items-center justify-between py-2 border-b last:border-0">
+                    <div className="min-w-0 pr-2">
+                      <p className="truncate text-sm font-semibold text-gray-800">{d.title}</p>
+                      <p className="text-xs text-gray-500">{d.location.city}</p>
+                    </div>
+                    <span className={`rounded px-2 py-0.5 text-xs font-semibold capitalize flex-shrink-0 ${STATUS_BADGE[d.status] ?? ''}`}>
+                      {d.status}
+                    </span>
+                  </div>
+                ))}
+              </div>
+            </div>
+          </div>
+        )}
+
+        {!dataLoading && tab === 'users' && (
+          <div className="rounded-lg bg-white shadow">
+            <div className="border-b p-4">
+              <input
+                type="text"
+                placeholder="Search by name, email or city..."
+                value={userSearch}
+                onChange={(e) => setUserSearch(e.target.value)}
+                className="w-full max-w-sm rounded-lg border border-gray-300 px-4 py-2 text-sm outline-none focus:ring-2 focus:ring-teal-500 focus:border-transparent"
+              />
+            </div>
+            <div className="overflow-x-auto">
+              <table className="w-full text-sm">
+                <thead>
+                  <tr className="border-b bg-gray-50 text-left text-xs font-semibold uppercase tracking-wide text-gray-500">
+                    <th className="px-4 py-3">User</th>
+                    <th className="px-4 py-3">City</th>
+                    <th className="px-4 py-3">Donations</th>
+                    <th className="px-4 py-3">Role</th>
+                    <th className="px-4 py-3">Status</th>
+                    <th className="px-4 py-3">Actions</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  {filteredUsers.map((u) => (
+                    <tr key={u.uid} className="border-b last:border-0 hover:bg-gray-50">
+                      <td className="px-4 py-3">
+                        <p className="font-semibold text-gray-900">{u.name}</p>
+                        <p className="text-xs text-gray-500">{u.email}</p>
+                      </td>
+                      <td className="px-4 py-3 text-gray-600">{u.city || '—'}</td>
+                      <td className="px-4 py-3 text-gray-600">{u.donationCount}</td>
+                      <td className="px-4 py-3">
+                        <span className={`rounded px-2 py-0.5 text-xs font-semibold capitalize ${u.role === 'admin' ? 'bg-purple-100 text-purple-700' : 'bg-gray-100 text-gray-700'}`}>
+                          {u.role}
+                        </span>
+                      </td>
+                      <td className="px-4 py-3">
+                        <span className={`rounded px-2 py-0.5 text-xs font-semibold capitalize ${STATUS_BADGE[u.status] ?? ''}`}>
+                          {u.status}
+                        </span>
+                      </td>
+                      <td className="px-4 py-3">
+                        {u.uid === user.uid ? (
+                          <span className="text-xs text-gray-400">You</span>
+                        ) : (
+                          <div className="flex flex-wrap gap-1">
+                            {u.status === 'active' && (
+                              <>
+                                <button
+                                  onClick={() => handleUserStatus(u.uid, 'suspended')}
+                                  disabled={actionPending === u.uid}
+                                  className="rounded bg-yellow-100 px-2 py-1 text-xs font-semibold text-yellow-800 hover:bg-yellow-200 disabled:opacity-40"
+                                >
+                                  Suspend
+                                </button>
+                                <button
+                                  onClick={() => handleUserStatus(u.uid, 'banned')}
+                                  disabled={actionPending === u.uid}
+                                  className="rounded bg-red-100 px-2 py-1 text-xs font-semibold text-red-700 hover:bg-red-200 disabled:opacity-40"
+                                >
+                                  Ban
+                                </button>
+                              </>
+                            )}
+                            {(u.status === 'suspended' || u.status === 'banned') && (
+                              <button
+                                onClick={() => handleUserStatus(u.uid, 'active')}
+                                disabled={actionPending === u.uid}
+                                className="rounded bg-green-100 px-2 py-1 text-xs font-semibold text-green-700 hover:bg-green-200 disabled:opacity-40"
+                              >
+                                Restore
+                              </button>
+                            )}
+                            <button
+                              onClick={() => handleUserRole(u.uid, u.role === 'admin' ? 'user' : 'admin')}
+                              disabled={actionPending === u.uid + '-role'}
+                              className="rounded bg-purple-100 px-2 py-1 text-xs font-semibold text-purple-700 hover:bg-purple-200 disabled:opacity-40"
+                            >
+                              {u.role === 'admin' ? 'Remove Admin' : 'Make Admin'}
+                            </button>
+                          </div>
+                        )}
+                      </td>
+                    </tr>
+                  ))}
+                  {filteredUsers.length === 0 && (
+                    <tr>
+                      <td colSpan={6} className="px-4 py-10 text-center text-gray-400">No users found.</td>
+                    </tr>
+                  )}
+                </tbody>
+              </table>
+            </div>
+          </div>
+        )}
+
+        {!dataLoading && tab === 'donations' && (
+          <div className="rounded-lg bg-white shadow">
+            <div className="flex flex-wrap items-center gap-3 border-b p-4">
+              <span className="text-sm font-semibold text-gray-700">Filter:</span>
+              {(['all', 'active', 'completed', 'rejected'] as const).map((s) => (
+                <button
+                  key={s}
+                  onClick={() => setDonationFilter(s)}
+                  className={`rounded-lg px-3 py-1.5 text-xs font-semibold capitalize transition ${
+                    donationFilter === s ? 'bg-teal-600 text-white' : 'bg-gray-100 text-gray-700 hover:bg-gray-200'
+                  }`}
+                >
+                  {s} {s === 'all' ? `(${donations.length})` : `(${donations.filter((d) => d.status === s).length})`}
+                </button>
+              ))}
+            </div>
+            <div className="divide-y">
+              {filteredDonations.map((d) => (
+                <div key={d.id} className="flex items-start gap-4 p-4 hover:bg-gray-50">
+                  {d.images[0] ? (
+                    <img src={d.images[0]} alt={d.title} className="h-14 w-14 flex-shrink-0 rounded-lg object-cover bg-gray-100" />
+                  ) : (
+                    <div className="h-14 w-14 flex-shrink-0 rounded-lg bg-gray-100 flex items-center justify-center text-2xl">📦</div>
+                  )}
+                  <div className="flex-1 min-w-0">
+                    <div className="flex flex-wrap items-center gap-2">
+                      <Link href={`/donations/${d.id}`} className="font-semibold text-gray-900 hover:text-teal-600 truncate">
+                        {d.title}
+                      </Link>
+                      <span className={`rounded px-2 py-0.5 text-xs font-semibold capitalize ${STATUS_BADGE[d.status] ?? ''}`}>
+                        {d.status}
+                      </span>
+                    </div>
+                    <p className="mt-0.5 text-xs text-gray-500">
+                      {getCategoryName(d.category)} · {d.location.city} · {d.viewCount} views
+                    </p>
+                    <p className="mt-1 line-clamp-1 text-xs text-gray-400">{d.description}</p>
+                  </div>
+                  <div className="flex flex-shrink-0 flex-wrap gap-1">
+                    {d.status !== 'active' && (
+                      <button
+                        onClick={() => handleDonationStatus(d.id, 'active')}
+                        disabled={actionPending === d.id}
+                        className="rounded bg-green-100 px-2 py-1 text-xs font-semibold text-green-700 hover:bg-green-200 disabled:opacity-40"
+                      >
+                        Approve
+                      </button>
+                    )}
+                    {d.status !== 'rejected' && (
+                      <button
+                        onClick={() => handleDonationStatus(d.id, 'rejected')}
+                        disabled={actionPending === d.id}
+                        className="rounded bg-red-100 px-2 py-1 text-xs font-semibold text-red-700 hover:bg-red-200 disabled:opacity-40"
+                      >
+                        Reject
+                      </button>
+                    )}
+                    <button
+                      onClick={() => handleDeleteDonation(d.id)}
+                      disabled={actionPending === d.id + '-del'}
+                      className="rounded bg-gray-100 px-2 py-1 text-xs font-semibold text-gray-700 hover:bg-gray-200 disabled:opacity-40"
+                    >
+                      Delete
+                    </button>
+                  </div>
+                </div>
+              ))}
+              {filteredDonations.length === 0 && (
+                <div className="py-10 text-center text-gray-400">No donations found.</div>
+              )}
+            </div>
+          </div>
+        )}
       </div>
     </div>
   );

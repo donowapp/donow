@@ -18,10 +18,17 @@ export default function RootLayout({
       <body className="bg-white text-gray-900">
         <Navbar />
         <main className="container mx-auto py-8">{children}</main>
-        <footer className="bg-gray-100 text-center p-6 mt-10">
-          <p className="text-gray-600">
-            &copy; 2024 Donow. Free Donation Platform. All rights reserved.
-          </p>
+        <footer className="bg-gray-100 mt-10 px-4 py-8">
+          <div className="mx-auto max-w-5xl flex flex-col items-center gap-3 text-center">
+            <p className="text-sm font-semibold text-gray-700">Donow &mdash; Donate. Help. Make Impact.</p>
+            <div className="flex flex-wrap justify-center gap-4 text-sm text-gray-500">
+              <a href="/terms" className="hover:text-teal-600 hover:underline">Terms of Service</a>
+              <a href="/privacy" className="hover:text-teal-600 hover:underline">Privacy Policy</a>
+              <a href="/donations" className="hover:text-teal-600 hover:underline">Browse Donations</a>
+              <a href="/create-donation" className="hover:text-teal-600 hover:underline">Donate an Item</a>
+            </div>
+            <p className="text-xs text-gray-400">&copy; 2025 Donow. All rights reserved.</p>
+          </div>
         </footer>
       </body>
     </html>
