@@ -14,20 +14,51 @@ interface AuthStore {
   loading: boolean;
   error: string | null;
   signup: (email: string, password: string, userData: Partial<User>) => Promise<void>;
+  login: (email: string, password: string) => Promise<void>;
   sendLoginLink: (email: string) => Promise<void>;
   completeLogin: (email: string, href: string) => Promise<void>;
   logout: () => Promise<void>;
   checkAuth: () => Promise<void>;
 }
 
-function getErrorMessage(error: unknown) {
-  return error instanceof Error ? error.message : 'Something went wrong';
+function getErrorMessage(error: unknown): string {
+  if (error instanceof Error) {
+    const code = (error as { code?: string }).code ?? '';
+    switch (code) {
+      case 'auth/wrong-password':
+      case 'auth/invalid-credential':
+        return 'Incorrect email or password';
+      case 'auth/user-not-found':
+        return 'No account found with this email';
+      case 'auth/too-many-requests':
+        return 'Too many failed attempts. Try again later.';
+      case 'auth/user-disabled':
+        return 'This account has been suspended';
+      case 'auth/invalid-email':
+        return 'Invalid email address';
+      default:
+        return error.message;
+    }
+  }
+  return 'Something went wrong';
 }
 
 export const useAuth = create<AuthStore>((set) => ({
   user: null,
   loading: false,
   error: null,
+
+  login: async (email, password) => {
+    set({ loading: true, error: null });
+    try {
+      await authLib.loginWithEmail(email, password);
+      const user = await authLib.getCurrentUser();
+      set({ user, loading: false });
+    } catch (error: unknown) {
+      set({ error: getErrorMessage(error), loading: false });
+      throw error;
+    }
+  },
 
   signup: async (email, password, userData) => {
     set({ loading: true, error: null });

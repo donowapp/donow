@@ -8,18 +8,20 @@ import { useAuth } from '@/hooks/useAuth';
 import { isLoginLink } from '@/lib/auth';
 import Link from 'next/link';
 
-type Step = 'email' | 'sent' | 'confirm-email' | 'completing';
+type Step = 'password' | 'magic-email' | 'sent' | 'confirm-email' | 'completing';
 
 export default function LoginPage() {
   const router = useRouter();
-  const { sendLoginLink, completeLogin, loading, error } = useAuth();
+  const { login, sendLoginLink, completeLogin, loading, error } = useAuth();
 
-  const [step, setStep] = useState<Step>('email');
+  const [step, setStep] = useState<Step>('password');
   const [email, setEmail] = useState('');
+  const [password, setPassword] = useState('');
   const [emailError, setEmailError] = useState('');
+  const [passwordError, setPasswordError] = useState('');
   const [confirmEmail, setConfirmEmail] = useState('');
 
-  // Detect if page was opened via a magic link
+  // Detect if the page was opened via a magic link in the URL
   useEffect(() => {
     if (typeof window === 'undefined') return;
     if (!isLoginLink(window.location.href)) return;
@@ -31,17 +33,40 @@ export default function LoginPage() {
       setStep('completing');
       completeLogin(saved, window.location.href)
         .then(() => router.push('/dashboard'))
-        .catch(() => setStep('email'));
+        .catch(() => setStep('password'));
     } else {
       setStep('confirm-email');
     }
   // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
-  const handleSend = async (e: React.FormEvent) => {
+  const handlePasswordLogin = async (e: React.FormEvent) => {
     e.preventDefault();
     setEmailError('');
-    if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) { setEmailError('Enter a valid email address'); return; }
+    setPasswordError('');
+    if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) {
+      setEmailError('Enter a valid email address');
+      return;
+    }
+    if (!password) {
+      setPasswordError('Password is required');
+      return;
+    }
+    try {
+      await login(email, password);
+      router.push('/dashboard');
+    } catch {
+      // error shown from store
+    }
+  };
+
+  const handleSendLink = async (e: React.FormEvent) => {
+    e.preventDefault();
+    setEmailError('');
+    if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) {
+      setEmailError('Enter a valid email address');
+      return;
+    }
     try {
       await sendLoginLink(email);
       setStep('sent');
@@ -52,11 +77,14 @@ export default function LoginPage() {
 
   const handleConfirmEmail = async (e: React.FormEvent) => {
     e.preventDefault();
-    if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(confirmEmail)) { setEmailError('Enter your email'); return; }
+    if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(confirmEmail)) {
+      setEmailError('Enter your email');
+      return;
+    }
     setStep('completing');
     completeLogin(confirmEmail, window.location.href)
       .then(() => router.push('/dashboard'))
-      .catch(() => { setStep('email'); });
+      .catch(() => setStep('password'));
   };
 
   if (step === 'completing') {
@@ -110,29 +138,76 @@ export default function LoginPage() {
             We sent a login link to{' '}
             <span className="font-semibold text-teal-600">{email}</span>
           </p>
-          <p className="mt-1 text-sm text-gray-500">Click the link in the email to sign in. The link expires in 1 hour.</p>
+          <p className="mt-1 text-sm text-gray-500">
+            Click the link in the email to sign in. The link expires in 1 hour.
+          </p>
+          <p className="mt-3 text-xs text-gray-400">
+            If you don&apos;t see it, check your Spam or Promotions folder.
+          </p>
           <button
-            onClick={() => setStep('email')}
+            onClick={() => setStep('password')}
             className="mt-6 text-sm text-teal-600 hover:underline"
           >
-            Use a different email
+            Back to login
           </button>
         </div>
       </div>
     );
   }
 
+  if (step === 'magic-email') {
+    return (
+      <div className="min-h-screen bg-gradient-to-br from-teal-50 to-blue-50 flex items-center justify-center py-12 px-4">
+        <div className="max-w-md w-full bg-white rounded-lg shadow-lg p-8">
+          <h1 className="text-3xl font-bold text-teal-600 mb-1">Sign in with link</h1>
+          <p className="text-gray-500 text-sm mb-6">
+            We&apos;ll email you a one-time login link — no password needed.
+          </p>
+
+          {error && (
+            <div className="mb-4 rounded border border-red-200 bg-red-50 px-4 py-3 text-red-700 text-sm">{error}</div>
+          )}
+
+          <form onSubmit={handleSendLink} className="space-y-4">
+            <Input
+              label="Email"
+              type="email"
+              value={email}
+              onChange={(e) => setEmail(e.target.value)}
+              placeholder="you@example.com"
+              error={emailError}
+              required
+            />
+            <Button type="submit" disabled={loading} className="w-full">
+              {loading ? 'Sending…' : 'Send Login Link'}
+            </Button>
+          </form>
+
+          <div className="mt-4 text-center text-sm text-gray-600">
+            <button
+              onClick={() => { setStep('password'); setEmailError(''); }}
+              className="text-teal-600 hover:underline font-medium"
+            >
+              Back to password login
+            </button>
+          </div>
+        </div>
+      </div>
+    );
+  }
+
+  // Default: email + password login
   return (
     <div className="min-h-screen bg-gradient-to-br from-teal-50 to-blue-50 flex items-center justify-center py-12 px-4">
       <div className="max-w-md w-full bg-white rounded-lg shadow-lg p-8">
         <h1 className="text-3xl font-bold text-teal-600 mb-1">Welcome Back</h1>
-        <p className="text-gray-500 text-sm mb-6">Enter your email &mdash; we&apos;ll send you a login link</p>
+        <p className="text-gray-500 text-sm mb-6">Sign in to your Donow account</p>
 
         {error && (
           <div className="mb-4 rounded border border-red-200 bg-red-50 px-4 py-3 text-red-700 text-sm">{error}</div>
         )}
 
-        <form onSubmit={handleSend} className="space-y-4">
+        <form onSubmit={handlePasswordLogin} className="space-y-4">
           <Input
             label="Email"
             type="email"
@@ -142,15 +217,39 @@ export default function LoginPage() {
             error={emailError}
             required
           />
+          <div>
+            <Input
+              label="Password"
+              type="password"
+              value={password}
+              onChange={(e) => setPassword(e.target.value)}
+              placeholder="••••••••"
+              error={passwordError}
+              required
+            />
+            <div className="mt-1 text-right">
+              <Link href="/forgot-password" className="text-xs text-teal-600 hover:underline">
+                Forgot password?
+              </Link>
+            </div>
+          </div>
           <Button type="submit" disabled={loading} className="w-full">
-            {loading ? 'Sending…' : 'Send Login Link'}
+            {loading ? 'Signing in…' : 'Sign In'}
           </Button>
         </form>
 
-        <div className="mt-4 space-y-2 text-center text-sm text-gray-600">
+        <div className="mt-5 space-y-2 text-center text-sm text-gray-600">
           <p>
             Don&apos;t have an account?{' '}
             <Link href="/signup" className="text-teal-600 font-semibold hover:underline">Sign up</Link>
+          </p>
+          <p>
+            <button
+              onClick={() => { setStep('magic-email'); setEmailError(''); setPasswordError(''); }}
+              className="text-gray-400 hover:text-teal-600 hover:underline text-xs"
+            >
+              Sign in without password
+            </button>
           </p>
         </div>
       </div>
