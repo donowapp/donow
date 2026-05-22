@@ -109,6 +109,10 @@ export interface PlatformSettings {
   messagingEnabled: boolean;
   requireVerificationForPosting: boolean;
   maxDonationsPerDay: number;
+  ratingsEnabled: boolean;
+  savedDonationsEnabled: boolean;
+  maintenanceMode: boolean;
+  maintenanceMessage: string;
 }
 
 export interface Fundraiser {

@@ -51,6 +51,26 @@ function fmt(date: Date) {
   return date.toLocaleDateString('en-IN', { day: '2-digit', month: 'short', year: 'numeric' });
 }
 
+function exportCSV(filename: string, rows: Record<string, string | number | boolean>[]) {
+  if (!rows.length) return;
+  const headers = Object.keys(rows[0]);
+  const lines = [
+    headers.join(','),
+    ...rows.map((r) =>
+      headers.map((h) => {
+        const v = String(r[h] ?? '');
+        return v.includes(',') || v.includes('"') || v.includes('\n')
+          ? `"${v.replace(/"/g, '""')}"` : v;
+      }).join(',')
+    ),
+  ];
+  const blob = new Blob([lines.join('\n')], { type: 'text/csv;charset=utf-8;' });
+  const url = URL.createObjectURL(blob);
+  const a = document.createElement('a');
+  a.href = url; a.download = filename; a.click();
+  URL.revokeObjectURL(url);
+}
+
 // ─── User Details Modal ───────────────────────────────────────────────────────
 function UserModal({
   u,
@@ -277,6 +297,9 @@ export default function AdminPage() {
   const [dataLoaded, setDataLoaded]       = useState(false);
   const [userSearch, setUserSearch]       = useState('');
   const [donationFilter, setDonationFilter] = useState<'all' | Donation['status']>('all');
+  const [donationSearch, setDonationSearch] = useState('');
+  const [moderationSearch, setModerationSearch] = useState('');
+  const [moderationReasonFilter, setModerationReasonFilter] = useState('');
   const [actionPending, setActionPending] = useState<string | null>(null);
   // bulk selection
   const [selectedUsers, setSelectedUsers] = useState<Set<string>>(new Set());
@@ -518,11 +541,23 @@ export default function AdminPage() {
     return !q || u.name.toLowerCase().includes(q) || u.email.toLowerCase().includes(q) || u.city.toLowerCase().includes(q);
   });
 
-  const filteredDonations = donations.filter(
-    (d) => donationFilter === 'all' || d.status === donationFilter
-  );
+  const filteredDonations = donations.filter((d) => {
+    if (donationFilter !== 'all' && d.status !== donationFilter) return false;
+    if (donationSearch) {
+      const q = donationSearch.toLowerCase();
+      return d.title.toLowerCase().includes(q) || d.location.city.toLowerCase().includes(q) || d.userId.toLowerCase().includes(q);
+    }
+    return true;
+  });
 
   const flaggedDonations = donations.filter((d) => d.flagged);
+
+  const filteredFlaggedDonations = flaggedDonations.filter((d) => {
+    const q = moderationSearch.toLowerCase();
+    const matchQ = !q || d.title.toLowerCase().includes(q) || (d.flagReason ?? '').toLowerCase().includes(q) || d.location.city.toLowerCase().includes(q);
+    const matchReason = !moderationReasonFilter || (d.flagReason ?? '').toLowerCase().includes(moderationReasonFilter.toLowerCase());
+    return matchQ && matchReason;
+  });
 
   const filteredLogs = logs.filter((l) => {
     const q = logSearch.toLowerCase();
@@ -734,6 +769,16 @@ export default function AdminPage() {
                     className="flex-1 min-w-[180px] max-w-sm rounded-lg border border-gray-300 px-4 py-2 text-sm outline-none focus:ring-2 focus:ring-teal-500 focus:border-transparent"
                   />
                   <span className="text-xs text-gray-500">{filteredUsers.length} user{filteredUsers.length !== 1 ? 's' : ''}</span>
+                  <button
+                    onClick={() => exportCSV('users.csv', filteredUsers.map((u) => ({
+                      Name: u.name, Email: u.email, Phone: u.phone, City: u.city, State: u.state,
+                      Role: u.role, Status: u.status, Donations: u.donationCount,
+                      Received: u.receivedCount, Rating: u.rating, Verified: u.isVerified ? 'Yes' : 'No', Joined: fmt(u.createdAt),
+                    })))}
+                    className="ml-auto rounded-lg bg-gray-100 px-3 py-1.5 text-xs font-semibold text-gray-700 hover:bg-gray-200 transition"
+                  >
+                    ↓ Export CSV
+                  </button>
                 </div>
 
                 {/* Bulk action bar */}
@@ -846,7 +891,14 @@ export default function AdminPage() {
             {!dataLoading && tab === 'donations' && (
               <div className="rounded-xl bg-white shadow">
                 <div className="flex flex-wrap items-center gap-3 border-b p-4">
-                  <span className="text-sm font-semibold text-gray-700">Filter:</span>
+                  <input
+                    type="text"
+                    placeholder="Search title or city…"
+                    value={donationSearch}
+                    onChange={(e) => setDonationSearch(e.target.value)}
+                    className="flex-1 min-w-[160px] max-w-xs rounded-lg border border-gray-300 px-3 py-2 text-sm outline-none focus:ring-2 focus:ring-teal-500"
+                  />
+                  <span className="text-sm font-semibold text-gray-700">Status:</span>
                   {(['all', 'active', 'completed', 'rejected'] as const).map((s) => (
                     <button
                       key={s}
@@ -856,6 +908,16 @@ export default function AdminPage() {
                       {s} ({s === 'all' ? donations.length : donations.filter((d) => d.status === s).length})
                     </button>
                   ))}
+                  <button
+                    onClick={() => exportCSV('donations.csv', filteredDonations.map((d) => ({
+                      Title: d.title, Category: getCategoryName(d.category), City: d.location.city,
+                      Status: d.status, Featured: d.featured ? 'Yes' : 'No', Flagged: d.flagged ? 'Yes' : 'No',
+                      Views: d.viewCount, Created: fmt(d.createdAt),
+                    })))}
+                    className="ml-auto rounded-lg bg-gray-100 px-3 py-1.5 text-xs font-semibold text-gray-700 hover:bg-gray-200 transition"
+                  >
+                    ↓ Export CSV
+                  </button>
                 </div>
                 <div className="divide-y">
                   {filteredDonations.map((d) => (
@@ -895,24 +957,55 @@ export default function AdminPage() {
             {/* ── MODERATION ── */}
             {!dataLoading && tab === 'moderation' && (
               <div className="space-y-4">
-                <div className="rounded-xl bg-white p-4 shadow flex items-start gap-3">
-                  <span className="text-2xl">⚠️</span>
-                  <div>
-                    <p className="font-semibold text-gray-800">Moderation Queue</p>
-                    <p className="text-sm text-gray-500">
-                      Flagged donations require admin review. Approve to clear the flag, Reject to mark as rejected, or Delete to remove permanently.
-                    </p>
+                {/* Stats row */}
+                <div className="grid grid-cols-2 gap-3 sm:grid-cols-3">
+                  <div className="rounded-xl bg-white p-4 shadow text-center">
+                    <p className={`text-2xl font-bold ${flaggedDonations.length > 0 ? 'text-orange-600' : 'text-gray-400'}`}>{flaggedDonations.length}</p>
+                    <p className="text-xs text-gray-500 mt-0.5">Pending Review</p>
+                  </div>
+                  <div className="rounded-xl bg-white p-4 shadow text-center">
+                    <p className="text-2xl font-bold text-red-600">{donations.filter((d) => d.status === 'rejected').length}</p>
+                    <p className="text-xs text-gray-500 mt-0.5">Rejected Total</p>
+                  </div>
+                  <div className="rounded-xl bg-white p-4 shadow text-center">
+                    <p className="text-2xl font-bold text-green-600">{donations.filter((d) => d.status === 'active' && !d.flagged).length}</p>
+                    <p className="text-xs text-gray-500 mt-0.5">Clean Active</p>
                   </div>
                 </div>
+
+                {/* Search + filter */}
+                <div className="flex flex-wrap gap-3 rounded-xl bg-white p-4 shadow">
+                  <input
+                    type="text"
+                    placeholder="Search by title, reason, or city…"
+                    value={moderationSearch}
+                    onChange={(e) => setModerationSearch(e.target.value)}
+                    className="flex-1 min-w-[180px] max-w-sm rounded-lg border border-gray-300 px-3 py-2 text-sm outline-none focus:ring-2 focus:ring-teal-500"
+                  />
+                  <input
+                    type="text"
+                    placeholder="Filter by reason…"
+                    value={moderationReasonFilter}
+                    onChange={(e) => setModerationReasonFilter(e.target.value)}
+                    className="min-w-[140px] max-w-xs rounded-lg border border-gray-300 px-3 py-2 text-sm outline-none focus:ring-2 focus:ring-orange-400"
+                  />
+                  {(moderationSearch || moderationReasonFilter) && (
+                    <button onClick={() => { setModerationSearch(''); setModerationReasonFilter(''); }} className="text-xs text-gray-500 hover:text-gray-800">✕ Clear</button>
+                  )}
+                  <span className="ml-auto self-center text-xs text-gray-500">{filteredFlaggedDonations.length} of {flaggedDonations.length} flagged</span>
+                </div>
+
                 {flaggedDonations.length === 0 ? (
                   <div className="rounded-xl bg-white py-16 shadow text-center">
                     <p className="text-4xl mb-3">✅</p>
                     <p className="font-semibold text-gray-700">Queue is clear</p>
                     <p className="text-sm text-gray-400 mt-1">No flagged donations to review.</p>
                   </div>
+                ) : filteredFlaggedDonations.length === 0 ? (
+                  <div className="rounded-xl bg-white py-10 shadow text-center text-gray-400">No results match your search.</div>
                 ) : (
                   <div className="rounded-xl bg-white shadow divide-y overflow-hidden">
-                    {flaggedDonations.map((d) => (
+                    {filteredFlaggedDonations.map((d) => (
                       <div key={d.id} className="flex items-start gap-4 p-4 hover:bg-gray-50">
                         {d.images[0] ? (
                           // eslint-disable-next-line @next/next/no-img-element
@@ -932,8 +1025,22 @@ export default function AdminPage() {
                         </div>
                         <div className="flex flex-shrink-0 flex-col gap-1.5">
                           <button onClick={() => handleUnflag(d.id)} disabled={actionPending === d.id + '-unflag'} className="rounded-lg bg-green-100 px-3 py-1.5 text-xs font-semibold text-green-700 hover:bg-green-200 disabled:opacity-40">✓ Approve</button>
+                          <button
+                            onClick={async () => {
+                              setActionPending(d.id + '-dismiss');
+                              try {
+                                await unflagDonation(d.id);
+                                setDonations((prev) => prev.map((x) => x.id === d.id ? { ...x, flagged: false, flagReason: '' } : x));
+                                auditLog('donation_dismiss', 'donation', d.id, 'Flag dismissed — kept active');
+                              } finally { setActionPending(null); }
+                            }}
+                            disabled={actionPending === d.id + '-dismiss'}
+                            className="rounded-lg bg-gray-100 px-3 py-1.5 text-xs font-semibold text-gray-600 hover:bg-gray-200 disabled:opacity-40"
+                          >
+                            Dismiss
+                          </button>
                           <button onClick={() => handleDonationStatus(d.id, 'rejected')} disabled={actionPending === d.id} className="rounded-lg bg-red-100 px-3 py-1.5 text-xs font-semibold text-red-700 hover:bg-red-200 disabled:opacity-40">Reject</button>
-                          <button onClick={() => handleDeleteDonation(d.id)} disabled={actionPending === d.id + '-del'} className="rounded-lg bg-gray-100 px-3 py-1.5 text-xs font-semibold text-gray-700 hover:bg-gray-200 disabled:opacity-40">Delete</button>
+                          <button onClick={() => handleDeleteDonation(d.id)} disabled={actionPending === d.id + '-del'} className="rounded-lg bg-gray-200 px-3 py-1.5 text-xs font-semibold text-gray-700 hover:bg-gray-300 disabled:opacity-40">Delete</button>
                         </div>
                       </div>
                     ))}
@@ -993,6 +1100,48 @@ export default function AdminPage() {
             {/* ── ANALYTICS ── */}
             {!dataLoading && tab === 'analytics' && (
               <div className="space-y-6">
+                {/* Metric cards */}
+                <div className="grid grid-cols-2 gap-3 sm:grid-cols-3 lg:grid-cols-6">
+                  {[
+                    { label: 'Total Users',       value: stats.totalUsers,         color: 'text-teal-600',    icon: '👥' },
+                    { label: 'Active Users',       value: stats.activeUsers,        color: 'text-green-600',   icon: '✅' },
+                    { label: 'Total Donations',    value: stats.totalDonations,     color: 'text-indigo-600',  icon: '📦' },
+                    { label: 'Active Donations',   value: stats.activeDonations,    color: 'text-blue-600',    icon: '🟢' },
+                    { label: 'Completed',          value: stats.completedDonations, color: 'text-purple-600',  icon: '🏁' },
+                    { label: 'Flagged',            value: stats.flaggedDonations,   color: stats.flaggedDonations > 0 ? 'text-orange-600' : 'text-gray-400', icon: '⚠️' },
+                  ].map((s) => (
+                    <div key={s.label} className="rounded-xl bg-white p-4 shadow text-center">
+                      <p className="text-xl mb-0.5">{s.icon}</p>
+                      <p className={`text-2xl font-bold ${s.color}`}>{s.value}</p>
+                      <p className="text-[11px] text-gray-500 mt-0.5 leading-tight">{s.label}</p>
+                    </div>
+                  ))}
+                </div>
+
+                {/* Export */}
+                <div className="flex justify-end gap-2">
+                  <button
+                    onClick={() => exportCSV('analytics-donations.csv', donations.map((d) => ({
+                      Title: d.title, Category: getCategoryName(d.category), City: d.location.city,
+                      Status: d.status, Featured: d.featured ? 'Yes' : 'No', Flagged: d.flagged ? 'Yes' : 'No',
+                      Views: d.viewCount, Created: fmt(d.createdAt),
+                    })))}
+                    className="rounded-lg bg-white px-3 py-2 text-xs font-semibold text-gray-700 shadow hover:bg-gray-50 transition"
+                  >
+                    ↓ Export Donations CSV
+                  </button>
+                  <button
+                    onClick={() => exportCSV('analytics-users.csv', users.map((u) => ({
+                      Name: u.name, City: u.city, State: u.state, Role: u.role, Status: u.status,
+                      Donations: u.donationCount, Received: u.receivedCount, Rating: u.rating,
+                      Verified: u.isVerified ? 'Yes' : 'No', Joined: fmt(u.createdAt),
+                    })))}
+                    className="rounded-lg bg-white px-3 py-2 text-xs font-semibold text-gray-700 shadow hover:bg-gray-50 transition"
+                  >
+                    ↓ Export Users CSV
+                  </button>
+                </div>
+
                 <div className="rounded-xl bg-white p-5 shadow">
                   <h2 className="mb-4 font-semibold text-gray-800">Donations by Category</h2>
                   {(() => {
@@ -1114,8 +1263,10 @@ export default function AdminPage() {
                     <div className="rounded-xl bg-white p-6 shadow space-y-4">
                       <h2 className="font-semibold text-gray-800 text-base">Feature Toggles</h2>
                       {([
-                        { key: 'messagingEnabled',              label: 'Messaging',                         desc: 'Allow users to message each other about donations' },
-                        { key: 'requireVerificationForPosting', label: 'Require verification to post',      desc: 'Users must be verified before posting a donation' },
+                        { key: 'messagingEnabled',              label: 'Messaging',                    desc: 'Allow users to message each other about donations' },
+                        { key: 'ratingsEnabled',                label: 'Ratings',                      desc: 'Allow users to rate donors after completed donations' },
+                        { key: 'savedDonationsEnabled',         label: 'Save Donations',               desc: 'Allow users to bookmark and save donations' },
+                        { key: 'requireVerificationForPosting', label: 'Require verification to post', desc: 'Users must be verified before posting a donation' },
                       ] as { key: keyof PlatformSettings; label: string; desc: string }[]).map(({ key, label, desc }) => (
                         <label key={key} className="flex items-center justify-between gap-4 cursor-pointer">
                           <div>
@@ -1141,6 +1292,33 @@ export default function AdminPage() {
                           className="w-28 rounded-lg border border-gray-300 px-4 py-2 text-sm outline-none focus:ring-2 focus:ring-teal-500"
                         />
                       </div>
+                    </div>
+
+                    <div className="rounded-xl bg-white p-6 shadow space-y-4">
+                      <h2 className="font-semibold text-gray-800 text-base">Maintenance</h2>
+                      <label className="flex items-center justify-between gap-4 cursor-pointer">
+                        <div>
+                          <p className="text-sm font-semibold text-gray-800">Maintenance Mode</p>
+                          <p className="text-xs text-gray-500">Show a maintenance banner to all users (admins still have full access)</p>
+                        </div>
+                        <div
+                          onClick={() => setSettingsData({ ...settingsData, maintenanceMode: !settingsData.maintenanceMode })}
+                          className={`relative inline-flex h-6 w-11 items-center rounded-full transition-colors flex-shrink-0 ${settingsData.maintenanceMode ? 'bg-orange-500' : 'bg-gray-300'}`}
+                        >
+                          <span className={`inline-block h-4 w-4 rounded-full bg-white shadow transform transition-transform ${settingsData.maintenanceMode ? 'translate-x-6' : 'translate-x-1'}`} />
+                        </div>
+                      </label>
+                      {settingsData.maintenanceMode && (
+                        <div>
+                          <label className="block text-xs font-semibold uppercase text-gray-500 mb-1">Maintenance Message</label>
+                          <input
+                            value={settingsData.maintenanceMessage}
+                            onChange={(e) => setSettingsData({ ...settingsData, maintenanceMessage: e.target.value })}
+                            placeholder="e.g. We'll be back in a few hours. Thanks for your patience!"
+                            className="w-full rounded-lg border border-gray-300 px-4 py-2 text-sm outline-none focus:ring-2 focus:ring-orange-400"
+                          />
+                        </div>
+                      )}
                     </div>
 
                     <div className="flex items-center gap-3">

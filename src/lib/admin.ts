@@ -163,6 +163,10 @@ const DEFAULT_SETTINGS: PlatformSettings = {
   messagingEnabled: true,
   requireVerificationForPosting: false,
   maxDonationsPerDay: 5,
+  ratingsEnabled: true,
+  savedDonationsEnabled: true,
+  maintenanceMode: false,
+  maintenanceMessage: '',
 };
 
 export async function getPlatformSettings(): Promise<PlatformSettings> {
@@ -176,6 +180,10 @@ export async function getPlatformSettings(): Promise<PlatformSettings> {
     messagingEnabled: data.messagingEnabled ?? true,
     requireVerificationForPosting: data.requireVerificationForPosting ?? false,
     maxDonationsPerDay: data.maxDonationsPerDay ?? 5,
+    ratingsEnabled: data.ratingsEnabled ?? true,
+    savedDonationsEnabled: data.savedDonationsEnabled ?? true,
+    maintenanceMode: data.maintenanceMode ?? false,
+    maintenanceMessage: data.maintenanceMessage ?? '',
   };
 }
 
