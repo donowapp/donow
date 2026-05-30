@@ -33,7 +33,7 @@ export default function RootLayout({
           <div className="mx-auto max-w-5xl">
             <div className="grid grid-cols-2 gap-8 sm:grid-cols-4 mb-10">
               <div className="col-span-2 sm:col-span-1">
-                <p className="text-xl font-extrabold text-white mb-1">Donow 🇮🇳</p>
+                <p className="text-xl font-extrabold text-white mb-1">Donow</p>
                 <p className="text-xs text-gray-400 mb-3">Donate. Help. Make Impact.</p>
                 <p className="text-xs text-gray-500 leading-relaxed">India&apos;s free platform to connect donors with people who need help — no fees, no middlemen.</p>
               </div>
@@ -69,7 +69,7 @@ export default function RootLayout({
               <div className="flex items-center gap-3">
                 <span className="rounded-full bg-green-900/50 border border-green-700/40 px-2.5 py-1 text-green-400 font-semibold">✓ 100% Free</span>
                 <span className="rounded-full bg-blue-900/50 border border-blue-700/40 px-2.5 py-1 text-blue-400 font-semibold">🔒 Secure</span>
-                <span className="rounded-full bg-orange-900/50 border border-orange-700/40 px-2.5 py-1 text-orange-400 font-semibold">🇮🇳 Made in India</span>
+                <span className="rounded-full bg-orange-900/50 border border-orange-700/40 px-2.5 py-1 text-orange-400 font-semibold">Made in India</span>
               </div>
             </div>
           </div>

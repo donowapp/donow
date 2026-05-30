@@ -52,7 +52,7 @@ export default function Home() {
         <div className="relative z-10 mx-auto max-w-5xl px-4 py-20 sm:py-24">
           <div className="max-w-xl">
             <span className="mb-5 inline-flex items-center gap-2 rounded-full bg-white/15 backdrop-blur-sm border border-white/20 px-4 py-1.5 text-xs font-bold uppercase tracking-widest">
-              🇮🇳 Free · No middleman · Direct impact
+              ✦ Free · No middleman · Direct impact
             </span>
             <h1 className="text-5xl sm:text-6xl font-extrabold leading-tight tracking-tight drop-shadow-lg">
               Donate unused items.<br />
@@ -98,7 +98,7 @@ export default function Home() {
             ['🔒', '100% Secure'],
             ['🚫', 'Zero Commission'],
             ['📱', 'Available on App'],
-            ['🇮🇳', 'Made in India'],
+            ['🍀', 'Made in India'],
             ['⚡', 'Instant Connect'],
           ].map(([icon, label]) => (
             <span key={label} className="flex items-center gap-1.5">{icon} {label}</span>
