@@ -190,3 +190,52 @@ export async function getPlatformSettings(): Promise<PlatformSettings> {
 export async function updatePlatformSettings(settings: PlatformSettings): Promise<void> {
   await setDoc(doc(db, 'settings', 'platform'), settings);
 }
+
+export async function setUserVerified(uid: string, isVerified: boolean): Promise<void> {
+  await updateDoc(doc(db, 'users', uid), { isVerified, updatedAt: new Date() });
+}
+
+export async function adminDeleteUser(uid: string): Promise<void> {
+  await deleteDoc(doc(db, 'users', uid));
+}
+
+export interface Announcement {
+  id: string;
+  title: string;
+  message: string;
+  adminName: string;
+  active: boolean;
+  createdAt: Date;
+}
+
+export async function sendAnnouncement(title: string, message: string, adminName: string): Promise<string> {
+  const ref = await addDoc(collection(db, 'announcements'), {
+    title, message, adminName, active: true, createdAt: new Date(),
+  });
+  return ref.id;
+}
+
+export async function getAnnouncements(): Promise<Announcement[]> {
+  const snap = await getDocs(collection(db, 'announcements'));
+  return snap.docs
+    .map((d) => {
+      const data = d.data();
+      return {
+        id: d.id,
+        title: data.title ?? '',
+        message: data.message ?? '',
+        adminName: data.adminName ?? '',
+        active: data.active ?? true,
+        createdAt: normalizeDate(data.createdAt),
+      } satisfies Announcement;
+    })
+    .sort((a, b) => b.createdAt.getTime() - a.createdAt.getTime());
+}
+
+export async function deleteAnnouncement(id: string): Promise<void> {
+  await deleteDoc(doc(db, 'announcements', id));
+}
+
+export async function toggleAnnouncement(id: string, active: boolean): Promise<void> {
+  await updateDoc(doc(db, 'announcements', id), { active });
+}
