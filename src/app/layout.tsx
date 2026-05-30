@@ -33,10 +33,10 @@ export default function RootLayout({
           <div className="mx-auto max-w-5xl flex flex-col items-center gap-3 text-center">
             <p className="text-sm font-semibold text-gray-700">Donow &mdash; Donate. Help. Make Impact.</p>
             <div className="flex flex-wrap justify-center gap-4 text-sm text-gray-500">
-              <Link href="/terms" className="hover:text-violet-600 hover:underline">Terms of Service</Link>
-              <Link href="/privacy" className="hover:text-violet-600 hover:underline">Privacy Policy</Link>
-              <Link href="/donations" className="hover:text-violet-600 hover:underline">Browse Donations</Link>
-              <Link href="/create-donation" className="hover:text-violet-600 hover:underline">Donate an Item</Link>
+              <Link href="/terms" className="hover:text-sky-600 hover:underline">Terms of Service</Link>
+              <Link href="/privacy" className="hover:text-sky-600 hover:underline">Privacy Policy</Link>
+              <Link href="/donations" className="hover:text-sky-600 hover:underline">Browse Donations</Link>
+              <Link href="/create-donation" className="hover:text-sky-600 hover:underline">Donate an Item</Link>
             </div>
             <p className="text-xs text-gray-400">&copy; 2026 Donow. All rights reserved.</p>
           </div>

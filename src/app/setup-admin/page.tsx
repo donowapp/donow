@@ -29,7 +29,7 @@ export default function SetupAdminPage() {
   if (checkingAuth || loading) {
     return (
       <div className="min-h-[60vh] flex items-center justify-center">
-        <div className="inline-block animate-spin rounded-full h-10 w-10 border-b-2 border-violet-600" />
+        <div className="inline-block animate-spin rounded-full h-10 w-10 border-b-2 border-sky-600" />
       </div>
     );
   }
@@ -49,7 +49,7 @@ export default function SetupAdminPage() {
           <p className="text-gray-500 mb-6">Your account already has admin privileges.</p>
           <button
             onClick={() => router.push('/admin')}
-            className="rounded-lg bg-violet-600 px-6 py-2.5 text-sm font-semibold text-white hover:bg-violet-700 transition"
+            className="rounded-lg bg-sky-600 px-6 py-2.5 text-sm font-semibold text-white hover:bg-sky-700 transition"
           >
             Go to Admin Panel
           </button>
@@ -93,7 +93,7 @@ export default function SetupAdminPage() {
           <p className="text-gray-500 mb-6">You now have admin access to Donow.</p>
           <button
             onClick={() => router.push('/admin')}
-            className="rounded-lg bg-violet-600 px-6 py-2.5 text-sm font-semibold text-white hover:bg-violet-700 transition"
+            className="rounded-lg bg-sky-600 px-6 py-2.5 text-sm font-semibold text-white hover:bg-sky-700 transition"
           >
             Go to Admin Panel
           </button>
@@ -108,7 +108,7 @@ export default function SetupAdminPage() {
         <p className="text-4xl mb-4">🔐</p>
         <h1 className="text-2xl font-bold text-gray-900 mb-2">Admin Setup</h1>
         <p className="text-gray-500 mb-2">Signed in as</p>
-        <p className="font-semibold text-violet-700 mb-6">{user.email}</p>
+        <p className="font-semibold text-sky-700 mb-6">{user.email}</p>
 
         {error && (
           <div className="mb-4 rounded border border-red-200 bg-red-50 px-4 py-3 text-red-700 text-sm">{error}</div>
@@ -117,7 +117,7 @@ export default function SetupAdminPage() {
         <button
           onClick={handleMakeAdmin}
           disabled={saving}
-          className="w-full rounded-lg bg-violet-600 px-6 py-3 font-semibold text-white hover:bg-violet-700 disabled:opacity-50 transition"
+          className="w-full rounded-lg bg-sky-600 px-6 py-3 font-semibold text-white hover:bg-sky-700 disabled:opacity-50 transition"
         >
           {saving ? 'Setting up…' : 'Make Me Admin'}
         </button>

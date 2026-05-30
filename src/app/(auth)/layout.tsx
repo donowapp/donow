@@ -9,7 +9,7 @@ export default function AuthLayout({
   children: React.ReactNode;
 }) {
   return (
-    <div className="min-h-screen bg-gradient-to-br from-violet-50 to-blue-50">
+    <div className="min-h-screen bg-gradient-to-br from-sky-50 to-blue-50">
       {children}
     </div>
   );

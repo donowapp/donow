@@ -50,7 +50,7 @@ export default function Home() {
           <div className="mx-auto max-w-5xl">
             <div className="mb-5 flex items-center justify-between">
               <h2 className="text-2xl font-bold text-gray-900">Featured Donations</h2>
-              <Link href="/donations" className="text-sm font-semibold text-teal-600 hover:text-teal-800">
+              <Link href="/donations" className="text-sm font-semibold text-orange-500 hover:text-orange-700">
                 View all →
               </Link>
             </div>
@@ -84,7 +84,7 @@ export default function Home() {
                     style={{ backgroundImage: donation.images[0] ? `url(${donation.images[0]})` : undefined }}
                   />
                   <div className="p-3">
-                    <span className="rounded bg-teal-50 px-1.5 py-0.5 text-xs font-semibold text-teal-700">
+                    <span className="rounded bg-sky-50 px-1.5 py-0.5 text-xs font-semibold text-sky-700">
                       {getCategoryName(donation.category)}
                     </span>
                     <h3 className="mt-2 line-clamp-2 text-sm font-bold text-gray-900">
@@ -109,7 +109,7 @@ export default function Home() {
               <Link
                 key={cat.id}
                 href={`/donations?category=${cat.id}`}
-                className="flex flex-col items-center gap-2 rounded-xl border border-gray-200 bg-white p-4 text-center shadow-sm transition hover:-translate-y-0.5 hover:border-teal-300 hover:shadow-md"
+                className="flex flex-col items-center gap-2 rounded-xl border border-gray-200 bg-white p-4 text-center shadow-sm transition hover:-translate-y-0.5 hover:border-sky-300 hover:shadow-md"
               >
                 <span className="text-3xl">{cat.icon}</span>
                 <span className="text-xs font-semibold text-gray-700">{cat.name}</span>

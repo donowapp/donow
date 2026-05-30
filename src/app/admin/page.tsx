@@ -99,7 +99,7 @@ function UserModal({
             // eslint-disable-next-line @next/next/no-img-element
             <img src={u.profileImage} alt={u.name} className="h-14 w-14 rounded-full object-cover flex-shrink-0" />
           ) : (
-            <div className="h-14 w-14 rounded-full bg-violet-600 flex items-center justify-center text-2xl font-bold text-white flex-shrink-0">
+            <div className="h-14 w-14 rounded-full bg-sky-600 flex items-center justify-center text-2xl font-bold text-white flex-shrink-0">
               {u.name.charAt(0).toUpperCase() || '?'}
             </div>
           )}
@@ -143,7 +143,7 @@ function UserModal({
 
           <div className="flex flex-wrap gap-4 rounded-lg bg-gray-50 px-4 py-3 text-center text-sm">
             <div>
-              <p className="text-xl font-bold text-violet-600">{u.donationCount}</p>
+              <p className="text-xl font-bold text-sky-600">{u.donationCount}</p>
               <p className="text-xs text-gray-500">Donations</p>
             </div>
             <div>
@@ -159,7 +159,7 @@ function UserModal({
           <div className="flex flex-wrap gap-2 text-sm">
             <span className={`rounded px-2 py-0.5 text-xs font-semibold capitalize ${STATUS_BADGE[u.status] ?? ''}`}>{u.status}</span>
             <span className={`rounded px-2 py-0.5 text-xs font-semibold capitalize ${u.role === 'admin' ? 'bg-purple-100 text-purple-700' : 'bg-gray-100 text-gray-700'}`}>{u.role}</span>
-            {u.isVerified && <span className="rounded px-2 py-0.5 text-xs font-semibold bg-violet-100 text-violet-700">✓ Verified</span>}
+            {u.isVerified && <span className="rounded px-2 py-0.5 text-xs font-semibold bg-sky-100 text-sky-700">✓ Verified</span>}
           </div>
 
           <div className="text-xs text-gray-400">
@@ -260,7 +260,7 @@ function SidebarNav({
               onClick={() => { setTab(t); setSidebarOpen(false); }}
               className={`w-full flex items-center gap-3 rounded-lg px-3 py-2.5 text-sm font-medium transition-colors ${
                 tab === t
-                  ? 'bg-violet-600 text-white'
+                  ? 'bg-sky-600 text-white'
                   : 'text-gray-300 hover:bg-gray-700 hover:text-white'
               }`}
             >
@@ -507,7 +507,7 @@ export default function AdminPage() {
   if (checkingAuth || loading) {
     return (
       <div className="min-h-[60vh] flex items-center justify-center">
-        <div className="inline-block animate-spin rounded-full h-10 w-10 border-b-2 border-violet-600" />
+        <div className="inline-block animate-spin rounded-full h-10 w-10 border-b-2 border-sky-600" />
       </div>
     );
   }
@@ -674,7 +674,7 @@ export default function AdminPage() {
           <main className="flex-1 p-4 sm:p-6">
             {dataLoading && (
               <div className="flex justify-center py-20">
-                <div className="inline-block animate-spin rounded-full h-10 w-10 border-b-2 border-violet-600" />
+                <div className="inline-block animate-spin rounded-full h-10 w-10 border-b-2 border-sky-600" />
               </div>
             )}
 
@@ -683,10 +683,10 @@ export default function AdminPage() {
               <div className="space-y-6">
                 <div className="grid grid-cols-2 gap-4 sm:grid-cols-4">
                   {[
-                    { label: 'Total Users',       value: stats.totalUsers,         color: 'text-violet-600',  tab: 'users' as Tab },
+                    { label: 'Total Users',       value: stats.totalUsers,         color: 'text-sky-600',  tab: 'users' as Tab },
                     { label: 'Active Users',       value: stats.activeUsers,        color: 'text-green-600', tab: 'users' as Tab },
                     { label: 'Suspended/Banned',   value: stats.bannedUsers,        color: 'text-red-600',   tab: 'users' as Tab },
-                    { label: 'Total Donations',    value: stats.totalDonations,     color: 'text-violet-600',  tab: 'donations' as Tab },
+                    { label: 'Total Donations',    value: stats.totalDonations,     color: 'text-sky-600',  tab: 'donations' as Tab },
                   ].map((s) => (
                     <button
                       key={s.label}
@@ -719,7 +719,7 @@ export default function AdminPage() {
                   <div className="rounded-xl bg-white p-5 shadow">
                     <div className="flex items-center justify-between mb-3">
                       <h2 className="font-semibold text-gray-800">Recent Users</h2>
-                      <button onClick={() => setTab('users')} className="text-xs text-violet-600 hover:underline">View all</button>
+                      <button onClick={() => setTab('users')} className="text-xs text-sky-600 hover:underline">View all</button>
                     </div>
                     {users.slice(0, 5).map((u) => (
                       <button
@@ -739,7 +739,7 @@ export default function AdminPage() {
                   <div className="rounded-xl bg-white p-5 shadow">
                     <div className="flex items-center justify-between mb-3">
                       <h2 className="font-semibold text-gray-800">Recent Donations</h2>
-                      <button onClick={() => setTab('donations')} className="text-xs text-violet-600 hover:underline">View all</button>
+                      <button onClick={() => setTab('donations')} className="text-xs text-sky-600 hover:underline">View all</button>
                     </div>
                     {donations.slice(0, 5).map((d) => (
                       <div key={d.id} className="flex items-center justify-between py-2 border-b last:border-0">
@@ -766,7 +766,7 @@ export default function AdminPage() {
                     placeholder="Search name, email or city…"
                     value={userSearch}
                     onChange={(e) => setUserSearch(e.target.value)}
-                    className="flex-1 min-w-[180px] max-w-sm rounded-lg border border-gray-300 px-4 py-2 text-sm outline-none focus:ring-2 focus:ring-violet-500 focus:border-transparent"
+                    className="flex-1 min-w-[180px] max-w-sm rounded-lg border border-gray-300 px-4 py-2 text-sm outline-none focus:ring-2 focus:ring-sky-500 focus:border-transparent"
                   />
                   <span className="text-xs text-gray-500">{filteredUsers.length} user{filteredUsers.length !== 1 ? 's' : ''}</span>
                   <button
@@ -783,8 +783,8 @@ export default function AdminPage() {
 
                 {/* Bulk action bar */}
                 {selectedUsers.size > 0 && (
-                  <div className="flex flex-wrap items-center gap-2 bg-violet-50 border-b border-violet-200 px-4 py-2">
-                    <span className="text-sm font-semibold text-violet-800">{selectedUsers.size} selected</span>
+                  <div className="flex flex-wrap items-center gap-2 bg-sky-50 border-b border-sky-200 px-4 py-2">
+                    <span className="text-sm font-semibold text-sky-800">{selectedUsers.size} selected</span>
                     <button onClick={() => handleBulkAction('suspend')} disabled={bulkPending} className="rounded bg-yellow-100 px-2.5 py-1 text-xs font-semibold text-yellow-800 hover:bg-yellow-200 disabled:opacity-40">Suspend All</button>
                     <button onClick={() => handleBulkAction('ban')} disabled={bulkPending} className="rounded bg-red-100 px-2.5 py-1 text-xs font-semibold text-red-700 hover:bg-red-200 disabled:opacity-40">Ban All</button>
                     <button onClick={() => handleBulkAction('restore')} disabled={bulkPending} className="rounded bg-green-100 px-2.5 py-1 text-xs font-semibold text-green-700 hover:bg-green-200 disabled:opacity-40">Restore All</button>
@@ -838,7 +838,7 @@ export default function AdminPage() {
                             )}
                           </td>
                           <td className="px-4 py-3">
-                            <button onClick={() => setViewUser(u)} className="text-left hover:text-violet-600 transition">
+                            <button onClick={() => setViewUser(u)} className="text-left hover:text-sky-600 transition">
                               <p className="font-semibold text-gray-900">{u.name}</p>
                               <p className="text-xs text-gray-500">{u.email}</p>
                             </button>
@@ -896,14 +896,14 @@ export default function AdminPage() {
                     placeholder="Search title or city…"
                     value={donationSearch}
                     onChange={(e) => setDonationSearch(e.target.value)}
-                    className="flex-1 min-w-[160px] max-w-xs rounded-lg border border-gray-300 px-3 py-2 text-sm outline-none focus:ring-2 focus:ring-violet-500"
+                    className="flex-1 min-w-[160px] max-w-xs rounded-lg border border-gray-300 px-3 py-2 text-sm outline-none focus:ring-2 focus:ring-sky-500"
                   />
                   <span className="text-sm font-semibold text-gray-700">Status:</span>
                   {(['all', 'active', 'completed', 'rejected'] as const).map((s) => (
                     <button
                       key={s}
                       onClick={() => setDonationFilter(s)}
-                      className={`rounded-lg px-3 py-1.5 text-xs font-semibold capitalize transition ${donationFilter === s ? 'bg-violet-600 text-white' : 'bg-gray-100 text-gray-700 hover:bg-gray-200'}`}
+                      className={`rounded-lg px-3 py-1.5 text-xs font-semibold capitalize transition ${donationFilter === s ? 'bg-sky-600 text-white' : 'bg-gray-100 text-gray-700 hover:bg-gray-200'}`}
                     >
                       {s} ({s === 'all' ? donations.length : donations.filter((d) => d.status === s).length})
                     </button>
@@ -930,7 +930,7 @@ export default function AdminPage() {
                       )}
                       <div className="flex-1 min-w-0">
                         <div className="flex flex-wrap items-center gap-2">
-                          <Link href={`/donations/${d.id}`} className="font-semibold text-gray-900 hover:text-violet-600 truncate">{d.title}</Link>
+                          <Link href={`/donations/${d.id}`} className="font-semibold text-gray-900 hover:text-sky-600 truncate">{d.title}</Link>
                           <span className={`rounded px-2 py-0.5 text-xs font-semibold capitalize ${STATUS_BADGE[d.status] ?? ''}`}>{d.status}</span>
                           {d.flagged && <span className="rounded px-2 py-0.5 text-xs font-semibold bg-red-100 text-red-700">⚠️ Flagged</span>}
                         </div>
@@ -980,7 +980,7 @@ export default function AdminPage() {
                     placeholder="Search by title, reason, or city…"
                     value={moderationSearch}
                     onChange={(e) => setModerationSearch(e.target.value)}
-                    className="flex-1 min-w-[180px] max-w-sm rounded-lg border border-gray-300 px-3 py-2 text-sm outline-none focus:ring-2 focus:ring-violet-500"
+                    className="flex-1 min-w-[180px] max-w-sm rounded-lg border border-gray-300 px-3 py-2 text-sm outline-none focus:ring-2 focus:ring-sky-500"
                   />
                   <input
                     type="text"
@@ -1014,7 +1014,7 @@ export default function AdminPage() {
                           <div className="h-16 w-16 flex-shrink-0 rounded-lg bg-gray-100 flex items-center justify-center text-3xl">📦</div>
                         )}
                         <div className="flex-1 min-w-0">
-                          <Link href={`/donations/${d.id}`} className="font-semibold text-gray-900 hover:text-violet-600 truncate block">{d.title}</Link>
+                          <Link href={`/donations/${d.id}`} className="font-semibold text-gray-900 hover:text-sky-600 truncate block">{d.title}</Link>
                           <p className="text-xs text-gray-500 mt-0.5">{getCategoryName(d.category)} · {d.location.city} · {d.viewCount} views · {fmt(d.createdAt)}</p>
                           {d.flagReason && (
                             <p className="mt-1 text-xs bg-red-50 border border-red-200 rounded px-2 py-1 text-red-700">
@@ -1087,7 +1087,7 @@ export default function AdminPage() {
                               >
                                 {actionPending === d.id + '-feat' ? '…' : d.featured ? 'Unpin' : '⭐ Pin'}
                               </button>
-                              <Link href={`/donations/${d.id}`} className="rounded bg-violet-50 px-2 py-1.5 text-xs font-semibold text-violet-700 hover:bg-violet-100 transition">View</Link>
+                              <Link href={`/donations/${d.id}`} className="rounded bg-sky-50 px-2 py-1.5 text-xs font-semibold text-sky-700 hover:bg-sky-100 transition">View</Link>
                             </div>
                           </div>
                         </div>
@@ -1103,7 +1103,7 @@ export default function AdminPage() {
                 {/* Metric cards */}
                 <div className="grid grid-cols-2 gap-3 sm:grid-cols-3 lg:grid-cols-6">
                   {[
-                    { label: 'Total Users',       value: stats.totalUsers,         color: 'text-violet-600',    icon: '👥' },
+                    { label: 'Total Users',       value: stats.totalUsers,         color: 'text-sky-600',    icon: '👥' },
                     { label: 'Active Users',       value: stats.activeUsers,        color: 'text-green-600',   icon: '✅' },
                     { label: 'Total Donations',    value: stats.totalDonations,     color: 'text-indigo-600',  icon: '📦' },
                     { label: 'Active Donations',   value: stats.activeDonations,    color: 'text-blue-600',    icon: '🟢' },
@@ -1155,7 +1155,7 @@ export default function AdminPage() {
                           <div key={cat} className="flex items-center gap-3">
                             <span className="w-28 flex-shrink-0 text-right text-xs text-gray-600">{cat}</span>
                             <div className="flex-1 rounded-full bg-gray-100 h-4 overflow-hidden">
-                              <div className="h-full rounded-full bg-violet-500 transition-all" style={{ width: `${(count / max) * 100}%` }} />
+                              <div className="h-full rounded-full bg-sky-500 transition-all" style={{ width: `${(count / max) * 100}%` }} />
                             </div>
                             <span className="w-6 text-xs font-semibold text-gray-700">{count}</span>
                           </div>
@@ -1228,7 +1228,7 @@ export default function AdminPage() {
             {!dataLoading && tab === 'settings' && (
               <div className="space-y-6 max-w-2xl">
                 {!settingsLoaded ? (
-                  <div className="flex justify-center py-16"><div className="animate-spin rounded-full h-8 w-8 border-b-2 border-violet-600" /></div>
+                  <div className="flex justify-center py-16"><div className="animate-spin rounded-full h-8 w-8 border-b-2 border-sky-600" /></div>
                 ) : settingsData && (
                   <>
                     <div className="rounded-xl bg-white p-6 shadow space-y-4">
@@ -1238,7 +1238,7 @@ export default function AdminPage() {
                         <input
                           value={settingsData.platformName}
                           onChange={(e) => setSettingsData({ ...settingsData, platformName: e.target.value })}
-                          className="w-full rounded-lg border border-gray-300 px-4 py-2 text-sm outline-none focus:ring-2 focus:ring-violet-500"
+                          className="w-full rounded-lg border border-gray-300 px-4 py-2 text-sm outline-none focus:ring-2 focus:ring-sky-500"
                         />
                       </div>
                       <div>
@@ -1246,7 +1246,7 @@ export default function AdminPage() {
                         <input
                           value={settingsData.tagline}
                           onChange={(e) => setSettingsData({ ...settingsData, tagline: e.target.value })}
-                          className="w-full rounded-lg border border-gray-300 px-4 py-2 text-sm outline-none focus:ring-2 focus:ring-violet-500"
+                          className="w-full rounded-lg border border-gray-300 px-4 py-2 text-sm outline-none focus:ring-2 focus:ring-sky-500"
                         />
                       </div>
                       <div>
@@ -1255,7 +1255,7 @@ export default function AdminPage() {
                           type="email"
                           value={settingsData.supportEmail}
                           onChange={(e) => setSettingsData({ ...settingsData, supportEmail: e.target.value })}
-                          className="w-full rounded-lg border border-gray-300 px-4 py-2 text-sm outline-none focus:ring-2 focus:ring-violet-500"
+                          className="w-full rounded-lg border border-gray-300 px-4 py-2 text-sm outline-none focus:ring-2 focus:ring-sky-500"
                         />
                       </div>
                     </div>
@@ -1275,7 +1275,7 @@ export default function AdminPage() {
                           </div>
                           <div
                             onClick={() => setSettingsData({ ...settingsData, [key]: !settingsData[key] })}
-                            className={`relative inline-flex h-6 w-11 items-center rounded-full transition-colors flex-shrink-0 ${settingsData[key] ? 'bg-violet-600' : 'bg-gray-300'}`}
+                            className={`relative inline-flex h-6 w-11 items-center rounded-full transition-colors flex-shrink-0 ${settingsData[key] ? 'bg-sky-600' : 'bg-gray-300'}`}
                           >
                             <span className={`inline-block h-4 w-4 rounded-full bg-white shadow transform transition-transform ${settingsData[key] ? 'translate-x-6' : 'translate-x-1'}`} />
                           </div>
@@ -1289,7 +1289,7 @@ export default function AdminPage() {
                           max={50}
                           value={settingsData.maxDonationsPerDay}
                           onChange={(e) => setSettingsData({ ...settingsData, maxDonationsPerDay: Math.max(1, parseInt(e.target.value) || 1) })}
-                          className="w-28 rounded-lg border border-gray-300 px-4 py-2 text-sm outline-none focus:ring-2 focus:ring-violet-500"
+                          className="w-28 rounded-lg border border-gray-300 px-4 py-2 text-sm outline-none focus:ring-2 focus:ring-sky-500"
                         />
                       </div>
                     </div>
@@ -1325,7 +1325,7 @@ export default function AdminPage() {
                       <button
                         onClick={handleSaveSettings}
                         disabled={settingsSaving}
-                        className="rounded-lg bg-violet-600 px-6 py-2.5 text-sm font-semibold text-white hover:bg-violet-700 disabled:opacity-50 transition"
+                        className="rounded-lg bg-sky-600 px-6 py-2.5 text-sm font-semibold text-white hover:bg-sky-700 disabled:opacity-50 transition"
                       >
                         {settingsSaving ? 'Saving…' : 'Save Settings'}
                       </button>
@@ -1345,11 +1345,11 @@ export default function AdminPage() {
                     placeholder="Search by action, admin, or details…"
                     value={logSearch}
                     onChange={(e) => setLogSearch(e.target.value)}
-                    className="w-full max-w-sm rounded-lg border border-gray-300 px-4 py-2 text-sm outline-none focus:ring-2 focus:ring-violet-500"
+                    className="w-full max-w-sm rounded-lg border border-gray-300 px-4 py-2 text-sm outline-none focus:ring-2 focus:ring-sky-500"
                   />
                 </div>
                 {logsLoading ? (
-                  <div className="flex justify-center py-16"><div className="animate-spin rounded-full h-8 w-8 border-b-2 border-violet-600" /></div>
+                  <div className="flex justify-center py-16"><div className="animate-spin rounded-full h-8 w-8 border-b-2 border-sky-600" /></div>
                 ) : filteredLogs.length === 0 ? (
                   <div className="rounded-xl bg-white py-16 shadow text-center">
                     <p className="text-4xl mb-3">📝</p>

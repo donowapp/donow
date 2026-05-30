@@ -45,7 +45,7 @@ export default function DashboardPage() {
     return (
       <div className="flex items-center justify-center min-h-screen">
         <div className="text-center">
-          <div className="inline-block animate-spin rounded-full h-12 w-12 border-b-2 border-violet-600"></div>
+          <div className="inline-block animate-spin rounded-full h-12 w-12 border-b-2 border-sky-600"></div>
           <p className="text-gray-600 mt-4">Loading...</p>
         </div>
       </div>
@@ -77,7 +77,7 @@ export default function DashboardPage() {
             <div className="flex items-center justify-between">
               <div>
                 <p className="text-gray-600 text-sm">Donations Given</p>
-                <p className="text-3xl font-bold text-violet-600 mt-2">{user.donationCount || 0}</p>
+                <p className="text-3xl font-bold text-sky-600 mt-2">{user.donationCount || 0}</p>
               </div>
               <div className="text-4xl">🎁</div>
             </div>
@@ -88,7 +88,7 @@ export default function DashboardPage() {
             <div className="flex items-center justify-between">
               <div>
                 <p className="text-gray-600 text-sm">Items Received</p>
-                <p className="text-3xl font-bold text-violet-600 mt-2">{user.receivedCount || 0}</p>
+                <p className="text-3xl font-bold text-sky-600 mt-2">{user.receivedCount || 0}</p>
               </div>
               <div className="text-4xl">📦</div>
             </div>
@@ -99,7 +99,7 @@ export default function DashboardPage() {
             <div className="flex items-center justify-between">
               <div>
                 <p className="text-gray-600 text-sm">Your Rating</p>
-                <p className="text-3xl font-bold text-violet-600 mt-2">{(user.rating || 0).toFixed(1)}</p>
+                <p className="text-3xl font-bold text-sky-600 mt-2">{(user.rating || 0).toFixed(1)}</p>
               </div>
               <div className="text-4xl">⭐</div>
             </div>
@@ -136,17 +136,17 @@ export default function DashboardPage() {
         {/* Action Buttons */}
         <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
           <Link href="/donations">
-            <Button className="w-full bg-violet-600 hover:bg-violet-700">
+            <Button className="w-full bg-sky-600 hover:bg-sky-700">
               Browse Donations
             </Button>
           </Link>
           <Link href="/create-donation">
-            <Button className="w-full bg-violet-600 hover:bg-violet-700">
+            <Button className="w-full bg-sky-600 hover:bg-sky-700">
               Create Donation
             </Button>
           </Link>
           <Link href="/profile">
-            <Button className="w-full bg-violet-600 hover:bg-violet-700">
+            <Button className="w-full bg-sky-600 hover:bg-sky-700">
               Edit Profile
             </Button>
           </Link>

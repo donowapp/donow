@@ -98,13 +98,13 @@ export default function TermsPage() {
 
         <p className="text-xs text-gray-400">
           Questions? Contact us at{' '}
-          <a href="mailto:support@donow.in" className="text-violet-600 hover:underline">
+          <a href="mailto:support@donow.in" className="text-sky-600 hover:underline">
             support@donow.in
           </a>
         </p>
 
         <div className="mt-6 border-t pt-4 flex gap-4 text-sm">
-          <Link href="/privacy" className="text-violet-600 hover:underline">Privacy Policy</Link>
+          <Link href="/privacy" className="text-sky-600 hover:underline">Privacy Policy</Link>
           <Link href="/" className="text-gray-500 hover:underline">Back to Home</Link>
         </div>
       </div>
