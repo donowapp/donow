@@ -65,7 +65,7 @@ export default function RootLayout({
               </div>
             </div>
             <div className="border-t border-gray-800 pt-6 flex flex-col sm:flex-row items-center justify-between gap-3 text-xs text-gray-500">
-              <p>&copy; 2026 Donow. All rights reserved. Made with ❤️ for India.</p>
+              <p>&copy; 2025 Donow. All rights reserved. Made with ❤️ for India.</p>
               <div className="flex items-center gap-3">
                 <span className="rounded-full bg-green-900/50 border border-green-700/40 px-2.5 py-1 text-green-400 font-semibold">✓ 100% Free</span>
                 <span className="rounded-full bg-blue-900/50 border border-blue-700/40 px-2.5 py-1 text-blue-400 font-semibold">🔒 Secure</span>

@@ -105,10 +105,10 @@ export default function Home() {
       <section className="relative overflow-hidden text-white" style={{ minHeight: '580px' }}>
         {/* eslint-disable-next-line @next/next/no-img-element */}
         <img src={heroImage} alt="" className="absolute inset-0 h-full w-full object-cover" style={{ objectPosition: '70% center' }} />
-        <div className="absolute inset-0 bg-gradient-to-r from-black/75 via-black/45 to-transparent" />
-        <div className="absolute bottom-0 left-0 right-0 h-24 bg-gradient-to-t from-black/40 to-transparent" />
+        <div className="absolute inset-0 bg-gradient-to-r from-black/75 via-black/45 to-black/30" />
+        <div className="absolute bottom-0 left-0 right-0 h-32 bg-gradient-to-t from-black/60 to-transparent" />
         {/* cover Gemini watermark bottom-right */}
-        <div className="absolute bottom-0 right-0 w-20 h-20 bg-gradient-to-tl from-black/60 to-transparent pointer-events-none" />
+        <div className="absolute bottom-0 right-0 w-56 h-56 bg-gradient-to-tl from-black/95 via-black/70 to-transparent pointer-events-none" />
         <div className="relative z-10 mx-auto max-w-5xl px-4 py-20 sm:py-24">
           <div className="max-w-xl">
             <span className="mb-5 inline-flex items-center gap-2 rounded-full bg-white/15 backdrop-blur-sm border border-white/20 px-4 py-1.5 text-xs font-bold uppercase tracking-widest">
