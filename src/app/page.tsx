@@ -28,16 +28,52 @@ const CATEGORY_IMAGES: Record<string, string> = {
   other:      'https://images.unsplash.com/photo-1485965120184-e220f721d03e?w=300&q=80&fit=crop',
 };
 
+const ALL_STORIES = [
+  { img: 'https://images.unsplash.com/photo-1770908959158-aa1b885fa902?w=500&q=80&fit=crop&crop=top', quote: 'I got a warm jacket just before winter. My children and I are so grateful. May God bless you!', name: 'Priya S.', city: 'Delhi', item: '🧥 Winter Jacket', emoji: '😊' },
+  { img: 'https://plus.unsplash.com/premium_photo-1682089869602-2ec199cc501a?w=500&q=80&fit=crop&crop=top', quote: 'The books helped my son prepare for his board exams. Thank you from the bottom of my heart.', name: 'Ramesh K.', city: 'Bangalore', item: '📚 Textbooks', emoji: '🥹' },
+  { img: 'https://images.unsplash.com/photo-1489993360877-883980cc7333?w=500&q=80&fit=crop&crop=top', quote: 'We received a wheelchair for my mother. Words cannot describe how much this means to us.', name: 'Sunita M.', city: 'Mumbai', item: '♿ Wheelchair', emoji: '❤️' },
+  { img: 'https://plus.unsplash.com/premium_photo-1682089859052-6e9e4463b18c?w=500&q=80&fit=crop&crop=top', quote: 'The medicines arrived just when we needed them most. You are truly a blessing. Thank you!', name: 'Devika R.', city: 'Chennai', item: '💊 Medicines', emoji: '🙏' },
+  { img: 'https://plus.unsplash.com/premium_photo-1726783564564-280eb0741ea3?w=500&q=80&fit=crop&crop=top', quote: 'My children got school bags and books. They were so excited on their first day. God bless you!', name: 'Kumar Family', city: 'Pune', item: '🎒 School Bags', emoji: '😄' },
+  { img: 'https://plus.unsplash.com/premium_photo-1723867282153-b4bdcdeeca87?w=500&q=80&fit=crop&crop=top', quote: 'This birthday celebration was made possible by your kind donation. We are forever grateful.', name: 'Anjali V.', city: 'Kolkata', item: '🎂 Birthday Gift', emoji: '✨' },
+];
+
+const ALL_CARDS = [
+  { photo: 'https://plus.unsplash.com/premium_photo-1661594909295-1ba7e9078696?w=120&q=80&fit=crop&crop=face', name: 'Anita R.', city: 'Jaipur', msg: 'Just received the baby clothes. Perfect timing! My newborn is so cozy now. 🙏', time: '2m ago', color: 'bg-pink-50 border-pink-200', reaction: '🥰' },
+  { photo: 'https://images.unsplash.com/photo-1744804298701-f7be33867ca3?w=120&q=80&fit=crop&crop=face', name: 'Mohammed I.', city: 'Hyderabad', msg: 'The study table arrived in great condition. My daughter finally has a proper place to study!', time: '15m ago', color: 'bg-blue-50 border-blue-200', reaction: '😊' },
+  { photo: 'https://images.unsplash.com/photo-1749793299204-462f634e53cc?w=120&q=80&fit=crop&crop=face', name: 'Kamla D.', city: 'Lucknow', msg: 'Thank you so much for the warm blankets. Winter was very difficult for us this year. 🙏❤️', time: '1h ago', color: 'bg-amber-50 border-amber-200', reaction: '🙏' },
+  { photo: 'https://images.unsplash.com/photo-1558023598-0afa967eac90?w=120&q=80&fit=crop&crop=face', name: 'Sharma Family', city: 'Pune', msg: 'Got school bags and stationery for our kids. You made their first day of school special! 😭❤️', time: '3h ago', color: 'bg-green-50 border-green-200', reaction: '😭' },
+  { photo: 'https://plus.unsplash.com/premium_photo-1661631235126-d692141653c7?w=120&q=80&fit=crop&crop=face', name: 'Arjun P.', city: 'Chennai', msg: "Received the cricket bat and kit. I couldn't afford one on my own. Thank you so much!", time: '5h ago', color: 'bg-orange-50 border-orange-200', reaction: '🎉' },
+  { photo: 'https://plus.unsplash.com/premium_photo-1682092082088-28369c9ec0d0?w=120&q=80&fit=crop&crop=face', name: 'Meera T.', city: 'Kolkata', msg: 'The sewing machine changed my life. I can now stitch and earn for my family. Forever grateful 🙏', time: '1d ago', color: 'bg-purple-50 border-purple-200', reaction: '✨' },
+  { photo: 'https://plus.unsplash.com/premium_photo-1682089859052-6e9e4463b18c?w=120&q=80&fit=crop&crop=face', name: 'Ritu V.', city: 'Ahmedabad', msg: 'Received warm winter clothes for my whole family. We slept comfortably this year. Thank you! 🧥', time: '2h ago', color: 'bg-teal-50 border-teal-200', reaction: '😇' },
+  { photo: 'https://plus.unsplash.com/premium_photo-1726783564564-280eb0741ea3?w=120&q=80&fit=crop&crop=face', name: 'Dinesh K.', city: 'Nagpur', msg: 'The bicycle helps me get to work every day. You have no idea how much this means to me!', time: '6h ago', color: 'bg-indigo-50 border-indigo-200', reaction: '🚲' },
+  { photo: 'https://plus.unsplash.com/premium_photo-1723867282153-b4bdcdeeca87?w=120&q=80&fit=crop&crop=face', name: 'Fatima B.', city: 'Surat', msg: "My children's eyes lit up when they got the toys. Pure joy! Thank you from the bottom of my heart.", time: '8h ago', color: 'bg-rose-50 border-rose-200', reaction: '🎊' },
+];
+
 export default function Home() {
   const [featured, setFeatured] = useState<Donation[]>([]);
   const [loadingFeatured, setLoadingFeatured] = useState(true);
   const [heroImage, setHeroImage] = useState(DEFAULT_HERO);
   const [stats, setStats] = useState<PublicStats | null>(null);
+  const [storyOffset, setStoryOffset] = useState(0);
+  const [cardOffset, setCardOffset] = useState(0);
+  const [sectionsVisible, setSectionsVisible] = useState(true);
 
   useEffect(() => {
     getFeaturedDonations(8).then(setFeatured).catch(() => {}).finally(() => setLoadingFeatured(false));
     getPlatformSettings().then((s) => { if (s.heroImageUrl) setHeroImage(s.heroImageUrl); }).catch(() => {});
     getPublicStats().then(setStats).catch(() => {});
+  }, []);
+
+  useEffect(() => {
+    const id = setInterval(() => {
+      setSectionsVisible(false);
+      setTimeout(() => {
+        setStoryOffset((prev) => (prev + 3) % ALL_STORIES.length);
+        setCardOffset((prev) => (prev + 3) % ALL_CARDS.length);
+        setSectionsVisible(true);
+      }, 500);
+    }, 30000);
+    return () => clearInterval(id);
   }, []);
 
   return (
@@ -248,13 +284,13 @@ export default function Home() {
             <span className="inline-block rounded-full bg-orange-100 px-4 py-1 text-xs font-bold uppercase tracking-widest text-orange-500">Real Stories</span>
           </div>
           <h2 className="mb-2 text-center text-3xl font-extrabold text-gray-900">People Whose Lives You Touched</h2>
-          <p className="mb-10 text-center text-sm text-gray-500">Every donation creates a real smile. Here are a few.</p>
-          <div className="grid grid-cols-1 gap-6 sm:grid-cols-3">
-            {[
-              { img: 'https://images.unsplash.com/photo-1770908959158-aa1b885fa902?w=500&q=80&fit=crop&crop=top', quote: 'I got a warm jacket just before winter. My children and I are so grateful. May God bless you!', name: 'Priya S.', city: 'Delhi', item: '🧥 Winter Jacket', emoji: '😊' },
-              { img: 'https://plus.unsplash.com/premium_photo-1682089869602-2ec199cc501a?w=500&q=80&fit=crop&crop=top', quote: 'The books helped my son prepare for his board exams. Thank you from the bottom of my heart.', name: 'Ramesh K.', city: 'Bangalore', item: '📚 Textbooks', emoji: '🥹' },
-              { img: 'https://images.unsplash.com/photo-1489993360877-883980cc7333?w=500&q=80&fit=crop&crop=top', quote: 'We received a wheelchair for my mother. Words cannot describe how much this means to us.', name: 'Sunita M.', city: 'Mumbai', item: '♿ Wheelchair', emoji: '❤️' },
-            ].map((story, i) => (
+          <p className="mb-3 text-center text-sm text-gray-500">Every donation creates a real smile. Here are a few.</p>
+          <p className="mb-8 text-center text-xs text-gray-400 flex items-center justify-center gap-1.5">
+            <span className="inline-block h-1.5 w-1.5 rounded-full bg-orange-400 animate-pulse" />
+            Stories refresh every 30 seconds
+          </p>
+          <div className={`grid grid-cols-1 gap-6 sm:grid-cols-3 transition-opacity duration-500 ${sectionsVisible ? 'opacity-100' : 'opacity-0'}`}>
+            {Array.from({ length: 3 }, (_, i) => ALL_STORIES[(storyOffset + i) % ALL_STORIES.length]).map((story, i) => (
               <div key={i} className="group flex flex-col rounded-2xl bg-white border border-gray-100 shadow-md transition hover:-translate-y-1 hover:shadow-xl overflow-hidden">
                 <div className="relative h-52 overflow-hidden">
                   {/* eslint-disable-next-line @next/next/no-img-element */}
@@ -285,16 +321,13 @@ export default function Home() {
             <span className="inline-block rounded-full bg-teal-50 px-4 py-1 text-xs font-bold uppercase tracking-widest text-teal-600">Gratitude</span>
           </div>
           <h2 className="mb-2 text-center text-3xl font-extrabold text-gray-900">❤️ Thank You Wall</h2>
-          <p className="mb-8 text-center text-sm text-gray-400">Real messages from people across India</p>
-          <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
-            {[
-              { photo: 'https://plus.unsplash.com/premium_photo-1661594909295-1ba7e9078696?w=120&q=80&fit=crop&crop=face', name: 'Anita R.', city: 'Jaipur', msg: 'Just received the baby clothes. Perfect timing! My newborn is so cozy now. 🙏', time: '2m ago', color: 'bg-pink-50 border-pink-200', reaction: '🥰' },
-              { photo: 'https://images.unsplash.com/photo-1744804298701-f7be33867ca3?w=120&q=80&fit=crop&crop=face', name: 'Mohammed I.', city: 'Hyderabad', msg: 'The study table arrived in great condition. My daughter finally has a proper place to study!', time: '15m ago', color: 'bg-blue-50 border-blue-200', reaction: '😊' },
-              { photo: 'https://images.unsplash.com/photo-1749793299204-462f634e53cc?w=120&q=80&fit=crop&crop=face', name: 'Kamla D.', city: 'Lucknow', msg: 'Thank you so much for the warm blankets. Winter was very difficult for us this year. 🙏❤️', time: '1h ago', color: 'bg-amber-50 border-amber-200', reaction: '🙏' },
-              { photo: 'https://images.unsplash.com/photo-1558023598-0afa967eac90?w=120&q=80&fit=crop&crop=face', name: 'Sharma Family', city: 'Pune', msg: 'Got school bags and stationery for our kids. You made their first day of school special! 😭❤️', time: '3h ago', color: 'bg-green-50 border-green-200', reaction: '😭' },
-              { photo: 'https://plus.unsplash.com/premium_photo-1661631235126-d692141653c7?w=120&q=80&fit=crop&crop=face', name: 'Arjun P.', city: 'Chennai', msg: "Received the cricket bat and kit. I couldn't afford one on my own. Thank you so much!", time: '5h ago', color: 'bg-orange-50 border-orange-200', reaction: '🎉' },
-              { photo: 'https://plus.unsplash.com/premium_photo-1682092082088-28369c9ec0d0?w=120&q=80&fit=crop&crop=face', name: 'Meera T.', city: 'Kolkata', msg: 'The sewing machine changed my life. I can now stitch and earn for my family. Forever grateful 🙏', time: '1d ago', color: 'bg-purple-50 border-purple-200', reaction: '✨' },
-            ].map((card, i) => (
+          <p className="mb-1 text-center text-sm text-gray-400">Real messages from people across India</p>
+          <p className="mb-8 text-center text-xs text-gray-400 flex items-center justify-center gap-1.5">
+            <span className="inline-block h-1.5 w-1.5 rounded-full bg-teal-500 animate-pulse" />
+            New messages every 30 seconds
+          </p>
+          <div className={`grid grid-cols-1 gap-4 sm:grid-cols-2 transition-opacity duration-500 ${sectionsVisible ? 'opacity-100' : 'opacity-0'}`}>
+            {Array.from({ length: 6 }, (_, i) => ALL_CARDS[(cardOffset + i) % ALL_CARDS.length]).map((card, i) => (
               <div key={i} className={`flex items-start gap-4 rounded-2xl border-2 p-4 transition hover:shadow-lg hover:-translate-y-0.5 ${card.color}`}>
                 <div className="relative flex-shrink-0">
                   {/* eslint-disable-next-line @next/next/no-img-element */}
