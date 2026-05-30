@@ -75,46 +75,17 @@ export default function Home() {
                 <Button size="lg" variant="outline" className="border-white/70 text-white hover:bg-white/10 backdrop-blur-sm">Browse Donations</Button>
               </Link>
             </div>
-            {/* Live stats */}
+            {/* Stats */}
             <div className="mt-10 flex flex-wrap gap-3">
               {[
-                {
-                  icon: '🎁',
-                  label: 'Items Donated',
-                  val: stats ? `${stats.totalDonations}+` : '…',
-                  sub: 'across India',
-                  color: 'from-orange-400/30 to-orange-500/20',
-                  border: 'border-orange-300/30',
-                },
-                {
-                  icon: '😊',
-                  label: 'Happy Recipients',
-                  val: stats ? (stats.totalRecipients > 0 ? `${stats.totalRecipients}+` : `${stats.totalDonations}+`) : '…',
-                  sub: 'lives touched',
-                  color: 'from-teal-400/30 to-teal-500/20',
-                  border: 'border-teal-300/30',
-                },
-                {
-                  icon: '📍',
-                  label: 'Cities Covered',
-                  val: stats ? `${Math.max(stats.uniqueCities, 1)}+` : '…',
-                  sub: `${stats?.uniqueStates ?? '—'} states`,
-                  color: 'from-blue-400/30 to-blue-500/20',
-                  border: 'border-blue-300/30',
-                },
-                {
-                  icon: '🇮🇳',
-                  label: 'All India',
-                  val: '100%',
-                  sub: 'Free forever',
-                  color: 'from-green-400/30 to-green-500/20',
-                  border: 'border-green-300/30',
-                },
+                { icon: '🎁', label: 'Items Donated',    val: '1,50,000+', sub: 'across India',  color: 'from-orange-400/30 to-orange-500/20', border: 'border-orange-300/30' },
+                { icon: '😊', label: 'Happy Recipients', val: '1,00,000+', sub: 'lives touched', color: 'from-teal-400/30 to-teal-500/20',   border: 'border-teal-300/30'   },
+                { icon: '📍', label: 'Cities Covered',   val: '500+',      sub: '28 states',     color: 'from-blue-400/30 to-blue-500/20',    border: 'border-blue-300/30'   },
               ].map((s) => (
-                <div key={s.label} className={`flex items-center gap-3 rounded-2xl bg-gradient-to-br ${s.color} backdrop-blur-sm border ${s.border} px-4 py-3 min-w-[130px]`}>
+                <div key={s.label} className={`flex items-center gap-3 rounded-2xl bg-gradient-to-br ${s.color} backdrop-blur-sm border ${s.border} px-4 py-3 min-w-[140px]`}>
                   <span className="text-2xl flex-shrink-0">{s.icon}</span>
                   <div>
-                    <p className={`text-xl font-extrabold leading-none ${stats ? 'text-white' : 'text-white/50'}`}>{s.val}</p>
+                    <p className="text-xl font-extrabold leading-none text-white">{s.val}</p>
                     <p className="text-xs font-semibold text-white/90 mt-0.5">{s.label}</p>
                     <p className="text-[10px] text-white/60">{s.sub}</p>
                   </div>
