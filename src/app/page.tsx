@@ -289,20 +289,49 @@ export default function Home() {
       </section>
 
       {/* Browse by Category */}
-      <section className="border-t bg-gray-50 px-4 py-10">
+      <section className="border-t bg-gray-50 px-4 py-12">
         <div className="mx-auto max-w-5xl">
-          <h2 className="mb-6 text-2xl font-bold text-gray-900">Browse by Category</h2>
-          <div className="grid grid-cols-2 gap-3 sm:grid-cols-3 md:grid-cols-5">
-            {CATEGORIES.map((cat) => (
-              <Link
-                key={cat.id}
-                href={`/donations?category=${cat.id}`}
-                className="flex flex-col items-center gap-2 rounded-xl border border-gray-200 bg-white p-4 text-center shadow-sm transition hover:-translate-y-0.5 hover:border-teal-300 hover:shadow-md"
-              >
-                <span className="text-3xl">{cat.icon}</span>
-                <span className="text-xs font-semibold text-gray-700">{cat.name}</span>
-              </Link>
-            ))}
+          <h2 className="mb-2 text-2xl font-bold text-gray-900">Browse by Category</h2>
+          <p className="mb-7 text-sm text-gray-500">Find what you need or donate what you have</p>
+          <div className="grid grid-cols-2 gap-4 sm:grid-cols-3 md:grid-cols-5">
+            {CATEGORIES.map((cat) => {
+              const img: Record<string, string> = {
+                medical:   'https://plus.unsplash.com/premium_photo-1661767897334-bbfbdfdc4d1a?w=300&q=80&fit=crop',
+                medicines: 'https://plus.unsplash.com/premium_photo-1673953509975-576678fa6710?w=300&q=80&fit=crop',
+                clothes:   'https://plus.unsplash.com/premium_photo-1675186049366-64a655f8f537?w=300&q=80&fit=crop',
+                books:     'https://plus.unsplash.com/premium_photo-1669652639337-c513cc42ead6?w=300&q=80&fit=crop',
+                furniture: 'https://plus.unsplash.com/premium_photo-1670076513880-f58e3c377903?w=300&q=80&fit=crop',
+                electronics:'https://plus.unsplash.com/premium_photo-1683120966127-14162cdd0935?w=300&q=80&fit=crop',
+                toys:      'https://plus.unsplash.com/premium_photo-1684795780266-ecd819f04f96?w=300&q=80&fit=crop',
+                food:      'https://plus.unsplash.com/premium_photo-1673108852141-e8c3c22a4a22?w=300&q=80&fit=crop',
+                emergency: 'https://plus.unsplash.com/premium_photo-1687819872154-9d4fd3cb7cca?w=300&q=80&fit=crop',
+                other:     'https://plus.unsplash.com/premium_photo-1683133263716-731795d25343?w=300&q=80&fit=crop',
+              };
+              return (
+                <Link
+                  key={cat.id}
+                  href={`/donations?category=${cat.id}`}
+                  className="group relative overflow-hidden rounded-2xl shadow-sm transition hover:-translate-y-1 hover:shadow-xl"
+                  style={{ aspectRatio: '1 / 1' }}
+                >
+                  {/* Real photo background */}
+                  {/* eslint-disable-next-line @next/next/no-img-element */}
+                  <img
+                    src={img[cat.id]}
+                    alt={cat.name}
+                    className="absolute inset-0 h-full w-full object-cover transition duration-300 group-hover:scale-110"
+                  />
+                  {/* gradient overlay */}
+                  <div className="absolute inset-0 bg-gradient-to-t from-black/70 via-black/20 to-transparent" />
+                  {/* emoji badge top-right */}
+                  <span className="absolute top-2 right-2 text-xl drop-shadow">{cat.icon}</span>
+                  {/* label at bottom */}
+                  <div className="absolute bottom-0 left-0 right-0 px-2 pb-3 text-center">
+                    <p className="text-xs font-bold text-white drop-shadow leading-tight">{cat.name}</p>
+                  </div>
+                </Link>
+              );
+            })}
           </div>
         </div>
       </section>
