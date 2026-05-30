@@ -296,16 +296,16 @@ export default function Home() {
           <div className="grid grid-cols-2 gap-4 sm:grid-cols-3 md:grid-cols-5">
             {CATEGORIES.map((cat) => {
               const img: Record<string, string> = {
-                medical:   'https://plus.unsplash.com/premium_photo-1661767897334-bbfbdfdc4d1a?w=300&q=80&fit=crop',
-                medicines: 'https://plus.unsplash.com/premium_photo-1673953509975-576678fa6710?w=300&q=80&fit=crop',
-                clothes:   'https://plus.unsplash.com/premium_photo-1675186049366-64a655f8f537?w=300&q=80&fit=crop',
-                books:     'https://plus.unsplash.com/premium_photo-1669652639337-c513cc42ead6?w=300&q=80&fit=crop',
-                furniture: 'https://plus.unsplash.com/premium_photo-1670076513880-f58e3c377903?w=300&q=80&fit=crop',
-                electronics:'https://plus.unsplash.com/premium_photo-1683120966127-14162cdd0935?w=300&q=80&fit=crop',
-                toys:      'https://plus.unsplash.com/premium_photo-1684795780266-ecd819f04f96?w=300&q=80&fit=crop',
-                food:      'https://plus.unsplash.com/premium_photo-1673108852141-e8c3c22a4a22?w=300&q=80&fit=crop',
-                emergency: 'https://plus.unsplash.com/premium_photo-1687819872154-9d4fd3cb7cca?w=300&q=80&fit=crop',
-                other:     'https://plus.unsplash.com/premium_photo-1683133263716-731795d25343?w=300&q=80&fit=crop',
+                medical:    'https://images.unsplash.com/photo-1642680936843-b09109c69104?w=300&q=80&fit=crop',
+                medicines:  'https://images.unsplash.com/photo-1573883430697-4c3479aae6b9?w=300&q=80&fit=crop',
+                clothes:    'https://plus.unsplash.com/premium_photo-1661741379133-9206bca144dc?w=300&q=80&fit=crop',
+                books:      'https://images.unsplash.com/photo-1603058817990-2b9a9abbce86?w=300&q=80&fit=crop',
+                furniture:  'https://images.unsplash.com/photo-1611269154421-4e27233ac5c7?w=300&q=80&fit=crop',
+                electronics:'https://images.unsplash.com/photo-1560169897-fc0cdbdfa4d5?w=300&q=80&fit=crop',
+                toys:       'https://images.unsplash.com/photo-1602734846297-9299fc2d4703?w=300&q=80&fit=crop',
+                food:       'https://images.unsplash.com/photo-1627485937980-221c88ac04f9?w=300&q=80&fit=crop',
+                emergency:  'https://images.unsplash.com/photo-1619025873875-59dfdd2bbbd6?w=300&q=80&fit=crop',
+                other:      'https://images.unsplash.com/photo-1485965120184-e220f721d03e?w=300&q=80&fit=crop',
               };
               return (
                 <Link
