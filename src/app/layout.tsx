@@ -14,7 +14,7 @@ export const metadata: Metadata = {
   title: 'Donow - Free Donation Platform',
   description: 'Connect donors with people in need. Free donations for India.',
   icons: {
-    icon: [{ url: '/icon.png', type: 'image/png' }],
+    icon: [{ url: '/icon.svg', type: 'image/svg+xml' }],
     apple: [{ url: '/apple-icon.png', type: 'image/png' }],
   },
 };
