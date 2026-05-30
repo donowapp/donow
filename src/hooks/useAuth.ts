@@ -1,8 +1,3 @@
-/**
- * Zustand auth store hook
- * Manages global authentication state
- */
-
 'use client';
 
 import { create } from 'zustand';
@@ -13,12 +8,12 @@ interface AuthStore {
   user: User | null;
   loading: boolean;
   error: string | null;
+  unverifiedEmail: string | null;
   signup: (email: string, password: string, userData: Partial<User>) => Promise<void>;
   login: (email: string, password: string) => Promise<void>;
-  sendLoginLink: (email: string) => Promise<void>;
-  completeLogin: (email: string, href: string) => Promise<void>;
   logout: () => Promise<void>;
   checkAuth: () => Promise<void>;
+  clearError: () => void;
 }
 
 function getErrorMessage(error: unknown): string {
@@ -30,14 +25,20 @@ function getErrorMessage(error: unknown): string {
         return 'Incorrect email or password';
       case 'auth/user-not-found':
         return 'No account found with this email';
+      case 'auth/email-not-verified':
+        return 'Your email is not verified. Click the link we sent to your inbox.';
       case 'auth/too-many-requests':
         return 'Too many failed attempts. Try again later.';
       case 'auth/user-disabled':
         return 'This account has been suspended';
       case 'auth/invalid-email':
         return 'Invalid email address';
+      case 'auth/email-already-in-use':
+        return 'An account with this email already exists';
+      case 'auth/weak-password':
+        return 'Password must be at least 6 characters';
       default:
-        return error.message;
+        return error.message || 'Something went wrong';
     }
   }
   return 'Something went wrong';
@@ -47,49 +48,33 @@ export const useAuth = create<AuthStore>((set) => ({
   user: null,
   loading: false,
   error: null,
+  unverifiedEmail: null,
+
+  signup: async (email, password, userData) => {
+    set({ loading: true, error: null });
+    try {
+      await authLib.signupWithEmail(email, password, userData);
+      // Don't set user — must verify email before accessing the app
+      set({ user: null, loading: false });
+    } catch (error: unknown) {
+      set({ error: getErrorMessage(error), loading: false });
+      throw error;
+    }
+  },
 
   login: async (email, password) => {
-    set({ loading: true, error: null });
+    set({ loading: true, error: null, unverifiedEmail: null });
     try {
       await authLib.loginWithEmail(email, password);
       const user = await authLib.getCurrentUser();
       set({ user, loading: false });
     } catch (error: unknown) {
-      set({ error: getErrorMessage(error), loading: false });
-      throw error;
-    }
-  },
-
-  signup: async (email, password, userData) => {
-    set({ loading: true, error: null });
-    try {
-      const user = await authLib.signupWithEmail(email, password, userData);
-      set({ user, loading: false });
-    } catch (error: unknown) {
-      set({ error: getErrorMessage(error), loading: false });
-      throw error;
-    }
-  },
-
-  sendLoginLink: async (email) => {
-    set({ loading: true, error: null });
-    try {
-      await authLib.sendLoginLink(email);
-      set({ loading: false });
-    } catch (error: unknown) {
-      set({ error: getErrorMessage(error), loading: false });
-      throw error;
-    }
-  },
-
-  completeLogin: async (email, href) => {
-    set({ loading: true, error: null });
-    try {
-      await authLib.completeLoginWithLink(email, href);
-      const user = await authLib.getCurrentUser();
-      set({ user, loading: false });
-    } catch (error: unknown) {
-      set({ error: getErrorMessage(error), loading: false });
+      const code = (error as { code?: string }).code ?? '';
+      if (code === 'auth/email-not-verified') {
+        set({ error: getErrorMessage(error), loading: false, unverifiedEmail: email });
+      } else {
+        set({ error: getErrorMessage(error), loading: false });
+      }
       throw error;
     }
   },
@@ -98,7 +83,7 @@ export const useAuth = create<AuthStore>((set) => ({
     set({ loading: true, error: null });
     try {
       await authLib.logout();
-      set({ user: null, loading: false });
+      set({ user: null, loading: false, unverifiedEmail: null });
     } catch (error: unknown) {
       set({ error: getErrorMessage(error), loading: false });
       throw error;
@@ -114,4 +99,6 @@ export const useAuth = create<AuthStore>((set) => ({
       set({ loading: false });
     }
   },
+
+  clearError: () => set({ error: null, unverifiedEmail: null }),
 }));

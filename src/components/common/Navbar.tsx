@@ -1,4 +1,4 @@
-'use client';
+﻿'use client';
 
 import { useEffect, useState } from 'react';
 import Link from 'next/link';
@@ -44,7 +44,7 @@ export default function Navbar() {
     return (
       <Link
         href={href}
-        className={`transition-colors ${active ? 'text-white font-bold underline underline-offset-4' : 'text-teal-100 hover:text-white'}`}
+        className={`transition-colors ${active ? 'text-white font-bold underline underline-offset-4' : 'text-violet-100 hover:text-white'}`}
       >
         {label}
       </Link>
@@ -74,13 +74,13 @@ export default function Navbar() {
   );
 
   return (
-    <nav className="bg-teal-600 text-white shadow">
+    <nav className="bg-violet-600 text-white shadow">
       <div className="container mx-auto px-4 py-3">
         <div className="flex items-center justify-between">
           {/* Brand */}
           <Link href="/" className="group">
-            <span className="text-xl font-extrabold tracking-tight group-hover:text-teal-100">Donow</span>
-            <span className="ml-2 hidden text-xs text-teal-200 sm:inline">Donate. Help. Make Impact.</span>
+            <span className="text-xl font-extrabold tracking-tight group-hover:text-violet-100">Donow</span>
+            <span className="ml-2 hidden text-xs text-violet-200 sm:inline">Donate. Help. Make Impact.</span>
           </Link>
 
           {/* Desktop nav */}
@@ -93,13 +93,13 @@ export default function Navbar() {
                 {navLink('/saved', 'Saved')}
                 <Link
                   href="/messages"
-                  className={`transition-colors ${pathname.startsWith('/messages') ? 'text-white font-bold underline underline-offset-4' : 'text-teal-100 hover:text-white'}`}
+                  className={`transition-colors ${pathname.startsWith('/messages') ? 'text-white font-bold underline underline-offset-4' : 'text-violet-100 hover:text-white'}`}
                 >
                   {messagesLabel}
                 </Link>
                 <Link
                   href="/notifications"
-                  className={`transition-colors ${pathname === '/notifications' ? 'text-white font-bold underline underline-offset-4' : 'text-teal-100 hover:text-white'}`}
+                  className={`transition-colors ${pathname === '/notifications' ? 'text-white font-bold underline underline-offset-4' : 'text-violet-100 hover:text-white'}`}
                 >
                   {notificationsLabel}
                 </Link>
@@ -108,7 +108,7 @@ export default function Navbar() {
 
             <Link
               href="/create-donation"
-              className="rounded-lg bg-white px-3 py-1.5 font-semibold text-teal-700 transition hover:bg-teal-50"
+              className="rounded-lg bg-white px-3 py-1.5 font-semibold text-violet-700 transition hover:bg-violet-50"
             >
               + Donate
             </Link>
@@ -116,7 +116,7 @@ export default function Navbar() {
             {user?.role === 'admin' && (
               <Link
                 href="/admin"
-                className={`rounded px-2 py-1 text-xs font-bold transition ${pathname === '/admin' ? 'bg-white text-teal-700' : 'bg-teal-700 text-teal-100 hover:bg-teal-800'}`}
+                className={`rounded px-2 py-1 text-xs font-bold transition ${pathname === '/admin' ? 'bg-white text-violet-700' : 'bg-violet-700 text-violet-100 hover:bg-violet-800'}`}
               >
                 Admin
               </Link>
@@ -126,17 +126,17 @@ export default function Navbar() {
               <div className="flex items-center gap-3">
                 <Link
                   href="/profile"
-                  className="flex items-center gap-2 text-teal-100 hover:text-white transition-colors"
+                  className="flex items-center gap-2 text-violet-100 hover:text-white transition-colors"
                 >
                   {user.profileImage ? (
                     // eslint-disable-next-line @next/next/no-img-element
                     <img
                       src={user.profileImage}
                       alt={user.name}
-                      className="w-7 h-7 rounded-full object-cover border-2 border-teal-300"
+                      className="w-7 h-7 rounded-full object-cover border-2 border-violet-300"
                     />
                   ) : (
-                    <span className="flex h-7 w-7 items-center justify-center rounded-full bg-teal-800 text-xs font-bold text-white">
+                    <span className="flex h-7 w-7 items-center justify-center rounded-full bg-violet-800 text-xs font-bold text-white">
                       {(user.name || 'U').charAt(0).toUpperCase()}
                     </span>
                   )}
@@ -144,14 +144,14 @@ export default function Navbar() {
                     {user.name.split(' ')[0]}
                   </span>
                 </Link>
-                <button onClick={handleLogout} className="text-xs text-teal-200 underline hover:text-white">
+                <button onClick={handleLogout} className="text-xs text-violet-200 underline hover:text-white">
                   Logout
                 </button>
               </div>
             ) : (
               <Link
                 href="/login"
-                className="rounded-lg border border-teal-300 px-3 py-1.5 text-sm font-semibold text-white hover:bg-teal-700"
+                className="rounded-lg border border-violet-300 px-3 py-1.5 text-sm font-semibold text-white hover:bg-violet-700"
               >
                 Login
               </Link>
@@ -160,7 +160,7 @@ export default function Navbar() {
 
           {/* Mobile hamburger */}
           <button
-            className="flex items-center justify-center rounded p-1 text-white hover:bg-teal-700 md:hidden"
+            className="flex items-center justify-center rounded p-1 text-white hover:bg-violet-700 md:hidden"
             onClick={() => setMenuOpen((o) => !o)}
             aria-label="Toggle menu"
           >
@@ -170,26 +170,26 @@ export default function Navbar() {
 
         {/* Mobile menu */}
         {menuOpen && (
-          <div className="mt-3 flex flex-col gap-2 border-t border-teal-500 pt-4 text-sm font-medium">
+          <div className="mt-3 flex flex-col gap-2 border-t border-violet-500 pt-4 text-sm font-medium">
             {user ? (
               <>
                 {/* User identity */}
                 <Link
                   href="/profile"
-                  className="flex items-center gap-3 rounded-lg px-3 py-2 hover:bg-teal-700 transition"
+                  className="flex items-center gap-3 rounded-lg px-3 py-2 hover:bg-violet-700 transition"
                 >
                   {user.profileImage ? (
                     // eslint-disable-next-line @next/next/no-img-element
-                    <img src={user.profileImage} alt={user.name} className="w-8 h-8 rounded-full object-cover border-2 border-teal-300 flex-shrink-0" />
+                    <img src={user.profileImage} alt={user.name} className="w-8 h-8 rounded-full object-cover border-2 border-violet-300 flex-shrink-0" />
                   ) : (
-                    <span className="flex h-8 w-8 flex-shrink-0 items-center justify-center rounded-full bg-teal-800 text-sm font-bold text-white">
+                    <span className="flex h-8 w-8 flex-shrink-0 items-center justify-center rounded-full bg-violet-800 text-sm font-bold text-white">
                       {(user.name || 'U').charAt(0).toUpperCase()}
                     </span>
                   )}
                   <span className="font-semibold text-white">{user.name.split(' ')[0]}</span>
                 </Link>
 
-                <div className="my-1 border-t border-teal-500/50" />
+                <div className="my-1 border-t border-violet-500/50" />
 
                 {[
                   { href: '/donations', label: 'Browse Donations' },
@@ -200,7 +200,7 @@ export default function Navbar() {
                   <Link
                     key={href}
                     href={href}
-                    className={`rounded-lg px-3 py-2.5 transition hover:bg-teal-700 ${pathname === href || (href !== '/donations' && pathname.startsWith(href + '/')) ? 'bg-teal-700 text-white font-bold' : 'text-teal-100'}`}
+                    className={`rounded-lg px-3 py-2.5 transition hover:bg-violet-700 ${pathname === href || (href !== '/donations' && pathname.startsWith(href + '/')) ? 'bg-violet-700 text-white font-bold' : 'text-violet-100'}`}
                   >
                     {label}
                   </Link>
@@ -208,7 +208,7 @@ export default function Navbar() {
 
                 <Link
                   href="/messages"
-                  className={`flex items-center justify-between rounded-lg px-3 py-2.5 transition hover:bg-teal-700 ${pathname.startsWith('/messages') ? 'bg-teal-700 text-white font-bold' : 'text-teal-100'}`}
+                  className={`flex items-center justify-between rounded-lg px-3 py-2.5 transition hover:bg-violet-700 ${pathname.startsWith('/messages') ? 'bg-violet-700 text-white font-bold' : 'text-violet-100'}`}
                 >
                   <span>Messages</span>
                   {totalUnread > 0 && (
@@ -220,7 +220,7 @@ export default function Navbar() {
 
                 <Link
                   href="/notifications"
-                  className={`flex items-center justify-between rounded-lg px-3 py-2.5 transition hover:bg-teal-700 ${pathname === '/notifications' ? 'bg-teal-700 text-white font-bold' : 'text-teal-100'}`}
+                  className={`flex items-center justify-between rounded-lg px-3 py-2.5 transition hover:bg-violet-700 ${pathname === '/notifications' ? 'bg-violet-700 text-white font-bold' : 'text-violet-100'}`}
                 >
                   <span>Notifications</span>
                   {unreadNotifications > 0 && (
@@ -233,23 +233,23 @@ export default function Navbar() {
                 {user.role === 'admin' && (
                   <Link
                     href="/admin"
-                    className={`rounded-lg px-3 py-2.5 transition hover:bg-teal-700 ${pathname === '/admin' ? 'bg-teal-700 text-white font-bold' : 'text-teal-100'}`}
+                    className={`rounded-lg px-3 py-2.5 transition hover:bg-violet-700 ${pathname === '/admin' ? 'bg-violet-700 text-white font-bold' : 'text-violet-100'}`}
                   >
                     Admin Panel
                   </Link>
                 )}
 
-                <div className="my-1 border-t border-teal-500/50" />
+                <div className="my-1 border-t border-violet-500/50" />
 
                 <Link
                   href="/create-donation"
-                  className="rounded-lg bg-white px-3 py-2.5 text-center font-semibold text-teal-700 hover:bg-teal-50 transition"
+                  className="rounded-lg bg-white px-3 py-2.5 text-center font-semibold text-violet-700 hover:bg-violet-50 transition"
                 >
                   + Donate
                 </Link>
                 <button
                   onClick={handleLogout}
-                  className="rounded-lg px-3 py-2.5 text-left text-teal-200 hover:bg-teal-700 hover:text-white transition"
+                  className="rounded-lg px-3 py-2.5 text-left text-violet-200 hover:bg-violet-700 hover:text-white transition"
                 >
                   Logout
                 </button>
@@ -258,19 +258,19 @@ export default function Navbar() {
               <>
                 <Link
                   href="/donations"
-                  className={`rounded-lg px-3 py-2.5 text-center transition hover:bg-teal-700 ${pathname === '/donations' ? 'bg-teal-700 text-white font-bold' : 'text-teal-100'}`}
+                  className={`rounded-lg px-3 py-2.5 text-center transition hover:bg-violet-700 ${pathname === '/donations' ? 'bg-violet-700 text-white font-bold' : 'text-violet-100'}`}
                 >
                   Browse Donations
                 </Link>
                 <Link
                   href="/create-donation"
-                  className="rounded-lg bg-white px-3 py-2.5 text-center font-semibold text-teal-700 hover:bg-teal-50 transition"
+                  className="rounded-lg bg-white px-3 py-2.5 text-center font-semibold text-violet-700 hover:bg-violet-50 transition"
                 >
                   + Donate
                 </Link>
                 <Link
                   href="/login"
-                  className="rounded-lg border border-teal-300 px-3 py-2.5 text-center font-semibold text-white hover:bg-teal-700 transition"
+                  className="rounded-lg border border-violet-300 px-3 py-2.5 text-center font-semibold text-white hover:bg-violet-700 transition"
                 >
                   Login
                 </Link>

@@ -249,7 +249,9 @@ export async function getSavedDonationsByIds(ids: string[]): Promise<Donation[]>
   return results.flat().sort((a, b) => b.createdAt.getTime() - a.createdAt.getTime());
 }
 
-export async function getDonorById(userId: string) {
+export async function getDonorById(userId: string): Promise<Pick<User, 'uid' | 'name' | 'city' | 'state' | 'profileImage' | 'donationCount' | 'receivedCount' | 'rating' | 'isVerified'> | null> {
   const userSnapshot = await getDoc(doc(db, 'users', userId));
-  return userSnapshot.exists() ? (userSnapshot.data() as User) : null;
+  if (!userSnapshot.exists()) return null;
+  const { uid, name, city, state, profileImage, donationCount, receivedCount, rating, isVerified } = userSnapshot.data() as User;
+  return { uid, name, city, state, profileImage, donationCount, receivedCount, rating, isVerified };
 }

@@ -13,6 +13,8 @@ import { createNotification } from '@/lib/notifications';
 import { useAuth } from '@/hooks/useAuth';
 import { Donation, User, Review } from '@/types';
 
+type DonorProfile = Pick<User, 'uid' | 'name' | 'city' | 'state' | 'profileImage' | 'donationCount' | 'receivedCount' | 'rating' | 'isVerified'>;
+
 interface DonationDetailsClientProps {
   donationId: string;
 }
@@ -30,7 +32,7 @@ export default function DonationDetailsClient({ donationId }: DonationDetailsCli
   const { user } = useAuth();
 
   const [donation, setDonation] = useState<Donation | null>(null);
-  const [donor, setDonor] = useState<User | null>(null);
+  const [donor, setDonor] = useState<DonorProfile | null>(null);
   const [selectedImage, setSelectedImage] = useState('');
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
@@ -297,12 +299,6 @@ export default function DonationDetailsClient({ donationId }: DonationDetailsCli
                 <div className="mt-4 space-y-3 text-sm text-gray-700">
                   <div><span className="font-semibold text-gray-900">Name: </span>{donor.name || 'Donor'}</div>
                   <div><span className="font-semibold text-gray-900">City: </span>{donor.city || donation.location.city}</div>
-                  {donor.email && (
-                    <div className="break-all"><span className="font-semibold text-gray-900">Email: </span>{donor.email}</div>
-                  )}
-                  {donor.phone && (
-                    <div><span className="font-semibold text-gray-900">Phone: </span>{donor.phone}</div>
-                  )}
                 </div>
               ) : (
                 <p className="mt-3 text-sm text-gray-600">Donor profile details are not available yet.</p>

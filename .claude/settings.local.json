@@ -1,0 +1,17 @@
+{
+  "permissions": {
+    "allow": [
+      "Bash(Get-ChildItem -Path \"c:\\\\Users\\\\prave\\\\Desktop\\\\donow\\\\src\" -Recurse)",
+      "Bash(Select-Object FullName)",
+      "Bash(Sort-Object FullName)",
+      "Bash(mkdir -p \"c:\\\\Users\\\\prave\\\\Desktop\\\\donow\\\\src\\\\app\\\\messages\\\\[id]\")",
+      "Bash(git add *)",
+      "Bash(git commit -m ' *)",
+      "Bash(git push *)",
+      "Bash(del \"c:\\\\Users\\\\prave\\\\Desktop\\\\donow\\\\src\\\\app\\\\donate\\\\page.tsx\")"
+    ],
+    "additionalDirectories": [
+      "c:\\Users\\prave\\Desktop\\donow\\src\\app\\messages"
+    ]
+  }
+}

@@ -1,4 +1,4 @@
-'use client';
+﻿'use client';
 
 import { useEffect, useState } from 'react';
 import { useRouter } from 'next/navigation';
@@ -57,7 +57,7 @@ export default function SavedPage() {
   if (checkingAuth || loading) {
     return (
       <div className="min-h-[60vh] flex items-center justify-center">
-        <div className="inline-block animate-spin rounded-full h-10 w-10 border-b-2 border-teal-600" />
+        <div className="inline-block animate-spin rounded-full h-10 w-10 border-b-2 border-violet-600" />
       </div>
     );
   }
@@ -71,7 +71,7 @@ export default function SavedPage() {
 
         {fetching ? (
           <div className="flex justify-center py-20">
-            <div className="inline-block animate-spin rounded-full h-10 w-10 border-b-2 border-teal-600" />
+            <div className="inline-block animate-spin rounded-full h-10 w-10 border-b-2 border-violet-600" />
           </div>
         ) : donations.length === 0 ? (
           <div className="flex flex-col items-center justify-center rounded-lg bg-white py-20 shadow text-center">
@@ -96,7 +96,7 @@ export default function SavedPage() {
                   />
                   <div className="p-5">
                     <div className="mb-3 flex items-center justify-between gap-3">
-                      <span className="rounded bg-teal-50 px-2 py-1 text-xs font-semibold text-teal-700">
+                      <span className="rounded bg-violet-50 px-2 py-1 text-xs font-semibold text-violet-700">
                         {getCategoryName(donation.category)}
                       </span>
                       <span className="rounded bg-gray-100 px-2 py-1 text-xs font-semibold capitalize text-gray-700">

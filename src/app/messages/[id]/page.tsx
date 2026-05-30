@@ -136,7 +136,7 @@ export default function ChatPage() {
   }
 
   return (
-    <div className="flex flex-col bg-gray-50" style={{ height: 'calc(100vh - 80px)' }}>
+    <div className="flex flex-col bg-gray-50" style={{ height: 'calc(100dvh - 80px)' }}>
       {/* Header */}
       <div className="flex items-center gap-3 border-b bg-white px-4 py-3 shadow-sm">
         <Link href="/messages" className="text-teal-600 hover:text-teal-800 text-lg font-bold">

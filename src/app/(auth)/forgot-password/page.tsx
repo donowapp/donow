@@ -1,4 +1,4 @@
-'use client';
+﻿'use client';
 
 import { useState } from 'react';
 import Link from 'next/link';
@@ -34,12 +34,12 @@ export default function ForgotPasswordPage() {
 
   if (sent) {
     return (
-      <div className="min-h-screen bg-gradient-to-br from-teal-50 to-blue-50 flex items-center justify-center py-12 px-4">
+      <div className="min-h-screen bg-gradient-to-br from-violet-50 to-blue-50 flex items-center justify-center py-12 px-4">
         <div className="max-w-md w-full bg-white rounded-lg shadow-lg p-8 text-center">
           <span className="text-5xl">📬</span>
           <h1 className="mt-4 text-2xl font-bold text-gray-900">Check your inbox</h1>
           <p className="mt-2 text-gray-600">
-            We sent a password reset link to <span className="font-semibold text-teal-600">{email}</span>.
+            We sent a password reset link to <span className="font-semibold text-violet-600">{email}</span>.
           </p>
           <p className="mt-1 text-sm text-gray-500">The link expires in 1 hour.</p>
           <Link href="/login" className="mt-6 inline-block">
@@ -51,9 +51,9 @@ export default function ForgotPasswordPage() {
   }
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-teal-50 to-blue-50 flex items-center justify-center py-12 px-4">
+    <div className="min-h-screen bg-gradient-to-br from-violet-50 to-blue-50 flex items-center justify-center py-12 px-4">
       <div className="max-w-md w-full bg-white rounded-lg shadow-lg p-8">
-        <h1 className="text-3xl font-bold text-teal-600 mb-2">Reset Password</h1>
+        <h1 className="text-3xl font-bold text-violet-600 mb-2">Reset Password</h1>
         <p className="text-gray-600 mb-6">
           Enter your email and we&apos;ll send you a reset link.
         </p>
@@ -80,7 +80,7 @@ export default function ForgotPasswordPage() {
 
         <p className="mt-4 text-center text-sm text-gray-600">
           Remembered it?{' '}
-          <Link href="/login" className="text-teal-600 font-semibold hover:underline">
+          <Link href="/login" className="text-violet-600 font-semibold hover:underline">
             Back to Login
           </Link>
         </p>

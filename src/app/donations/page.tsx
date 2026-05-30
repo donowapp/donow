@@ -1,4 +1,4 @@
-'use client';
+﻿'use client';
 
 import { Suspense, useEffect, useMemo, useRef, useState } from 'react';
 import Link from 'next/link';
@@ -113,7 +113,7 @@ function DonationsContent() {
                 value={searchInput}
                 onChange={handleSearchChange}
                 placeholder="Title or description"
-                className="w-full rounded-lg border border-gray-300 px-4 py-2 outline-none transition focus:border-transparent focus:ring-2 focus:ring-teal-500"
+                className="w-full rounded-lg border border-gray-300 px-4 py-2 outline-none transition focus:border-transparent focus:ring-2 focus:ring-violet-500"
               />
             </div>
             <div>
@@ -122,7 +122,7 @@ function DonationsContent() {
                 id="filter-category"
                 value={category}
                 onChange={(e) => setCategory(e.target.value)}
-                className="w-full rounded-lg border border-gray-300 px-4 py-2 outline-none transition focus:border-transparent focus:ring-2 focus:ring-teal-500"
+                className="w-full rounded-lg border border-gray-300 px-4 py-2 outline-none transition focus:border-transparent focus:ring-2 focus:ring-violet-500"
               >
                 <option value="all">All categories</option>
                 {CATEGORIES.map((c) => <option key={c.id} value={c.id}>{c.name}</option>)}
@@ -134,7 +134,7 @@ function DonationsContent() {
                 id="filter-city"
                 value={city}
                 onChange={(e) => setCity(e.target.value)}
-                className="w-full rounded-lg border border-gray-300 px-4 py-2 outline-none transition focus:border-transparent focus:ring-2 focus:ring-teal-500"
+                className="w-full rounded-lg border border-gray-300 px-4 py-2 outline-none transition focus:border-transparent focus:ring-2 focus:ring-violet-500"
               >
                 <option value="all">All cities</option>
                 {cities.map((c) => <option key={c} value={c}>{c}</option>)}
@@ -146,7 +146,7 @@ function DonationsContent() {
                 id="filter-condition"
                 value={condition}
                 onChange={(e) => setCondition(e.target.value)}
-                className="w-full rounded-lg border border-gray-300 px-4 py-2 capitalize outline-none transition focus:border-transparent focus:ring-2 focus:ring-teal-500"
+                className="w-full rounded-lg border border-gray-300 px-4 py-2 capitalize outline-none transition focus:border-transparent focus:ring-2 focus:ring-violet-500"
               >
                 <option value="all">All conditions</option>
                 {CONDITIONS.map((c) => <option key={c} value={c}>{c}</option>)}
@@ -186,7 +186,7 @@ function DonationsContent() {
                   />
                   <div className="p-5">
                     <div className="mb-3 flex items-center justify-between gap-3">
-                      <span className="rounded bg-teal-50 px-2 py-1 text-xs font-semibold text-teal-700">
+                      <span className="rounded bg-violet-50 px-2 py-1 text-xs font-semibold text-violet-700">
                         {getCategoryName(donation.category)}
                       </span>
                       <span className="rounded bg-gray-100 px-2 py-1 text-xs font-semibold capitalize text-gray-700">
@@ -200,7 +200,7 @@ function DonationsContent() {
                       <div className="flex gap-3">
                         <span>{donation.viewCount} views</span>
                         {donation.interestedUsers.length > 0 && (
-                          <span className="text-teal-600 font-medium">
+                          <span className="text-violet-600 font-medium">
                             {donation.interestedUsers.length} interested
                           </span>
                         )}
@@ -232,7 +232,7 @@ export default function DonationsPage() {
   return (
     <Suspense fallback={
       <div className="min-h-[60vh] flex items-center justify-center">
-        <div className="inline-block animate-spin rounded-full h-10 w-10 border-b-2 border-teal-600" />
+        <div className="inline-block animate-spin rounded-full h-10 w-10 border-b-2 border-violet-600" />
       </div>
     }>
       <DonationsContent />
