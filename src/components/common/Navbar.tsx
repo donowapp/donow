@@ -75,18 +75,16 @@ export default function Navbar() {
 
   return (
     <nav className="bg-teal-600 text-white shadow">
-      <div className="container mx-auto px-4 py-3">
+      <div className="container mx-auto px-4 py-4">
         <div className="flex items-center justify-between">
           {/* Brand */}
-          <Link href="/" className="group">
-            <span className="text-xl font-extrabold tracking-tight group-hover:text-teal-100">Donow</span>
-            <span className="ml-2 hidden text-xs text-teal-200 sm:inline">Donate. Help. Make Impact.</span>
+          <Link href="/" className="group flex flex-col leading-tight">
+            <span className="text-3xl font-extrabold tracking-tight group-hover:text-teal-100">Donow</span>
+            <span className="text-[11px] font-medium text-teal-200 tracking-wide">Donate · Help · Make Impact</span>
           </Link>
 
           {/* Desktop nav */}
-          <div className="hidden items-center gap-5 text-sm font-medium md:flex">
-            {navLink('/donations', 'Browse')}
-
+          <div className="hidden items-center gap-3 text-sm font-medium md:flex">
             {user && (
               <>
                 {navLink('/my-donations', 'My Donations')}
@@ -106,52 +104,58 @@ export default function Navbar() {
               </>
             )}
 
-            <Link
-              href="/create-donation"
-              className="rounded-lg bg-orange-400 px-3 py-1.5 font-semibold text-white transition hover:bg-orange-500"
-            >
-              + Donate
-            </Link>
-
             {user?.role === 'admin' && (
               <Link
                 href="/admin"
-                className={`rounded px-2 py-1 text-xs font-bold transition ${pathname === '/admin' ? 'bg-white text-teal-700' : 'bg-teal-700 text-teal-100 hover:bg-teal-800'}`}
+                className={`rounded-lg px-3 py-2 text-xs font-bold transition ${pathname === '/admin' ? 'bg-white text-teal-700' : 'bg-teal-700 text-teal-100 hover:bg-teal-800'}`}
               >
                 Admin
               </Link>
             )}
 
+            {/* Symmetrical action pills */}
+            <Link
+              href="/donations"
+              className={`rounded-lg border border-white/40 px-4 py-2 text-sm font-semibold transition hover:bg-teal-700 ${pathname === '/donations' ? 'bg-teal-700 text-white' : 'text-white'}`}
+            >
+              Browse
+            </Link>
+
+            <Link
+              href="/create-donation"
+              className="rounded-lg bg-orange-400 px-4 py-2 text-sm font-semibold text-white transition hover:bg-orange-500 shadow"
+            >
+              + Donate
+            </Link>
+
             {user ? (
               <div className="flex items-center gap-3">
                 <Link
                   href="/profile"
-                  className="flex items-center gap-2 text-teal-100 hover:text-white transition-colors"
+                  className="flex items-center gap-2 rounded-lg border border-white/30 px-3 py-2 text-white hover:bg-teal-700 transition-colors"
                 >
                   {user.profileImage ? (
                     // eslint-disable-next-line @next/next/no-img-element
                     <img
                       src={user.profileImage}
                       alt={user.name}
-                      className="w-7 h-7 rounded-full object-cover border-2 border-teal-300"
+                      className="w-6 h-6 rounded-full object-cover border border-teal-300"
                     />
                   ) : (
-                    <span className="flex h-7 w-7 items-center justify-center rounded-full bg-teal-800 text-xs font-bold text-white">
+                    <span className="flex h-6 w-6 items-center justify-center rounded-full bg-teal-800 text-xs font-bold text-white">
                       {(user.name || 'U').charAt(0).toUpperCase()}
                     </span>
                   )}
-                  <span className={pathname === '/dashboard' || pathname === '/profile' ? 'font-bold text-white underline underline-offset-4' : ''}>
-                    {user.name.split(' ')[0]}
-                  </span>
+                  <span className="text-sm font-semibold">{user.name.split(' ')[0]}</span>
                 </Link>
-                <button onClick={handleLogout} className="text-xs text-teal-200 underline hover:text-white">
+                <button onClick={handleLogout} className="rounded-lg border border-white/30 px-4 py-2 text-sm font-semibold text-white hover:bg-teal-700 transition">
                   Logout
                 </button>
               </div>
             ) : (
               <Link
                 href="/login"
-                className="rounded-lg border border-teal-300 px-3 py-1.5 text-sm font-semibold text-white hover:bg-teal-700"
+                className="rounded-lg border border-white/40 bg-white/10 px-4 py-2 text-sm font-semibold text-white hover:bg-white/20 transition"
               >
                 Login
               </Link>
