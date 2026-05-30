@@ -74,7 +74,7 @@ export default function Navbar() {
   );
 
   return (
-    <nav className="bg-teal-600 text-white shadow">
+    <nav className="bg-teal-700 text-white shadow">
       <div className="container mx-auto px-4 py-4">
         <div className="flex items-center justify-between">
           {/* Brand */}
@@ -123,7 +123,7 @@ export default function Navbar() {
 
             <Link
               href="/create-donation"
-              className="rounded-lg bg-orange-400 px-4 py-2 text-sm font-semibold text-white transition hover:bg-orange-500 shadow"
+              className="rounded-lg bg-teal-500 px-4 py-2 text-sm font-semibold text-white transition hover:bg-teal-600 shadow"
             >
               + Donate
             </Link>
@@ -247,7 +247,7 @@ export default function Navbar() {
 
                 <Link
                   href="/create-donation"
-                  className="rounded-lg bg-orange-400 px-3 py-2.5 text-center font-semibold text-white hover:bg-orange-500 transition"
+                  className="rounded-lg bg-teal-500 px-3 py-2.5 text-center font-semibold text-white hover:bg-teal-600 transition"
                 >
                   + Donate
                 </Link>
@@ -268,7 +268,7 @@ export default function Navbar() {
                 </Link>
                 <Link
                   href="/create-donation"
-                  className="rounded-lg bg-orange-400 px-3 py-2.5 text-center font-semibold text-white hover:bg-orange-500 transition"
+                  className="rounded-lg bg-teal-500 px-3 py-2.5 text-center font-semibold text-white hover:bg-teal-600 transition"
                 >
                   + Donate
                 </Link>

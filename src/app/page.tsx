@@ -99,7 +99,7 @@ export default function Home() {
   }, []);
 
   return (
-    <div className="bg-gray-50">
+    <div className="bg-slate-50">
 
       {/* ── HERO ─────────────────────────────────────────────────────────────── */}
       <section className="relative overflow-hidden text-white" style={{ minHeight: '580px' }}>
@@ -123,7 +123,7 @@ export default function Home() {
             </p>
             <div className="mt-8 flex flex-wrap gap-3">
               <Link href="/create-donation">
-                <Button size="lg" className="bg-orange-400 hover:bg-orange-500 text-white border-0 shadow-xl px-8">🎁 Donate Now</Button>
+                <Button size="lg" className="bg-teal-700 hover:bg-teal-800 text-white border-0 shadow-xl px-8">🎁 Donate Now</Button>
               </Link>
               <Link href="/donations">
                 <Button size="lg" variant="outline" className="border-white/70 text-white hover:bg-white/10 backdrop-blur-sm">Browse Donations</Button>
@@ -164,7 +164,7 @@ export default function Home() {
           <div className="mx-auto max-w-5xl">
             <div className="mb-6 flex items-center justify-between">
               <div>
-                <h2 className="text-2xl font-extrabold text-gray-900">⭐ Featured Donations</h2>
+                <h2 className="text-2xl font-extrabold text-slate-900">⭐ Featured Donations</h2>
                 <p className="text-sm text-gray-400 mt-0.5">Hand-picked items available near you</p>
               </div>
               <Link href="/donations" className="rounded-xl bg-orange-50 border border-orange-200 px-4 py-2 text-sm font-semibold text-orange-500 hover:bg-orange-100 transition">
@@ -174,7 +174,7 @@ export default function Home() {
             {loadingFeatured ? (
               <div className="flex gap-4 overflow-x-auto pb-3">
                 {Array.from({ length: 4 }).map((_, i) => (
-                  <div key={i} className="flex-shrink-0 w-60 rounded-2xl border bg-gray-50 overflow-hidden animate-pulse">
+                  <div key={i} className="flex-shrink-0 w-60 rounded-2xl border bg-slate-50 overflow-hidden animate-pulse">
                     <div className="h-40 bg-gray-200" />
                     <div className="p-4 space-y-2">
                       <div className="h-3 w-16 rounded bg-gray-200" />
@@ -201,7 +201,7 @@ export default function Home() {
                       <span className="rounded-full bg-teal-50 border border-teal-100 px-2.5 py-0.5 text-xs font-semibold text-teal-700">
                         {getCategoryName(donation.category)}
                       </span>
-                      <h3 className="mt-2 line-clamp-2 text-sm font-bold text-gray-900">{donation.title}</h3>
+                      <h3 className="mt-2 line-clamp-2 text-sm font-bold text-slate-900">{donation.title}</h3>
                       <p className="mt-1 text-xs text-gray-400">📍 {donation.location.city}</p>
                     </div>
                   </Link>
@@ -213,10 +213,10 @@ export default function Home() {
       )}
 
       {/* ── BROWSE BY CATEGORY ────────────────────────────────────────────────── */}
-      <section className="border-t bg-gray-50 px-4 py-12">
+      <section className="border-t bg-slate-50 px-4 py-12">
         <div className="mx-auto max-w-5xl">
           <div className="mb-2">
-            <h2 className="text-2xl font-extrabold text-gray-900">Browse by Category</h2>
+            <h2 className="text-2xl font-extrabold text-slate-900">Browse by Category</h2>
             <p className="mt-1 text-sm text-gray-500">Find what you need or donate what you have</p>
           </div>
           <div className="mt-7 grid grid-cols-2 gap-4 sm:grid-cols-3 md:grid-cols-5">
@@ -244,9 +244,9 @@ export default function Home() {
       <section className="border-t bg-white px-4 py-14">
         <div className="mx-auto max-w-5xl">
           <div className="mb-2 text-center">
-            <span className="inline-block rounded-full bg-teal-50 px-4 py-1 text-xs font-bold uppercase tracking-widest text-teal-600">Simple Process</span>
+            <span className="inline-block rounded-full bg-teal-50 px-4 py-1 text-xs font-bold uppercase tracking-widest text-teal-700">Simple Process</span>
           </div>
-          <h2 className="mb-2 text-center text-3xl font-extrabold text-gray-900">How Donow Works</h2>
+          <h2 className="mb-2 text-center text-3xl font-extrabold text-slate-900">How Donow Works</h2>
           <p className="mb-12 text-center text-sm text-gray-400">3 simple steps to give or receive</p>
           <div className="grid grid-cols-1 gap-6 sm:grid-cols-3 relative">
             {/* connector line desktop */}
@@ -261,7 +261,7 @@ export default function Home() {
                   <span className="text-3xl">{step.icon}</span>
                 </div>
                 <span className={`absolute top-4 right-4 text-xs font-black ${step.color.replace('bg-', 'text-')} opacity-40`}>{step.step}</span>
-                <h3 className="text-lg font-extrabold text-gray-900 mb-2">{step.title}</h3>
+                <h3 className="text-lg font-extrabold text-slate-900 mb-2">{step.title}</h3>
                 <p className="text-sm text-gray-500 leading-relaxed">{step.desc}</p>
               </div>
             ))}
@@ -275,7 +275,7 @@ export default function Home() {
           <div className="mb-2 text-center">
             <span className="inline-block rounded-full bg-orange-100 px-4 py-1 text-xs font-bold uppercase tracking-widest text-orange-500">Why Choose Us</span>
           </div>
-          <h2 className="mb-10 text-center text-3xl font-extrabold text-gray-900">Why Donow?</h2>
+          <h2 className="mb-10 text-center text-3xl font-extrabold text-slate-900">Why Donow?</h2>
           <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-4">
             {[
               { icon: '🆓', title: 'Completely Free', desc: 'No fees, no subscriptions, no hidden charges. Always free for donors and recipients.', color: 'border-teal-200 bg-white' },
@@ -285,7 +285,7 @@ export default function Home() {
             ].map((w) => (
               <div key={w.title} className={`rounded-2xl border-2 p-5 shadow-sm hover:shadow-md transition hover:-translate-y-0.5 ${w.color}`}>
                 <span className="text-4xl mb-3 block">{w.icon}</span>
-                <h3 className="font-extrabold text-gray-900 mb-1">{w.title}</h3>
+                <h3 className="font-extrabold text-slate-900 mb-1">{w.title}</h3>
                 <p className="text-sm text-gray-500 leading-relaxed">{w.desc}</p>
               </div>
             ))}
@@ -299,7 +299,7 @@ export default function Home() {
           <div className="mb-2 text-center">
             <span className="inline-block rounded-full bg-orange-100 px-4 py-1 text-xs font-bold uppercase tracking-widest text-orange-500">Real Stories</span>
           </div>
-          <h2 className="mb-2 text-center text-3xl font-extrabold text-gray-900">People Whose Lives You Touched</h2>
+          <h2 className="mb-2 text-center text-3xl font-extrabold text-slate-900">People Whose Lives You Touched</h2>
           <p className="mb-3 text-center text-sm text-gray-500">Every donation creates a real smile. Here are a few.</p>
           <p className="mb-8 text-center text-xs text-gray-400 flex items-center justify-center gap-1.5">
             <span className="inline-block h-1.5 w-1.5 rounded-full bg-orange-400 animate-pulse" />
@@ -318,7 +318,7 @@ export default function Home() {
                   <p className="mb-4 flex-1 text-sm italic leading-relaxed text-gray-600">&ldquo;{story.quote}&rdquo;</p>
                   <div className="flex items-center justify-between">
                     <div>
-                      <p className="text-sm font-bold text-gray-900">{story.name}</p>
+                      <p className="text-sm font-bold text-slate-900">{story.name}</p>
                       <p className="text-xs text-gray-400">📍 {story.city}</p>
                     </div>
                     <span className="rounded-full bg-teal-50 border border-teal-100 px-3 py-1 text-xs font-semibold text-teal-700">{story.item}</span>
@@ -331,12 +331,12 @@ export default function Home() {
       </section>
 
       {/* ── THANK YOU WALL ───────────────────────────────────────────────────── */}
-      <section className="border-t bg-gray-50 px-4 py-12">
+      <section className="border-t bg-slate-50 px-4 py-12">
         <div className="mx-auto max-w-5xl">
           <div className="mb-2 text-center">
-            <span className="inline-block rounded-full bg-teal-50 px-4 py-1 text-xs font-bold uppercase tracking-widest text-teal-600">Gratitude</span>
+            <span className="inline-block rounded-full bg-teal-50 px-4 py-1 text-xs font-bold uppercase tracking-widest text-teal-700">Gratitude</span>
           </div>
-          <h2 className="mb-2 text-center text-3xl font-extrabold text-gray-900">❤️ Thank You Wall</h2>
+          <h2 className="mb-2 text-center text-3xl font-extrabold text-slate-900">❤️ Thank You Wall</h2>
           <p className="mb-1 text-center text-sm text-gray-400">Real messages from people across India</p>
           <p className="mb-8 text-center text-xs text-gray-400 flex items-center justify-center gap-1.5">
             <span className="inline-block h-1.5 w-1.5 rounded-full bg-teal-500 animate-pulse" />
@@ -355,7 +355,7 @@ export default function Home() {
                 <div className="min-w-0 flex-1">
                   <div className="flex items-center justify-between gap-2">
                     <div className="flex items-center gap-1.5">
-                      <span className="text-sm font-bold text-gray-900">{card.name}</span>
+                      <span className="text-sm font-bold text-slate-900">{card.name}</span>
                       <span className="text-base">{card.reaction}</span>
                     </div>
                     <span className="whitespace-nowrap rounded-full bg-white/80 px-2 py-0.5 text-[10px] text-gray-400 font-medium">{card.time}</span>
@@ -370,7 +370,7 @@ export default function Home() {
       </section>
 
       {/* ── APP DOWNLOAD / CTA BANNER ─────────────────────────────────────────── */}
-      <section className="relative overflow-hidden bg-gradient-to-r from-teal-600 to-teal-800 px-4 py-14 text-white">
+      <section className="relative overflow-hidden bg-gradient-to-r from-teal-700 to-teal-800 px-4 py-14 text-white">
         <div className="pointer-events-none absolute -right-20 -top-20 h-80 w-80 rounded-full bg-white/5" />
         <div className="pointer-events-none absolute -left-10 bottom-0 h-48 w-48 rounded-full bg-white/5" />
         <div className="relative z-10 mx-auto max-w-5xl flex flex-col sm:flex-row items-center justify-between gap-8">
@@ -380,7 +380,7 @@ export default function Home() {
             <p className="text-teal-100 text-base max-w-md">Thousands of Indians are already giving and receiving. Your unused item could change someone&apos;s life today.</p>
             <div className="mt-6 flex flex-wrap gap-3">
               <Link href="/create-donation">
-                <button className="rounded-xl bg-orange-400 hover:bg-orange-500 px-6 py-3 text-sm font-bold text-white shadow-lg transition">🎁 Donate an Item</button>
+                <button className="rounded-xl bg-teal-700 hover:bg-teal-800 px-6 py-3 text-sm font-bold text-white shadow-lg transition">🎁 Donate an Item</button>
               </Link>
               <Link href="/donations">
                 <button className="rounded-xl bg-white/15 hover:bg-white/25 border border-white/30 px-6 py-3 text-sm font-bold text-white transition">🔍 Find Donations</button>
