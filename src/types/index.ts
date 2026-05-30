@@ -114,6 +114,20 @@ export interface PlatformSettings {
   savedDonationsEnabled: boolean;
   maintenanceMode: boolean;
   maintenanceMessage: string;
+  // Branding
+  logoUrl: string;
+  ogImageUrl: string;
+  // Dynamic homepage content
+  trustBadges: Array<{ icon: string; label: string; enabled: boolean }>;
+  heroStats: Array<{ icon: string; label: string; val: string; sub: string }>;
+  // App links
+  androidApkUrl: string;
+  iosAppUrl: string;
+  // Contact & social
+  contactPhone: string;
+  instagramUrl: string;
+  twitterUrl: string;
+  whatsappNumber: string;
 }
 
 export interface Fundraiser {

@@ -267,8 +267,12 @@ function SidebarNav({ tab, setTab, setSidebarOpen, userName, userEmail, userImag
   );
 }
 
-// ─── Hero Image Card ─────────────────────────────────────────────────────────
-function HeroImageCard({ url, onChange }: { url: string; onChange: (url: string) => void }) {
+// ─── Generic Image Upload Card ────────────────────────────────────────────────
+function ImageUploadCard({ title, desc, url, badge, previewNode, onChange }: {
+  title: string; desc: string; url: string; badge?: string;
+  previewNode?: React.ReactNode;
+  onChange: (url: string) => void;
+}) {
   const [uploading, setUploading] = useState(false);
   const [draft, setDraft] = useState(url);
   const [error, setError] = useState('');
@@ -276,84 +280,164 @@ function HeroImageCard({ url, onChange }: { url: string; onChange: (url: string)
   const cloudName = process.env.NEXT_PUBLIC_CLOUDINARY_CLOUD_NAME;
   const uploadPreset = process.env.NEXT_PUBLIC_CLOUDINARY_UPLOAD_PRESET;
 
+  useEffect(() => { setDraft(url); }, [url]);
+
   const handleUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
     if (!file || !cloudName || !uploadPreset) return;
-    setUploading(true);
-    setError('');
+    setUploading(true); setError('');
     try {
       const form = new FormData();
       form.append('file', file);
       form.append('upload_preset', uploadPreset);
       const res = await fetch(`https://api.cloudinary.com/v1_1/${cloudName}/image/upload`, { method: 'POST', body: form });
       const data = await res.json();
-      if (data.secure_url) {
-        setDraft(data.secure_url);
-        onChange(data.secure_url);
-      } else {
-        setError('Upload failed. Try pasting a URL instead.');
-      }
-    } catch {
-      setError('Upload failed. Check your connection.');
-    } finally {
-      setUploading(false);
-    }
+      if (data.secure_url) { setDraft(data.secure_url); onChange(data.secure_url); }
+      else setError('Upload failed. Try pasting a URL instead.');
+    } catch { setError('Upload failed. Check your connection.'); }
+    finally { setUploading(false); }
   };
 
   return (
     <div className="rounded-2xl bg-white p-6 shadow space-y-4">
       <div className="flex items-center justify-between">
         <div>
-          <h2 className="font-semibold text-gray-800">🖼 Hero Section Image</h2>
-          <p className="text-xs text-gray-400 mt-0.5">This image appears as the background of the homepage hero section.</p>
+          <h2 className="font-semibold text-gray-800">{title}</h2>
+          <p className="text-xs text-gray-400 mt-0.5">{desc}</p>
         </div>
-        <span className="rounded-full bg-teal-100 px-3 py-1 text-xs font-semibold text-teal-700">Live on site</span>
+        {badge && <span className="rounded-full bg-teal-100 px-3 py-1 text-xs font-semibold text-teal-700">{badge}</span>}
       </div>
-
-      {/* Preview */}
-      <div className="relative h-40 w-full overflow-hidden rounded-xl bg-gray-100 border-2 border-dashed border-gray-200">
+      <div className="relative h-36 w-full overflow-hidden rounded-xl bg-gray-100 border-2 border-dashed border-gray-200">
         {draft ? (
           <>
             {/* eslint-disable-next-line @next/next/no-img-element */}
-            <img src={draft} alt="Hero preview" className="h-full w-full object-cover" />
-            <div className="absolute inset-0 bg-gradient-to-r from-teal-800/80 to-transparent flex items-center px-5">
-              <div>
-                <p className="text-white font-bold text-lg drop-shadow">Donate unused items.</p>
-                <p className="text-orange-300 font-bold text-lg drop-shadow">Make someone smile today.</p>
-              </div>
-            </div>
+            <img src={draft} alt="preview" className="h-full w-full object-cover" />
+            {previewNode}
             <span className="absolute top-2 right-2 rounded-full bg-green-500 px-2 py-0.5 text-[10px] font-bold text-white">Preview</span>
           </>
         ) : (
-          <div className="flex h-full items-center justify-center text-gray-400 text-sm">No image set</div>
+          <div className="flex h-full items-center justify-center gap-2 text-gray-300 text-sm">
+            <span className="text-3xl">🖼</span><span>No image set</span>
+          </div>
         )}
       </div>
-
-      {/* URL input */}
       <div>
-        <label className="block text-xs font-semibold uppercase text-gray-500 mb-1">Image URL</label>
+        <label className="block text-xs font-semibold uppercase text-gray-500 mb-1">Paste Image URL</label>
         <div className="flex gap-2">
-          <input
-            type="url"
-            value={draft}
+          <input type="url" value={draft}
             onChange={(e) => { setDraft(e.target.value); onChange(e.target.value); }}
-            placeholder="https://images.unsplash.com/..."
+            placeholder="https://..."
             className="flex-1 rounded-lg border border-gray-300 px-3 py-2 text-sm outline-none focus:ring-2 focus:ring-teal-500"
           />
+          {draft && (
+            <button onClick={() => { setDraft(''); onChange(''); }}
+              className="rounded-lg border border-gray-200 px-2.5 text-gray-400 hover:text-red-500 hover:border-red-200 transition text-sm">✕</button>
+          )}
         </div>
       </div>
-
-      {/* Upload */}
       <div>
-        <label className="block text-xs font-semibold uppercase text-gray-500 mb-1">Or Upload Photo</label>
+        <label className="block text-xs font-semibold uppercase text-gray-500 mb-1">Or Upload from Device</label>
         <label className={`inline-flex cursor-pointer items-center gap-2 rounded-lg border-2 border-dashed px-4 py-2.5 text-sm font-semibold transition ${uploading ? 'border-gray-200 text-gray-400' : 'border-teal-300 text-teal-600 hover:bg-teal-50'}`}>
-          {uploading ? '⏳ Uploading…' : '📷 Choose image from device'}
+          {uploading ? '⏳ Uploading…' : '📷 Choose image'}
           <input type="file" accept="image/*" className="hidden" disabled={uploading} onChange={handleUpload} />
         </label>
         {error && <p className="mt-1 text-xs text-red-500">{error}</p>}
       </div>
+    </div>
+  );
+}
 
-      <p className="text-xs text-gray-400">Click <strong>Save Settings</strong> below to apply the change to the live site.</p>
+// ─── Badges Editor ────────────────────────────────────────────────────────────
+type TrustBadge = { icon: string; label: string; enabled: boolean };
+
+function BadgesEditor({ title, desc, badges, onChange }: {
+  title: string; desc: string;
+  badges: TrustBadge[];
+  onChange: (b: TrustBadge[]) => void;
+}) {
+  const update = (i: number, patch: Partial<TrustBadge>) =>
+    onChange(badges.map((b, idx) => idx === i ? { ...b, ...patch } : b));
+
+  return (
+    <div className="rounded-2xl bg-white p-6 shadow space-y-3">
+      <div>
+        <h2 className="font-semibold text-gray-800">{title}</h2>
+        <p className="text-xs text-gray-400 mt-0.5">{desc}</p>
+      </div>
+      <div className="space-y-2">
+        {badges.map((b, i) => (
+          <div key={i} className={`flex items-center gap-2 rounded-xl border p-2.5 transition ${b.enabled ? 'bg-white border-gray-200' : 'bg-gray-50 border-gray-100 opacity-60'}`}>
+            <input value={b.icon} onChange={(e) => update(i, { icon: e.target.value })}
+              className="w-12 rounded-lg border border-gray-200 px-2 py-1 text-center text-sm outline-none focus:ring-2 focus:ring-teal-400"
+              placeholder="✅" maxLength={4} />
+            <input value={b.label} onChange={(e) => update(i, { label: e.target.value })}
+              className="flex-1 rounded-lg border border-gray-200 px-3 py-1.5 text-sm outline-none focus:ring-2 focus:ring-teal-400"
+              placeholder="Badge label" />
+            <div onClick={() => update(i, { enabled: !b.enabled })}
+              className={`relative inline-flex h-5 w-9 cursor-pointer items-center rounded-full transition-colors flex-shrink-0 ${b.enabled ? 'bg-teal-500' : 'bg-gray-300'}`}>
+              <span className={`inline-block h-3.5 w-3.5 rounded-full bg-white shadow transform transition-transform ${b.enabled ? 'translate-x-4' : 'translate-x-0.5'}`} />
+            </div>
+            <button onClick={() => onChange(badges.filter((_, idx) => idx !== i))}
+              className="flex-shrink-0 rounded p-1 text-gray-400 hover:text-red-500 hover:bg-red-50 transition text-base leading-none">×</button>
+          </div>
+        ))}
+      </div>
+      {badges.length < 10 && (
+        <button onClick={() => onChange([...badges, { icon: '✨', label: 'New Badge', enabled: true }])}
+          className="w-full rounded-lg border border-dashed border-teal-300 py-2 text-xs font-semibold text-teal-600 hover:bg-teal-50 transition">
+          + Add Badge
+        </button>
+      )}
+      <div className="rounded-lg bg-gray-50 border border-gray-100 px-3 py-2">
+        <p className="text-[10px] font-bold uppercase text-gray-400 mb-1">Live preview</p>
+        <div className="flex flex-wrap gap-3 text-xs text-gray-600">
+          {badges.filter((b) => b.enabled).map((b, i) => (
+            <span key={i} className="flex items-center gap-1">{b.icon} {b.label}</span>
+          ))}
+        </div>
+      </div>
+    </div>
+  );
+}
+
+// ─── Hero Stats Editor ────────────────────────────────────────────────────────
+type HeroStat = { icon: string; label: string; val: string; sub: string };
+
+function HeroStatsEditor({ stats, onChange }: {
+  stats: HeroStat[];
+  onChange: (s: HeroStat[]) => void;
+}) {
+  const update = (i: number, patch: Partial<HeroStat>) =>
+    onChange(stats.map((s, idx) => idx === i ? { ...s, ...patch } : s));
+
+  return (
+    <div className="rounded-2xl bg-white p-6 shadow space-y-3">
+      <div>
+        <h2 className="font-semibold text-gray-800">📊 Hero Section Stats</h2>
+        <p className="text-xs text-gray-400 mt-0.5">The 3 impact counters shown on the homepage hero (e.g. "1,50,000+ Items Donated").</p>
+      </div>
+      <div className="space-y-3">
+        {stats.map((s, i) => (
+          <div key={i} className="rounded-xl bg-gray-50 border border-gray-200 p-3">
+            <div className="grid grid-cols-2 gap-2 sm:grid-cols-4">
+              {[
+                { field: 'icon'  as const, label: 'Icon',     placeholder: '🎁',           bold: false },
+                { field: 'val'   as const, label: 'Value',    placeholder: '1,50,000+',    bold: true  },
+                { field: 'label' as const, label: 'Label',    placeholder: 'Items Donated', bold: false },
+                { field: 'sub'   as const, label: 'Sub-text', placeholder: 'across India', bold: false },
+              ].map(({ field, label, placeholder, bold }) => (
+                <div key={field}>
+                  <label className="block text-[10px] font-bold uppercase text-gray-400 mb-0.5">{label}</label>
+                  <input value={s[field]} onChange={(e) => update(i, { [field]: e.target.value })}
+                    placeholder={placeholder} maxLength={field === 'icon' ? 4 : 40}
+                    className={`w-full rounded-lg border border-gray-200 px-2 py-1.5 text-sm outline-none focus:ring-2 focus:ring-teal-400 ${bold ? 'font-bold' : ''} ${field === 'icon' ? 'text-center' : ''}`}
+                  />
+                </div>
+              ))}
+            </div>
+          </div>
+        ))}
+      </div>
     </div>
   );
 }
@@ -1359,29 +1443,134 @@ export default function AdminPage() {
                   <div className="flex justify-center py-16"><div className="animate-spin rounded-full h-8 w-8 border-b-2 border-teal-600" /></div>
                 ) : settingsData && (
                   <>
-                    {/* ── Hero Image Card ── */}
-                    <HeroImageCard
+                    {/* ─ Images & Branding ─ */}
+                    <div className="flex items-center gap-3">
+                      <p className="text-[11px] font-bold uppercase tracking-widest text-gray-400 whitespace-nowrap">Images &amp; Branding</p>
+                      <div className="flex-1 h-px bg-gray-200" />
+                    </div>
+
+                    <ImageUploadCard
+                      title="🖼 Hero Background Image"
+                      desc="Large background on the homepage hero section."
+                      badge="Live on site"
                       url={settingsData.heroImageUrl ?? ''}
+                      previewNode={
+                        <div className="absolute inset-0 bg-gradient-to-r from-black/70 to-transparent flex items-center px-4">
+                          <div>
+                            <p className="text-white font-bold drop-shadow text-sm">Donate unused items.</p>
+                            <p className="text-orange-300 font-bold drop-shadow text-sm">Make someone smile today.</p>
+                          </div>
+                        </div>
+                      }
                       onChange={(url) => setSettingsData({ ...settingsData, heroImageUrl: url })}
                     />
 
+                    <ImageUploadCard
+                      title="📸 OG / Social Share Image"
+                      desc="Shown when the site is shared on WhatsApp, Twitter, Facebook, etc."
+                      url={settingsData.ogImageUrl ?? ''}
+                      onChange={(url) => setSettingsData({ ...settingsData, ogImageUrl: url })}
+                    />
+
+                    <ImageUploadCard
+                      title="🏷 Platform Logo"
+                      desc="Brand logo. Used in emails and branding materials."
+                      url={settingsData.logoUrl ?? ''}
+                      onChange={(url) => setSettingsData({ ...settingsData, logoUrl: url })}
+                    />
+
+                    {/* ─ Homepage Content ─ */}
+                    <div className="flex items-center gap-3 pt-2">
+                      <p className="text-[11px] font-bold uppercase tracking-widest text-gray-400 whitespace-nowrap">Homepage Content</p>
+                      <div className="flex-1 h-px bg-gray-200" />
+                    </div>
+
+                    <BadgesEditor
+                      title="🏅 Trust Bar Badges"
+                      desc="The small badges shown below the hero. Toggle, rename, or add new ones."
+                      badges={settingsData.trustBadges ?? []}
+                      onChange={(trustBadges) => setSettingsData({ ...settingsData, trustBadges })}
+                    />
+
+                    <HeroStatsEditor
+                      stats={settingsData.heroStats ?? []}
+                      onChange={(heroStats) => setSettingsData({ ...settingsData, heroStats })}
+                    />
+
+                    {/* ─ Platform Info ─ */}
+                    <div className="flex items-center gap-3 pt-2">
+                      <p className="text-[11px] font-bold uppercase tracking-widest text-gray-400 whitespace-nowrap">Platform Info</p>
+                      <div className="flex-1 h-px bg-gray-200" />
+                    </div>
+
                     <div className="rounded-2xl bg-white p-6 shadow space-y-4">
-                      <h2 className="font-semibold text-gray-800">Platform Info</h2>
                       {[
-                        { key: 'platformName', label: 'Platform Name', type: 'text' },
-                        { key: 'tagline', label: 'Tagline', type: 'text' },
-                        { key: 'supportEmail', label: 'Support Email', type: 'email' },
-                      ].map(({ key, label, type }) => (
+                        { key: 'platformName', label: 'Platform Name', type: 'text', placeholder: 'Donow' },
+                        { key: 'tagline',      label: 'Tagline',       type: 'text', placeholder: 'Give More. Waste Less.' },
+                        { key: 'supportEmail', label: 'Support Email', type: 'email', placeholder: 'help.donow@gmail.com' },
+                      ].map(({ key, label, type, placeholder }) => (
                         <div key={key}>
                           <label className="block text-xs font-semibold uppercase text-gray-500 mb-1">{label}</label>
-                          <input type={type} value={String(settingsData[key as keyof PlatformSettings])}
+                          <input type={type} value={String(settingsData[key as keyof PlatformSettings] ?? '')}
                             onChange={(e) => setSettingsData({ ...settingsData, [key]: e.target.value })}
+                            placeholder={placeholder}
                             className="w-full rounded-lg border border-gray-300 px-4 py-2 text-sm outline-none focus:ring-2 focus:ring-teal-500" />
                         </div>
                       ))}
                     </div>
+
+                    {/* ─ App Download Links ─ */}
+                    <div className="flex items-center gap-3 pt-2">
+                      <p className="text-[11px] font-bold uppercase tracking-widest text-gray-400 whitespace-nowrap">App Download Links</p>
+                      <div className="flex-1 h-px bg-gray-200" />
+                    </div>
+
                     <div className="rounded-2xl bg-white p-6 shadow space-y-4">
-                      <h2 className="font-semibold text-gray-800">Feature Toggles</h2>
+                      <p className="text-xs text-gray-500">These URLs are used in the &ldquo;Also available on mobile&rdquo; section on the homepage.</p>
+                      {[
+                        { key: 'androidApkUrl', label: '🤖 Android APK URL', placeholder: '/donow.apk  or  https://...' },
+                        { key: 'iosAppUrl',     label: '🍎 iOS App Store URL', placeholder: 'https://apps.apple.com/...' },
+                      ].map(({ key, label, placeholder }) => (
+                        <div key={key}>
+                          <label className="block text-xs font-semibold uppercase text-gray-500 mb-1">{label}</label>
+                          <input type="url" value={String(settingsData[key as keyof PlatformSettings] ?? '')}
+                            onChange={(e) => setSettingsData({ ...settingsData, [key]: e.target.value })}
+                            placeholder={placeholder}
+                            className="w-full rounded-lg border border-gray-300 px-4 py-2 text-sm outline-none focus:ring-2 focus:ring-teal-500" />
+                        </div>
+                      ))}
+                    </div>
+
+                    {/* ─ Contact & Social ─ */}
+                    <div className="flex items-center gap-3 pt-2">
+                      <p className="text-[11px] font-bold uppercase tracking-widest text-gray-400 whitespace-nowrap">Contact &amp; Social</p>
+                      <div className="flex-1 h-px bg-gray-200" />
+                    </div>
+
+                    <div className="rounded-2xl bg-white p-6 shadow space-y-4">
+                      {[
+                        { key: 'contactPhone',   label: 'Contact Phone / WhatsApp',      placeholder: '+91 98765 43210', type: 'tel'  },
+                        { key: 'instagramUrl',   label: 'Instagram URL',                  placeholder: 'https://instagram.com/donow', type: 'url' },
+                        { key: 'twitterUrl',     label: 'Twitter / X URL',               placeholder: 'https://twitter.com/donow', type: 'url' },
+                        { key: 'whatsappNumber', label: 'WhatsApp Number (digits only)', placeholder: '919876543210', type: 'tel' },
+                      ].map(({ key, label, placeholder, type }) => (
+                        <div key={key}>
+                          <label className="block text-xs font-semibold uppercase text-gray-500 mb-1">{label}</label>
+                          <input type={type} value={String(settingsData[key as keyof PlatformSettings] ?? '')}
+                            onChange={(e) => setSettingsData({ ...settingsData, [key]: e.target.value })}
+                            placeholder={placeholder}
+                            className="w-full rounded-lg border border-gray-300 px-4 py-2 text-sm outline-none focus:ring-2 focus:ring-teal-500" />
+                        </div>
+                      ))}
+                    </div>
+
+                    {/* ─ Feature Toggles ─ */}
+                    <div className="flex items-center gap-3 pt-2">
+                      <p className="text-[11px] font-bold uppercase tracking-widest text-gray-400 whitespace-nowrap">Feature Toggles</p>
+                      <div className="flex-1 h-px bg-gray-200" />
+                    </div>
+
+                    <div className="rounded-2xl bg-white p-6 shadow space-y-4">
                       {([
                         { key: 'messagingEnabled',              label: 'Messaging',                    desc: 'Allow users to message each other' },
                         { key: 'ratingsEnabled',                label: 'Ratings',                      desc: 'Allow users to rate donors' },
@@ -1406,11 +1595,17 @@ export default function AdminPage() {
                           className="w-28 rounded-lg border border-gray-300 px-4 py-2 text-sm outline-none focus:ring-2 focus:ring-teal-500" />
                       </div>
                     </div>
+
+                    {/* ─ Maintenance ─ */}
+                    <div className="flex items-center gap-3 pt-2">
+                      <p className="text-[11px] font-bold uppercase tracking-widest text-gray-400 whitespace-nowrap">Maintenance</p>
+                      <div className="flex-1 h-px bg-gray-200" />
+                    </div>
+
                     <div className="rounded-2xl bg-white p-6 shadow space-y-4">
-                      <h2 className="font-semibold text-gray-800">🔧 Maintenance</h2>
                       <label className="flex items-center justify-between gap-4 cursor-pointer">
                         <div>
-                          <p className="text-sm font-semibold text-gray-800">Maintenance Mode</p>
+                          <p className="text-sm font-semibold text-gray-800">🔧 Maintenance Mode</p>
                           <p className="text-xs text-gray-500">Show a banner to all users (admins still have full access)</p>
                         </div>
                         <div onClick={() => setSettingsData({ ...settingsData, maintenanceMode: !settingsData.maintenanceMode })}
@@ -1427,12 +1622,14 @@ export default function AdminPage() {
                         </div>
                       )}
                     </div>
-                    <div className="flex items-center gap-3">
+
+                    {/* ─ Save ─ */}
+                    <div className="flex items-center gap-3 pb-8">
                       <button onClick={handleSaveSettings} disabled={settingsSaving}
-                        className="rounded-lg bg-teal-600 px-6 py-2.5 text-sm font-semibold text-white hover:bg-teal-700 disabled:opacity-50 transition">
-                        {settingsSaving ? 'Saving…' : 'Save Settings'}
+                        className="rounded-lg bg-teal-600 px-8 py-2.5 text-sm font-semibold text-white hover:bg-teal-700 disabled:opacity-50 transition">
+                        {settingsSaving ? 'Saving…' : '💾 Save All Settings'}
                       </button>
-                      {settingsSaved && <span className="text-sm text-green-600 font-semibold">✓ Saved</span>}
+                      {settingsSaved && <span className="text-sm text-green-600 font-semibold">✓ Saved successfully!</span>}
                     </div>
                   </>
                 )}

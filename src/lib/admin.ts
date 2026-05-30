@@ -160,7 +160,7 @@ const DEFAULT_SETTINGS: PlatformSettings = {
   platformName: 'Donow',
   tagline: 'Give More. Waste Less.',
   supportEmail: 'help.donow@gmail.com',
-  heroImageUrl: 'https://images.unsplash.com/photo-1770908959158-aa1b885fa902?w=1600&q=85&fit=crop&crop=center',
+  heroImageUrl: '/hero.jpg',
   messagingEnabled: true,
   requireVerificationForPosting: false,
   maxDonationsPerDay: 5,
@@ -168,6 +168,27 @@ const DEFAULT_SETTINGS: PlatformSettings = {
   savedDonationsEnabled: true,
   maintenanceMode: false,
   maintenanceMessage: '',
+  logoUrl: '',
+  ogImageUrl: '',
+  trustBadges: [
+    { icon: '✅', label: 'Verified Users', enabled: true },
+    { icon: '🔒', label: '100% Secure', enabled: true },
+    { icon: '🚫', label: 'Zero Commission', enabled: true },
+    { icon: '📱', label: 'Available on App', enabled: true },
+    { icon: '🍀', label: 'Made in India', enabled: true },
+    { icon: '⚡', label: 'Instant Connect', enabled: true },
+  ],
+  heroStats: [
+    { icon: '🎁', label: 'Items Donated', val: '1,50,000+', sub: 'across India' },
+    { icon: '😊', label: 'Happy Recipients', val: '1,00,000+', sub: 'lives touched' },
+    { icon: '📍', label: 'Cities Covered', val: '500+', sub: '28 states' },
+  ],
+  androidApkUrl: '/donow.apk',
+  iosAppUrl: '',
+  contactPhone: '',
+  instagramUrl: '',
+  twitterUrl: '',
+  whatsappNumber: '',
 };
 
 export async function getPlatformSettings(): Promise<PlatformSettings> {
@@ -186,6 +207,16 @@ export async function getPlatformSettings(): Promise<PlatformSettings> {
     savedDonationsEnabled: data.savedDonationsEnabled ?? true,
     maintenanceMode: data.maintenanceMode ?? false,
     maintenanceMessage: data.maintenanceMessage ?? '',
+    logoUrl: data.logoUrl ?? '',
+    ogImageUrl: data.ogImageUrl ?? '',
+    trustBadges: data.trustBadges ?? DEFAULT_SETTINGS.trustBadges,
+    heroStats: data.heroStats ?? DEFAULT_SETTINGS.heroStats,
+    androidApkUrl: data.androidApkUrl ?? DEFAULT_SETTINGS.androidApkUrl,
+    iosAppUrl: data.iosAppUrl ?? '',
+    contactPhone: data.contactPhone ?? '',
+    instagramUrl: data.instagramUrl ?? '',
+    twitterUrl: data.twitterUrl ?? '',
+    whatsappNumber: data.whatsappNumber ?? '',
   };
 }
 

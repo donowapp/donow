@@ -7,9 +7,30 @@ import { getFeaturedDonations } from '@/lib/donations';
 import { getPlatformSettings } from '@/lib/admin';
 import { getPublicStats, PublicStats } from '@/lib/stats';
 import { CATEGORIES } from '@/constants/config';
-import { Donation } from '@/types';
+import { Donation, PlatformSettings } from '@/types';
 
-const DEFAULT_HERO = 'https://images.unsplash.com/photo-1770908959158-aa1b885fa902?w=1600&q=85&fit=crop&crop=center';
+const DEFAULT_HERO = '/hero.jpg';
+
+const DEFAULT_TRUST_BADGES = [
+  { icon: '✅', label: 'Verified Users', enabled: true },
+  { icon: '🔒', label: '100% Secure', enabled: true },
+  { icon: '🚫', label: 'Zero Commission', enabled: true },
+  { icon: '📱', label: 'Available on App', enabled: true },
+  { icon: '🍀', label: 'Made in India', enabled: true },
+  { icon: '⚡', label: 'Instant Connect', enabled: true },
+];
+
+const DEFAULT_HERO_STATS = [
+  { icon: '🎁', label: 'Items Donated', val: '1,50,000+', sub: 'across India' },
+  { icon: '😊', label: 'Happy Recipients', val: '1,00,000+', sub: 'lives touched' },
+  { icon: '📍', label: 'Cities Covered', val: '500+', sub: '28 states' },
+];
+
+const HERO_STAT_COLORS = [
+  { color: 'from-orange-400/25 to-orange-500/15', border: 'border-orange-300/30' },
+  { color: 'from-teal-400/25 to-teal-500/15',     border: 'border-teal-300/30'   },
+  { color: 'from-blue-400/25 to-blue-500/15',     border: 'border-blue-300/30'   },
+];
 
 function getCategoryName(id: Donation['category']) {
   return CATEGORIES.find((c) => c.id === id)?.name ?? 'Other';
@@ -53,6 +74,7 @@ export default function Home() {
   const [featured, setFeatured] = useState<Donation[]>([]);
   const [loadingFeatured, setLoadingFeatured] = useState(true);
   const [heroImage, setHeroImage] = useState(DEFAULT_HERO);
+  const [siteSettings, setSiteSettings] = useState<PlatformSettings | null>(null);
   const [stats, setStats] = useState<PublicStats | null>(null);
   const [storyOffset, setStoryOffset] = useState(0);
   const [cardOffset, setCardOffset] = useState(0);
@@ -60,7 +82,7 @@ export default function Home() {
 
   useEffect(() => {
     getFeaturedDonations(8).then(setFeatured).catch(() => {}).finally(() => setLoadingFeatured(false));
-    getPlatformSettings().then((s) => { if (s.heroImageUrl) setHeroImage(s.heroImageUrl); }).catch(() => {});
+    getPlatformSettings().then((s) => { if (s.heroImageUrl) setHeroImage(s.heroImageUrl); setSiteSettings(s); }).catch(() => {});
     getPublicStats().then(setStats).catch(() => {});
   }, []);
 
@@ -83,12 +105,14 @@ export default function Home() {
       <section className="relative overflow-hidden text-white" style={{ minHeight: '580px' }}>
         {/* eslint-disable-next-line @next/next/no-img-element */}
         <img src={heroImage} alt="" className="absolute inset-0 h-full w-full object-cover" style={{ objectPosition: '70% center' }} />
-        <div className="absolute inset-0 bg-gradient-to-r from-teal-900/95 via-teal-800/85 to-teal-600/20" />
-        <div className="absolute bottom-0 left-0 right-0 h-28 bg-gradient-to-t from-teal-900/50 to-transparent" />
+        <div className="absolute inset-0 bg-gradient-to-r from-black/75 via-black/45 to-transparent" />
+        <div className="absolute bottom-0 left-0 right-0 h-24 bg-gradient-to-t from-black/40 to-transparent" />
+        {/* cover Gemini watermark bottom-right */}
+        <div className="absolute bottom-0 right-0 w-20 h-20 bg-gradient-to-tl from-black/60 to-transparent pointer-events-none" />
         <div className="relative z-10 mx-auto max-w-5xl px-4 py-20 sm:py-24">
           <div className="max-w-xl">
             <span className="mb-5 inline-flex items-center gap-2 rounded-full bg-white/15 backdrop-blur-sm border border-white/20 px-4 py-1.5 text-xs font-bold uppercase tracking-widest">
-              ✦ Free · No middleman · Direct impact
+              Free · No middleman · Direct impact
             </span>
             <h1 className="text-5xl sm:text-6xl font-extrabold leading-tight tracking-tight drop-shadow-lg">
               Donate unused items.<br />
@@ -107,20 +131,19 @@ export default function Home() {
             </div>
             {/* Live stats */}
             <div className="mt-10 flex flex-wrap gap-3">
-              {[
-                { icon: '🎁', label: 'Items Donated',    val: '1,50,000+', sub: 'across India',  color: 'from-orange-400/25 to-orange-500/15', border: 'border-orange-300/30' },
-                { icon: '😊', label: 'Happy Recipients', val: '1,00,000+', sub: 'lives touched', color: 'from-teal-400/25 to-teal-500/15',     border: 'border-teal-300/30'   },
-                { icon: '📍', label: 'Cities Covered',   val: '500+',      sub: '28 states',     color: 'from-blue-400/25 to-blue-500/15',     border: 'border-blue-300/30'   },
-              ].map((s) => (
-                <div key={s.label} className={`flex items-center gap-3 rounded-2xl bg-gradient-to-br ${s.color} backdrop-blur-sm border ${s.border} px-4 py-3`}>
-                  <span className="text-2xl">{s.icon}</span>
-                  <div>
-                    <p className="text-xl font-extrabold leading-none text-white">{s.val}</p>
-                    <p className="text-xs font-semibold text-white/90 mt-0.5">{s.label}</p>
-                    <p className="text-[10px] text-white/60">{s.sub}</p>
+              {(siteSettings?.heroStats ?? DEFAULT_HERO_STATS).map((s, i) => {
+                const { color, border } = HERO_STAT_COLORS[i % 3];
+                return (
+                  <div key={s.label} className={`flex items-center gap-3 rounded-2xl bg-gradient-to-br ${color} backdrop-blur-sm border ${border} px-4 py-3`}>
+                    <span className="text-2xl">{s.icon}</span>
+                    <div>
+                      <p className="text-xl font-extrabold leading-none text-white">{s.val}</p>
+                      <p className="text-xs font-semibold text-white/90 mt-0.5">{s.label}</p>
+                      <p className="text-[10px] text-white/60">{s.sub}</p>
+                    </div>
                   </div>
-                </div>
-              ))}
+                );
+              })}
             </div>
           </div>
         </div>
@@ -129,14 +152,7 @@ export default function Home() {
       {/* ── TRUST BAR ────────────────────────────────────────────────────────── */}
       <div className="bg-white border-b border-gray-100 px-4 py-3">
         <div className="mx-auto max-w-5xl flex flex-wrap items-center justify-center gap-6 text-xs font-semibold text-gray-500">
-          {[
-            ['✅', 'Verified Users'],
-            ['🔒', '100% Secure'],
-            ['🚫', 'Zero Commission'],
-            ['📱', 'Available on App'],
-            ['🍀', 'Made in India'],
-            ['⚡', 'Instant Connect'],
-          ].map(([icon, label]) => (
+          {(siteSettings?.trustBadges ?? DEFAULT_TRUST_BADGES).filter((b) => b.enabled).map(({ icon, label }) => (
             <span key={label} className="flex items-center gap-1.5">{icon} {label}</span>
           ))}
         </div>
@@ -375,7 +391,7 @@ export default function Home() {
             <p className="text-sm text-teal-200 mb-3 font-semibold">Also available on mobile</p>
             <div className="flex gap-3 justify-center">
               <a
-                href="/donow.apk"
+                href={siteSettings?.androidApkUrl || '/donow.apk'}
                 download="Donow.apk"
                 className="rounded-2xl bg-white/10 border border-white/20 px-5 py-3 text-center hover:bg-white/20 transition flex flex-col items-center gap-1"
               >
