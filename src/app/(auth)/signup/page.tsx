@@ -58,18 +58,18 @@ export default function SignupPage() {
 
   if (verificationSent) {
     return (
-      <div className="min-h-screen bg-gradient-to-br from-sky-50 to-blue-50 flex items-center justify-center py-12 px-4">
+      <div className="min-h-screen bg-gradient-to-br from-teal-50 to-blue-50 flex items-center justify-center py-12 px-4">
         <div className="max-w-md w-full bg-white rounded-lg shadow-lg p-8 text-center">
           <span className="text-5xl">📧</span>
           <h1 className="mt-4 text-2xl font-bold text-gray-900">Check your email</h1>
           <p className="mt-2 text-gray-600">
             We sent a verification link to{' '}
-            <span className="font-semibold text-sky-600">{form.email}</span>
+            <span className="font-semibold text-teal-600">{form.email}</span>
           </p>
           <p className="mt-1 text-sm text-gray-500">You can still use the app while waiting.</p>
 
           {resendMessage && (
-            <p className="mt-4 text-sm text-sky-700 bg-sky-50 rounded px-3 py-2">{resendMessage}</p>
+            <p className="mt-4 text-sm text-teal-700 bg-teal-50 rounded px-3 py-2">{resendMessage}</p>
           )}
 
           <div className="mt-6 flex flex-col gap-3">
@@ -79,7 +79,7 @@ export default function SignupPage() {
             <button
               onClick={handleResend}
               disabled={resendLoading}
-              className="text-sm text-sky-600 hover:underline disabled:opacity-50"
+              className="text-sm text-teal-600 hover:underline disabled:opacity-50"
             >
               {resendLoading ? 'Sending…' : "Didn't receive it? Resend"}
             </button>
@@ -90,9 +90,9 @@ export default function SignupPage() {
   }
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-sky-50 to-blue-50 flex items-center justify-center py-12 px-4">
+    <div className="min-h-screen bg-gradient-to-br from-teal-50 to-blue-50 flex items-center justify-center py-12 px-4">
       <div className="max-w-md w-full bg-white rounded-lg shadow-lg p-8">
-        <h1 className="text-3xl font-bold text-sky-600 mb-1">Create Account</h1>
+        <h1 className="text-3xl font-bold text-teal-600 mb-1">Create Account</h1>
         <p className="text-gray-500 mb-6 text-sm">Join Donow and start donating today</p>
 
         {error && (
@@ -144,7 +144,7 @@ export default function SignupPage() {
 
         <p className="mt-4 text-center text-sm text-gray-600">
           Already have an account?{' '}
-          <Link href="/login" className="text-sky-600 font-semibold hover:underline">
+          <Link href="/login" className="text-teal-600 font-semibold hover:underline">
             Login
           </Link>
         </p>

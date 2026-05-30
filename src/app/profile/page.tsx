@@ -118,7 +118,7 @@ export default function ProfilePage() {
   if (checkingAuth || loading) {
     return (
       <div className="min-h-[60vh] flex items-center justify-center">
-        <div className="inline-block animate-spin rounded-full h-10 w-10 border-b-2 border-sky-600" />
+        <div className="inline-block animate-spin rounded-full h-10 w-10 border-b-2 border-teal-600" />
       </div>
     );
   }
@@ -154,17 +154,17 @@ export default function ProfilePage() {
                 <img
                   src={avatarSrc}
                   alt="Profile"
-                  className="w-24 h-24 rounded-full object-cover border-4 border-sky-100"
+                  className="w-24 h-24 rounded-full object-cover border-4 border-teal-100"
                 />
               ) : (
-                <div className="w-24 h-24 rounded-full bg-sky-100 flex items-center justify-center text-3xl font-bold text-sky-600">
+                <div className="w-24 h-24 rounded-full bg-teal-100 flex items-center justify-center text-3xl font-bold text-teal-600">
                   {initials}
                 </div>
               )}
               <button
                 type="button"
                 onClick={() => fileRef.current?.click()}
-                className="absolute bottom-0 right-0 bg-sky-600 text-white rounded-full p-1.5 hover:bg-sky-700 transition shadow"
+                className="absolute bottom-0 right-0 bg-teal-600 text-white rounded-full p-1.5 hover:bg-teal-700 transition shadow"
                 aria-label="Change photo"
               >
                 <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -201,7 +201,7 @@ export default function ProfilePage() {
               onChange={set('bio')}
               rows={3}
               placeholder="A short bio about yourself (optional)"
-              className="w-full rounded-lg border border-gray-300 px-4 py-2 outline-none transition focus:border-transparent focus:ring-2 focus:ring-sky-500"
+              className="w-full rounded-lg border border-gray-300 px-4 py-2 outline-none transition focus:border-transparent focus:ring-2 focus:ring-teal-500"
             />
           </div>
 

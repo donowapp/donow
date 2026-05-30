@@ -77,7 +77,7 @@ export default function MyDonationsPage() {
   if (checkingAuth || loading) {
     return (
       <div className="min-h-[60vh] flex items-center justify-center">
-        <div className="inline-block animate-spin rounded-full h-10 w-10 border-b-2 border-sky-600" />
+        <div className="inline-block animate-spin rounded-full h-10 w-10 border-b-2 border-teal-600" />
       </div>
     );
   }
@@ -105,7 +105,7 @@ export default function MyDonationsPage() {
 
         {fetching ? (
           <div className="flex justify-center py-20">
-            <div className="inline-block animate-spin rounded-full h-10 w-10 border-b-2 border-sky-600" />
+            <div className="inline-block animate-spin rounded-full h-10 w-10 border-b-2 border-teal-600" />
           </div>
         ) : donations.length === 0 ? (
           <div className="flex flex-col items-center justify-center rounded-lg bg-white py-20 shadow text-center">

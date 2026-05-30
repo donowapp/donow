@@ -22,7 +22,7 @@ function Initials({ name }: { name: string }) {
     ? parts[0][0] + parts[parts.length - 1][0]
     : name.slice(0, 2);
   return (
-    <div className="flex h-11 w-11 flex-shrink-0 items-center justify-center rounded-full bg-sky-100 text-sm font-bold text-sky-700 uppercase">
+    <div className="flex h-11 w-11 flex-shrink-0 items-center justify-center rounded-full bg-teal-100 text-sm font-bold text-teal-700 uppercase">
       {letters}
     </div>
   );
@@ -53,7 +53,7 @@ export default function MessagesPage() {
   if (checkingAuth || loading) {
     return (
       <div className="min-h-[60vh] flex items-center justify-center">
-        <div className="inline-block animate-spin rounded-full h-10 w-10 border-b-2 border-sky-600" />
+        <div className="inline-block animate-spin rounded-full h-10 w-10 border-b-2 border-teal-600" />
       </div>
     );
   }
@@ -72,7 +72,7 @@ export default function MessagesPage() {
             <p className="mt-2 text-gray-500">
               Browse donations and message a donor to get started.
             </p>
-            <Link href="/donations" className="mt-6 inline-block rounded-lg bg-sky-600 px-5 py-2.5 text-sm font-semibold text-white hover:bg-sky-700">
+            <Link href="/donations" className="mt-6 inline-block rounded-lg bg-teal-600 px-5 py-2.5 text-sm font-semibold text-white hover:bg-teal-700">
               Browse Donations
             </Link>
           </div>
@@ -98,14 +98,14 @@ export default function MessagesPage() {
                         {timeAgo(conv.lastMessageAt)}
                       </span>
                     </div>
-                    <p className="text-xs text-sky-600 font-medium truncate">{conv.donationTitle}</p>
+                    <p className="text-xs text-teal-600 font-medium truncate">{conv.donationTitle}</p>
                     <p className={`mt-0.5 text-sm truncate ${unread > 0 ? 'font-semibold text-gray-900' : 'text-gray-500'}`}>
                       {conv.lastMessage || 'No messages yet'}
                     </p>
                   </div>
 
                   {unread > 0 && (
-                    <span className="flex-shrink-0 flex h-5 w-5 items-center justify-center rounded-full bg-sky-600 text-xs font-bold text-white">
+                    <span className="flex-shrink-0 flex h-5 w-5 items-center justify-center rounded-full bg-teal-600 text-xs font-bold text-white">
                       {unread > 9 ? '9+' : unread}
                     </span>
                   )}

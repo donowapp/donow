@@ -62,7 +62,7 @@ export default function NotificationsPage() {
   if (checkingAuth || loading) {
     return (
       <div className="min-h-[60vh] flex items-center justify-center">
-        <div className="inline-block animate-spin rounded-full h-10 w-10 border-b-2 border-sky-600" />
+        <div className="inline-block animate-spin rounded-full h-10 w-10 border-b-2 border-teal-600" />
       </div>
     );
   }
@@ -89,7 +89,7 @@ export default function NotificationsPage() {
                 key={n.id}
                 onClick={() => handleClick(n)}
                 className={`w-full flex items-start gap-4 rounded-lg p-4 shadow text-left transition hover:shadow-md ${
-                  n.isRead ? 'bg-white' : 'bg-sky-50 border border-sky-100'
+                  n.isRead ? 'bg-white' : 'bg-teal-50 border border-teal-100'
                 }`}
               >
                 <span className="text-2xl flex-shrink-0 mt-0.5">{TYPE_ICONS[n.type]}</span>
@@ -103,7 +103,7 @@ export default function NotificationsPage() {
                   <p className="mt-0.5 text-sm text-gray-500 truncate">{n.body}</p>
                 </div>
                 {!n.isRead && (
-                  <span className="flex-shrink-0 mt-2 h-2 w-2 rounded-full bg-sky-500" />
+                  <span className="flex-shrink-0 mt-2 h-2 w-2 rounded-full bg-teal-500" />
                 )}
               </button>
             ))}

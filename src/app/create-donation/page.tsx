@@ -182,7 +182,7 @@ export default function CreateDonationPage() {
                   key={hint}
                   type="button"
                   onClick={() => setFormData((f) => ({ ...f, title: hint }))}
-                  className="rounded-full border border-sky-200 bg-sky-50 px-3 py-1 text-xs font-medium text-sky-700 transition hover:bg-sky-100"
+                  className="rounded-full border border-teal-200 bg-teal-50 px-3 py-1 text-xs font-medium text-teal-700 transition hover:bg-teal-100"
                 >
                   {hint}
                 </button>
@@ -200,7 +200,7 @@ export default function CreateDonationPage() {
                 setFormData({ ...formData, description: event.target.value })
               }
               rows={5}
-              className="w-full rounded-lg border border-gray-300 px-4 py-2 outline-none transition focus:border-transparent focus:ring-2 focus:ring-sky-500"
+              className="w-full rounded-lg border border-gray-300 px-4 py-2 outline-none transition focus:border-transparent focus:ring-2 focus:ring-teal-500"
               placeholder="Share item size, condition, pickup timing, and anything the receiver should know."
             />
             {validationErrors.description && (
@@ -223,7 +223,7 @@ export default function CreateDonationPage() {
                     category: event.target.value as Donation['category'],
                   })
                 }
-                className="w-full rounded-lg border border-gray-300 px-4 py-2 outline-none transition focus:border-transparent focus:ring-2 focus:ring-sky-500"
+                className="w-full rounded-lg border border-gray-300 px-4 py-2 outline-none transition focus:border-transparent focus:ring-2 focus:ring-teal-500"
               >
                 {CATEGORIES.map((category) => (
                   <option key={category.id} value={category.id}>
@@ -245,7 +245,7 @@ export default function CreateDonationPage() {
                     condition: event.target.value as Donation['condition'],
                   })
                 }
-                className="w-full rounded-lg border border-gray-300 px-4 py-2 capitalize outline-none transition focus:border-transparent focus:ring-2 focus:ring-sky-500"
+                className="w-full rounded-lg border border-gray-300 px-4 py-2 capitalize outline-none transition focus:border-transparent focus:ring-2 focus:ring-teal-500"
               >
                 {CONDITIONS.map((condition) => (
                   <option key={condition} value={condition}>
@@ -287,7 +287,7 @@ export default function CreateDonationPage() {
               accept="image/*"
               multiple
               onChange={handleImageChange}
-              className="w-full rounded-lg border border-gray-300 px-4 py-2 text-sm outline-none transition file:mr-4 file:rounded file:border-0 file:bg-sky-50 file:px-3 file:py-2 file:text-sm file:font-semibold file:text-sky-700 focus:border-transparent focus:ring-2 focus:ring-sky-500"
+              className="w-full rounded-lg border border-gray-300 px-4 py-2 text-sm outline-none transition file:mr-4 file:rounded file:border-0 file:bg-teal-50 file:px-3 file:py-2 file:text-sm file:font-semibold file:text-teal-700 focus:border-transparent focus:ring-2 focus:ring-teal-500"
             />
             <p className="mt-1 text-sm text-gray-500">
               Upload up to {MAX_IMAGES} images.

@@ -54,9 +54,9 @@ export default function LoginPage() {
   };
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-sky-50 to-blue-50 flex items-center justify-center py-12 px-4">
+    <div className="min-h-screen bg-gradient-to-br from-teal-50 to-blue-50 flex items-center justify-center py-12 px-4">
       <div className="max-w-md w-full bg-white rounded-2xl shadow-lg p-8">
-        <h1 className="text-3xl font-bold text-sky-600 mb-1">Welcome Back</h1>
+        <h1 className="text-3xl font-bold text-teal-600 mb-1">Welcome Back</h1>
         <p className="text-gray-500 text-sm mb-6">Sign in to your Donow account</p>
 
         {error && (
@@ -66,7 +66,7 @@ export default function LoginPage() {
         )}
 
         {resendMessage && (
-          <div className="mb-4 rounded-lg border border-sky-200 bg-sky-50 px-4 py-3 text-sky-700 text-sm">
+          <div className="mb-4 rounded-lg border border-teal-200 bg-teal-50 px-4 py-3 text-teal-700 text-sm">
             {resendMessage}
           </div>
         )}
@@ -92,7 +92,7 @@ export default function LoginPage() {
               required
             />
             <div className="mt-1 text-right">
-              <Link href="/forgot-password" className="text-xs text-sky-600 hover:underline">
+              <Link href="/forgot-password" className="text-xs text-teal-600 hover:underline">
                 Forgot password?
               </Link>
             </div>
@@ -111,7 +111,7 @@ export default function LoginPage() {
             <button
               onClick={handleResend}
               disabled={resendLoading}
-              className="text-sm text-sky-600 hover:underline disabled:opacity-50"
+              className="text-sm text-teal-600 hover:underline disabled:opacity-50"
             >
               {resendLoading ? 'Sending…' : "Didn't get it? Resend"}
             </button>
@@ -120,7 +120,7 @@ export default function LoginPage() {
 
         <p className="mt-6 text-center text-sm text-gray-600">
           Don&apos;t have an account?{' '}
-          <Link href="/signup" className="text-sky-600 font-semibold hover:underline">
+          <Link href="/signup" className="text-teal-600 font-semibold hover:underline">
             Sign up
           </Link>
         </p>
