@@ -267,6 +267,97 @@ function SidebarNav({ tab, setTab, setSidebarOpen, userName, userEmail, userImag
   );
 }
 
+// ─── Hero Image Card ─────────────────────────────────────────────────────────
+function HeroImageCard({ url, onChange }: { url: string; onChange: (url: string) => void }) {
+  const [uploading, setUploading] = useState(false);
+  const [draft, setDraft] = useState(url);
+  const [error, setError] = useState('');
+
+  const cloudName = process.env.NEXT_PUBLIC_CLOUDINARY_CLOUD_NAME;
+  const uploadPreset = process.env.NEXT_PUBLIC_CLOUDINARY_UPLOAD_PRESET;
+
+  const handleUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (!file || !cloudName || !uploadPreset) return;
+    setUploading(true);
+    setError('');
+    try {
+      const form = new FormData();
+      form.append('file', file);
+      form.append('upload_preset', uploadPreset);
+      const res = await fetch(`https://api.cloudinary.com/v1_1/${cloudName}/image/upload`, { method: 'POST', body: form });
+      const data = await res.json();
+      if (data.secure_url) {
+        setDraft(data.secure_url);
+        onChange(data.secure_url);
+      } else {
+        setError('Upload failed. Try pasting a URL instead.');
+      }
+    } catch {
+      setError('Upload failed. Check your connection.');
+    } finally {
+      setUploading(false);
+    }
+  };
+
+  return (
+    <div className="rounded-2xl bg-white p-6 shadow space-y-4">
+      <div className="flex items-center justify-between">
+        <div>
+          <h2 className="font-semibold text-gray-800">🖼 Hero Section Image</h2>
+          <p className="text-xs text-gray-400 mt-0.5">This image appears as the background of the homepage hero section.</p>
+        </div>
+        <span className="rounded-full bg-teal-100 px-3 py-1 text-xs font-semibold text-teal-700">Live on site</span>
+      </div>
+
+      {/* Preview */}
+      <div className="relative h-40 w-full overflow-hidden rounded-xl bg-gray-100 border-2 border-dashed border-gray-200">
+        {draft ? (
+          <>
+            {/* eslint-disable-next-line @next/next/no-img-element */}
+            <img src={draft} alt="Hero preview" className="h-full w-full object-cover" />
+            <div className="absolute inset-0 bg-gradient-to-r from-teal-800/80 to-transparent flex items-center px-5">
+              <div>
+                <p className="text-white font-bold text-lg drop-shadow">Donate unused items.</p>
+                <p className="text-orange-300 font-bold text-lg drop-shadow">Make someone smile today.</p>
+              </div>
+            </div>
+            <span className="absolute top-2 right-2 rounded-full bg-green-500 px-2 py-0.5 text-[10px] font-bold text-white">Preview</span>
+          </>
+        ) : (
+          <div className="flex h-full items-center justify-center text-gray-400 text-sm">No image set</div>
+        )}
+      </div>
+
+      {/* URL input */}
+      <div>
+        <label className="block text-xs font-semibold uppercase text-gray-500 mb-1">Image URL</label>
+        <div className="flex gap-2">
+          <input
+            type="url"
+            value={draft}
+            onChange={(e) => { setDraft(e.target.value); onChange(e.target.value); }}
+            placeholder="https://images.unsplash.com/..."
+            className="flex-1 rounded-lg border border-gray-300 px-3 py-2 text-sm outline-none focus:ring-2 focus:ring-teal-500"
+          />
+        </div>
+      </div>
+
+      {/* Upload */}
+      <div>
+        <label className="block text-xs font-semibold uppercase text-gray-500 mb-1">Or Upload Photo</label>
+        <label className={`inline-flex cursor-pointer items-center gap-2 rounded-lg border-2 border-dashed px-4 py-2.5 text-sm font-semibold transition ${uploading ? 'border-gray-200 text-gray-400' : 'border-teal-300 text-teal-600 hover:bg-teal-50'}`}>
+          {uploading ? '⏳ Uploading…' : '📷 Choose image from device'}
+          <input type="file" accept="image/*" className="hidden" disabled={uploading} onChange={handleUpload} />
+        </label>
+        {error && <p className="mt-1 text-xs text-red-500">{error}</p>}
+      </div>
+
+      <p className="text-xs text-gray-400">Click <strong>Save Settings</strong> below to apply the change to the live site.</p>
+    </div>
+  );
+}
+
 // ─── Main Page ────────────────────────────────────────────────────────────────
 export default function AdminPage() {
   const router = useRouter();
@@ -1268,6 +1359,12 @@ export default function AdminPage() {
                   <div className="flex justify-center py-16"><div className="animate-spin rounded-full h-8 w-8 border-b-2 border-teal-600" /></div>
                 ) : settingsData && (
                   <>
+                    {/* ── Hero Image Card ── */}
+                    <HeroImageCard
+                      url={settingsData.heroImageUrl ?? ''}
+                      onChange={(url) => setSettingsData({ ...settingsData, heroImageUrl: url })}
+                    />
+
                     <div className="rounded-2xl bg-white p-6 shadow space-y-4">
                       <h2 className="font-semibold text-gray-800">Platform Info</h2>
                       {[

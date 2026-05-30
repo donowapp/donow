@@ -4,8 +4,11 @@ import { useEffect, useState } from 'react';
 import Link from 'next/link';
 import { Button } from '@/components/common/Button';
 import { getFeaturedDonations } from '@/lib/donations';
+import { getPlatformSettings } from '@/lib/admin';
 import { CATEGORIES } from '@/constants/config';
 import { Donation } from '@/types';
+
+const DEFAULT_HERO = 'https://images.unsplash.com/photo-1770908959158-aa1b885fa902?w=1600&q=85&fit=crop&crop=center';
 
 function getCategoryName(id: Donation['category']) {
   return CATEGORIES.find((c) => c.id === id)?.name ?? 'Other';
@@ -14,12 +17,17 @@ function getCategoryName(id: Donation['category']) {
 export default function Home() {
   const [featured, setFeatured] = useState<Donation[]>([]);
   const [loadingFeatured, setLoadingFeatured] = useState(true);
+  const [heroImage, setHeroImage] = useState(DEFAULT_HERO);
 
   useEffect(() => {
     getFeaturedDonations(8)
       .then(setFeatured)
       .catch(() => {})
       .finally(() => setLoadingFeatured(false));
+
+    getPlatformSettings()
+      .then((s) => { if (s.heroImageUrl) setHeroImage(s.heroImageUrl); })
+      .catch(() => {});
   }, []);
 
   return (
@@ -29,7 +37,7 @@ export default function Home() {
         {/* Full background image — happy blessed lady */}
         {/* eslint-disable-next-line @next/next/no-img-element */}
         <img
-          src="https://images.unsplash.com/photo-1770908959158-aa1b885fa902?w=1600&q=85&fit=crop&crop=center"
+          src={heroImage}
           alt=""
           className="absolute inset-0 h-full w-full object-cover object-center"
           style={{ objectPosition: '70% center' }}

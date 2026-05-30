@@ -106,6 +106,7 @@ export interface PlatformSettings {
   platformName: string;
   tagline: string;
   supportEmail: string;
+  heroImageUrl: string;
   messagingEnabled: boolean;
   requireVerificationForPosting: boolean;
   maxDonationsPerDay: number;
