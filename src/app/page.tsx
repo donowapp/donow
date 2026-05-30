@@ -29,7 +29,7 @@ export default function Home() {
         {/* Full background image — happy blessed lady */}
         {/* eslint-disable-next-line @next/next/no-img-element */}
         <img
-          src="https://images.unsplash.com/photo-1508214751196-bcfd4ca60f91?w=1600&q=85&fit=crop&crop=center"
+          src="https://images.unsplash.com/photo-1583195764036-6dc248ac07d9?w=1600&q=85&fit=crop&crop=center"
           alt=""
           className="absolute inset-0 h-full w-full object-cover object-center"
           style={{ objectPosition: '70% center' }}
@@ -144,7 +144,7 @@ export default function Home() {
           <div className="grid grid-cols-1 gap-6 sm:grid-cols-3">
             {[
               {
-                img: 'https://images.unsplash.com/photo-1531746020798-e6953c6e8e04?w=500&q=80&fit=crop',
+                img: 'https://images.unsplash.com/photo-1609010697446-11f2155278f0?w=500&q=80&fit=crop',
                 quote: 'I got a warm jacket just before winter. My children and I are so grateful. May God bless you!',
                 name: 'Priya S.',
                 city: 'Delhi',
@@ -152,7 +152,7 @@ export default function Home() {
                 emoji: '😊',
               },
               {
-                img: 'https://images.unsplash.com/photo-1607746882042-944635dfe10e?w=500&q=80&fit=crop',
+                img: 'https://images.unsplash.com/photo-1618517351616-38fb9c5bdc75?w=500&q=80&fit=crop',
                 quote: 'The books helped my son prepare for his board exams. Thank you from the bottom of my heart.',
                 name: 'Ramesh K.',
                 city: 'Bangalore',
@@ -160,7 +160,7 @@ export default function Home() {
                 emoji: '🥹',
               },
               {
-                img: 'https://images.unsplash.com/photo-1488426862026-3ee34a7d66df?w=500&q=80&fit=crop',
+                img: 'https://images.unsplash.com/photo-1512361436605-a484bdb34b5f?w=500&q=80&fit=crop',
                 quote: 'We received a wheelchair for my mother. Words cannot describe how much this means to us.',
                 name: 'Sunita M.',
                 city: 'Mumbai',
@@ -202,37 +202,37 @@ export default function Home() {
           <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
             {[
               {
-                photo: 'https://images.unsplash.com/photo-1534528741775-53994a69daeb?w=120&q=80&fit=crop&crop=face',
+                photo: 'https://images.unsplash.com/photo-1590650153855-d9e808231d41?w=120&q=80&fit=crop&crop=face',
                 name: 'Anita R.', city: 'Jaipur',
                 msg: 'Just received the baby clothes. Perfect timing! My newborn is so cozy now. 🙏',
                 time: '2m ago', color: 'bg-pink-50 border-pink-200', reaction: '🥰',
               },
               {
-                photo: 'https://images.unsplash.com/photo-1500648767791-00dcc994a43e?w=120&q=80&fit=crop&crop=face',
+                photo: 'https://images.unsplash.com/photo-1607746882042-944635dfe10e?w=120&q=80&fit=crop&crop=face',
                 name: 'Mohammed I.', city: 'Hyderabad',
                 msg: 'The study table arrived in great condition. My daughter finally has a proper place to study!',
                 time: '15m ago', color: 'bg-blue-50 border-blue-200', reaction: '😊',
               },
               {
-                photo: 'https://images.unsplash.com/photo-1508214751196-bcfd4ca60f91?w=120&q=80&fit=crop&crop=face',
+                photo: 'https://images.unsplash.com/photo-1583195764036-6dc248ac07d9?w=120&q=80&fit=crop&crop=face',
                 name: 'Kamla D.', city: 'Lucknow',
                 msg: 'Thank you so much for the warm blankets. Winter was very difficult for us this year. 🙏❤️',
                 time: '1h ago', color: 'bg-amber-50 border-amber-200', reaction: '🙏',
               },
               {
-                photo: 'https://images.unsplash.com/photo-1529156069898-49953e39b3ac?w=120&q=80&fit=crop&crop=face',
+                photo: 'https://images.unsplash.com/photo-1598285879182-cc4b11f5c5b8?w=120&q=80&fit=crop&crop=face',
                 name: 'Sharma Family', city: 'Pune',
                 msg: 'Got school bags and stationery for our kids. You made their first day of school special! 😭❤️',
                 time: '3h ago', color: 'bg-green-50 border-green-200', reaction: '😭',
               },
               {
-                photo: 'https://images.unsplash.com/photo-1463453091185-61582044d556?w=120&q=80&fit=crop&crop=face',
+                photo: 'https://images.unsplash.com/photo-1618517351616-38fb9c5bdc75?w=120&q=80&fit=crop&crop=face',
                 name: 'Arjun P.', city: 'Chennai',
                 msg: "Received the cricket bat and kit. I couldn't afford one on my own. Thank you so much!",
                 time: '5h ago', color: 'bg-orange-50 border-orange-200', reaction: '🎉',
               },
               {
-                photo: 'https://images.unsplash.com/photo-1573496359142-b8d87734a5a2?w=120&q=80&fit=crop&crop=face',
+                photo: 'https://images.unsplash.com/photo-1609010697446-11f2155278f0?w=120&q=80&fit=crop&crop=face',
                 name: 'Meera T.', city: 'Kolkata',
                 msg: 'The sewing machine changed my life. I can now stitch and earn for my family. Forever grateful 🙏',
                 time: '1d ago', color: 'bg-purple-50 border-purple-200', reaction: '✨',
