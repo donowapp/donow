@@ -37,16 +37,16 @@ function getCategoryName(id: Donation['category']) {
 }
 
 const CATEGORY_IMAGES: Record<string, string> = {
-  medical:    'https://images.unsplash.com/photo-1642680936843-b09109c69104?w=300&q=80&fit=crop',
-  medicines:  'https://images.unsplash.com/photo-1573883430697-4c3479aae6b9?w=300&q=80&fit=crop',
-  clothes:    'https://plus.unsplash.com/premium_photo-1661741379133-9206bca144dc?w=300&q=80&fit=crop',
-  books:      'https://images.unsplash.com/photo-1603058817990-2b9a9abbce86?w=300&q=80&fit=crop',
-  furniture:  'https://images.unsplash.com/photo-1611269154421-4e27233ac5c7?w=300&q=80&fit=crop',
-  electronics:'https://images.unsplash.com/photo-1560169897-fc0cdbdfa4d5?w=300&q=80&fit=crop',
-  toys:       'https://images.unsplash.com/photo-1602734846297-9299fc2d4703?w=300&q=80&fit=crop',
-  food:       'https://images.unsplash.com/photo-1627485937980-221c88ac04f9?w=300&q=80&fit=crop',
-  emergency:  'https://images.unsplash.com/photo-1619025873875-59dfdd2bbbd6?w=300&q=80&fit=crop',
-  other:      'https://images.unsplash.com/photo-1485965120184-e220f721d03e?w=300&q=80&fit=crop',
+  medical:    'https://images.unsplash.com/photo-1576091160550-2173dba999ef?w=400&q=80&fit=crop',
+  medicines:  'https://images.unsplash.com/photo-1550572017-edd951b55104?w=400&q=80&fit=crop',
+  clothes:    'https://images.unsplash.com/photo-1558769132-cb1aea458c5e?w=400&q=80&fit=crop',
+  books:      'https://images.unsplash.com/photo-1497633762265-9d179a990aa6?w=400&q=80&fit=crop',
+  furniture:  'https://images.unsplash.com/photo-1555041469-a586c61ea9bc?w=400&q=80&fit=crop',
+  electronics:'https://images.unsplash.com/photo-1498049794561-7780e7231661?w=400&q=80&fit=crop',
+  toys:       'https://images.unsplash.com/photo-1558618666-fcd25c85cd64?w=400&q=80&fit=crop',
+  food:       'https://images.unsplash.com/photo-1568702846914-96b305d2aaeb?w=400&q=80&fit=crop',
+  emergency:  'https://images.unsplash.com/photo-1599045118108-bf9954418b76?w=400&q=80&fit=crop',
+  other:      'https://images.unsplash.com/photo-1532629345422-7515f3d16bb6?w=400&q=80&fit=crop',
 };
 
 const ALL_STORIES = [
