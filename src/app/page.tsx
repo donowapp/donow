@@ -104,7 +104,8 @@ export default function Home() {
       {/* ── HERO ─────────────────────────────────────────────────────────────── */}
       <section className="relative overflow-hidden text-white" style={{ minHeight: '580px' }}>
         {/* eslint-disable-next-line @next/next/no-img-element */}
-        <img src={heroImage} alt="" className="absolute inset-0 h-full w-full object-cover" style={{ objectPosition: '70% 25%' }} onError={(e) => { (e.target as HTMLImageElement).src = DEFAULT_HERO; }} />
+        {/* eslint-disable-next-line @next/next/no-img-element */}
+        <img src={heroImage} alt="" className="absolute inset-0 h-full w-full object-cover [object-position:50%_20%] sm:[object-position:70%_25%]" onError={(e) => { (e.target as HTMLImageElement).src = DEFAULT_HERO; }} />
         <div className="absolute inset-0 bg-gradient-to-r from-black/75 via-black/45 to-black/20" />
         <div className="absolute bottom-0 left-0 right-0 h-28 bg-gradient-to-t from-black/50 to-transparent" />
         <div className="relative z-10 mx-auto max-w-5xl px-4 py-20 sm:py-24">

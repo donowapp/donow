@@ -6,8 +6,7 @@ export default function Loading() {
       <img
         src="https://images.unsplash.com/photo-1593113598332-cd288d649433?w=1920&q=80"
         alt=""
-        className="absolute inset-0 h-full w-full object-cover"
-        style={{ objectPosition: '70% 25%' }}
+        className="absolute inset-0 h-full w-full object-cover [object-position:50%_20%] sm:[object-position:70%_25%]"
       />
       {/* Overlay */}
       <div className="absolute inset-0 bg-teal-900/80" />
