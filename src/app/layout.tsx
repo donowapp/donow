@@ -60,7 +60,7 @@ export default function RootLayout({
                 <div className="space-y-2 text-sm">
                   <Link href="/terms" className="block hover:text-white transition">Terms of Service</Link>
                   <Link href="/privacy" className="block hover:text-white transition">Privacy Policy</Link>
-                  <a href="mailto:help.donow@gmail.com" className="block hover:text-white transition">Contact Us</a>
+                  <a href="mailto:admin@donow.co.in" className="block hover:text-white transition">Contact Us</a>
                 </div>
               </div>
             </div>

@@ -98,8 +98,8 @@ export default function TermsPage() {
 
         <p className="text-xs text-gray-400">
           Questions? Contact us at{' '}
-          <a href="mailto:support@donow.in" className="text-teal-600 hover:underline">
-            support@donow.in
+          <a href="mailto:admin@donow.co.in" className="text-teal-600 hover:underline">
+            admin@donow.co.in
           </a>
         </p>
 

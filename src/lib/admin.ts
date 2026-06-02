@@ -159,7 +159,7 @@ export async function getAdminLogs(): Promise<AdminLog[]> {
 const DEFAULT_SETTINGS: PlatformSettings = {
   platformName: 'Donow',
   tagline: 'Give More. Waste Less.',
-  supportEmail: 'help.donow@gmail.com',
+  supportEmail: 'admin@donow.co.in',
   heroImageUrl: 'https://images.unsplash.com/photo-1593113598332-cd288d649433?w=1920&q=80',
   messagingEnabled: true,
   requireVerificationForPosting: false,

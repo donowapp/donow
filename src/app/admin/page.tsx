@@ -1507,7 +1507,7 @@ export default function AdminPage() {
                       {[
                         { key: 'platformName', label: 'Platform Name', type: 'text', placeholder: 'Donow' },
                         { key: 'tagline',      label: 'Tagline',       type: 'text', placeholder: 'Give More. Waste Less.' },
-                        { key: 'supportEmail', label: 'Support Email', type: 'email', placeholder: 'help.donow@gmail.com' },
+                        { key: 'supportEmail', label: 'Support Email', type: 'email', placeholder: 'admin@donow.co.in' },
                       ].map(({ key, label, type, placeholder }) => (
                         <div key={key}>
                           <label className="block text-xs font-semibold uppercase text-gray-500 mb-1">{label}</label>

@@ -112,8 +112,8 @@ export default function PrivacyPage() {
           </ul>
           <p className="mt-2 text-sm text-gray-600">
             To exercise these rights, contact us at{' '}
-            <a href="mailto:support@donow.in" className="text-teal-600 hover:underline">
-              support@donow.in
+            <a href="mailto:admin@donow.co.in" className="text-teal-600 hover:underline">
+              admin@donow.co.in
             </a>
             .
           </p>
