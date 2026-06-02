@@ -37,13 +37,13 @@ function getCategoryName(id: Donation['category']) {
 }
 
 const CATEGORY_IMAGES: Record<string, string> = {
-  medical:    'https://images.unsplash.com/photo-1576091160550-2173dba999ef?w=400&q=80&fit=crop',
+  medical:    'https://images.unsplash.com/photo-1530026405186-ed1f139313f3?w=400&q=80&fit=crop',
   medicines:  'https://images.unsplash.com/photo-1550572017-edd951b55104?w=400&q=80&fit=crop',
   clothes:    'https://images.unsplash.com/photo-1558769132-cb1aea458c5e?w=400&q=80&fit=crop',
   books:      'https://images.unsplash.com/photo-1497633762265-9d179a990aa6?w=400&q=80&fit=crop',
   furniture:  'https://images.unsplash.com/photo-1555041469-a586c61ea9bc?w=400&q=80&fit=crop',
   electronics:'https://images.unsplash.com/photo-1498049794561-7780e7231661?w=400&q=80&fit=crop',
-  toys:       'https://images.unsplash.com/photo-1558618666-fcd25c85cd64?w=400&q=80&fit=crop',
+  toys:       'https://images.unsplash.com/photo-1566576912321-d58ddd7a6088?w=400&q=80&fit=crop',
   food:       'https://images.unsplash.com/photo-1568702846914-96b305d2aaeb?w=400&q=80&fit=crop',
   emergency:  'https://images.unsplash.com/photo-1599045118108-bf9954418b76?w=400&q=80&fit=crop',
   other:      'https://images.unsplash.com/photo-1532629345422-7515f3d16bb6?w=400&q=80&fit=crop',
