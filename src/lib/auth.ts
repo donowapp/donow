@@ -54,11 +54,24 @@ function withTimeout<T>(promise: Promise<T>, ms: number) {
 export async function signupWithEmail(email: string, password: string, userData: Partial<User>) {
   const { user } = await createUserWithEmailAndPassword(auth, email, password);
   const profile = createFallbackUser(user.uid, user.email ?? email, userData);
-  // Fire-and-forget — don't block signup on Firestore write
   setDoc(doc(db, 'users', user.uid), profile).catch(console.error);
-  // Send verification email; keep Firebase session so resend can use auth.currentUser
-  await sendEmailVerification(user);
+  await sendCustomVerificationEmail(email);
   return profile;
+}
+
+async function sendCustomVerificationEmail(email: string) {
+  try {
+    const res = await fetch('/api/auth/send-verification', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ email }),
+    });
+    if (!res.ok) throw new Error('API error');
+  } catch {
+    // Fallback to Firebase email if our API fails
+    const user = auth.currentUser;
+    if (user) await sendEmailVerification(user);
+  }
 }
 
 export async function loginWithEmail(email: string, password: string) {
@@ -82,9 +95,8 @@ export async function resetPassword(email: string) {
 
 export async function resendVerificationEmail() {
   const user = auth.currentUser;
-  if (user && !user.emailVerified) {
-    await sendEmailVerification(user);
-  }
+  if (!user || user.emailVerified) return;
+  await sendCustomVerificationEmail(user.email ?? '');
 }
 
 export async function getCurrentUser() {
