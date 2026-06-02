@@ -37,7 +37,7 @@ function getCategoryName(id: Donation['category']) {
 }
 
 const CATEGORY_IMAGES: Record<string, string> = {
-  medical:    'https://images.unsplash.com/photo-1530026405186-ed1f139313f3?w=400&q=80&fit=crop',
+  medical:    'https://images.unsplash.com/photo-1646082275130-347d10885c5f?w=400&q=80&fit=crop',
   medicines:  'https://images.unsplash.com/photo-1550572017-edd951b55104?w=400&q=80&fit=crop',
   clothes:    'https://images.unsplash.com/photo-1558769132-cb1aea458c5e?w=400&q=80&fit=crop',
   books:      'https://images.unsplash.com/photo-1497633762265-9d179a990aa6?w=400&q=80&fit=crop',
