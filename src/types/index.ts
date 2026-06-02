@@ -16,6 +16,7 @@ export interface User {
   bio?: string;
   savedDonations?: string[];
   isVerified: boolean;
+  emailConfirmed?: boolean;
   donationCount: number;
   receivedCount: number;
   rating: number;

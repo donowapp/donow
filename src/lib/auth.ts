@@ -55,20 +55,19 @@ export async function signupWithEmail(email: string, password: string, userData:
   const { user } = await createUserWithEmailAndPassword(auth, email, password);
   const profile = createFallbackUser(user.uid, user.email ?? email, userData);
   setDoc(doc(db, 'users', user.uid), profile).catch(console.error);
-  await sendCustomVerificationEmail(email);
+  await sendCustomVerificationEmail(email, user.uid);
   return profile;
 }
 
-async function sendCustomVerificationEmail(email: string) {
+async function sendCustomVerificationEmail(email: string, uid: string) {
   try {
     const res = await fetch('/api/auth/send-verification', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ email }),
+      body: JSON.stringify({ email, uid }),
     });
     if (!res.ok) throw new Error('API error');
   } catch {
-    // Fallback to Firebase email if our API fails
     const user = auth.currentUser;
     if (user) await sendEmailVerification(user);
   }
@@ -76,13 +75,14 @@ async function sendCustomVerificationEmail(email: string) {
 
 export async function loginWithEmail(email: string, password: string) {
   const { user } = await signInWithEmailAndPassword(auth, email, password);
-  // Reload to get fresh emailVerified state (in case they just clicked the link)
   await user.reload();
-  if (!user.emailVerified) {
-    // Keep Firebase session active — caller can resend verification via auth.currentUser
-    throw Object.assign(new Error('Email not verified'), { code: 'auth/email-not-verified' });
-  }
-  return user;
+  if (user.emailVerified) return user; // verified via Firebase link
+
+  // Check custom Firestore-based confirmation (Resend flow)
+  const snap = await getDoc(doc(db, 'users', user.uid));
+  if (snap.exists() && snap.data().emailConfirmed) return user;
+
+  throw Object.assign(new Error('Email not verified'), { code: 'auth/email-not-verified' });
 }
 
 export async function logout() {
@@ -96,7 +96,7 @@ export async function resetPassword(email: string) {
 export async function resendVerificationEmail() {
   const user = auth.currentUser;
   if (!user || user.emailVerified) return;
-  await sendCustomVerificationEmail(user.email ?? '');
+  await sendCustomVerificationEmail(user.email ?? '', user.uid);
 }
 
 export async function getCurrentUser() {
