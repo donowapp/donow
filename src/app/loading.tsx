@@ -4,7 +4,7 @@ export default function Loading() {
       {/* Hero image background */}
       {/* eslint-disable-next-line @next/next/no-img-element */}
       <img
-        src="/hero.jpg"
+        src="https://images.unsplash.com/photo-1593113598332-cd288d649433?w=1920&q=80"
         alt=""
         className="absolute inset-0 h-full w-full object-cover"
         style={{ objectPosition: '70% 25%' }}

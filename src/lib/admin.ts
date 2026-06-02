@@ -160,7 +160,7 @@ const DEFAULT_SETTINGS: PlatformSettings = {
   platformName: 'Donow',
   tagline: 'Give More. Waste Less.',
   supportEmail: 'help.donow@gmail.com',
-  heroImageUrl: '/hero.jpg',
+  heroImageUrl: 'https://images.unsplash.com/photo-1593113598332-cd288d649433?w=1920&q=80',
   messagingEnabled: true,
   requireVerificationForPosting: false,
   maxDonationsPerDay: 5,
