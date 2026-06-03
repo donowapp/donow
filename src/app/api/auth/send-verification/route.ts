@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { Resend } from 'resend';
 import { sign } from 'jsonwebtoken';
+import { rateLimit } from '@/lib/rate-limit';
 
 const resend = new Resend(process.env.RESEND_API_KEY);
 const JWT_SECRET = process.env.EMAIL_JWT_SECRET;
@@ -14,6 +15,19 @@ export async function POST(request: NextRequest) {
     const { email, uid } = await request.json();
     if (!email || !uid) {
       return NextResponse.json({ error: 'email and uid required' }, { status: 400 });
+    }
+
+    // Throttle: at most 1 email per 60s and 5 per hour, per account.
+    const limit = await rateLimit(`verify:${uid}`, {
+      maxHits: 5,
+      windowMs: 60 * 60 * 1000,
+      minGapMs: 60 * 1000,
+    });
+    if (!limit.ok) {
+      return NextResponse.json(
+        { error: 'Too many requests. Please wait before trying again.' },
+        { status: 429, headers: { 'Retry-After': String(limit.retryAfter ?? 60) } }
+      );
     }
 
     const token = sign({ uid, email }, JWT_SECRET, { expiresIn: '24h' });

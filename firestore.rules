@@ -32,7 +32,7 @@ service cloud.firestore {
     // Donations: publicly readable; create requires auth; update by owner, admin, or limited fields
     match /donations/{donationId} {
       allow read: if true;
-      allow create: if isAuth();
+      allow create: if isAuth() && request.resource.data.userId == request.auth.uid;
       allow update: if isAuth() && (
         resource.data.userId == request.auth.uid ||
         isAdmin() ||
@@ -85,6 +85,12 @@ service cloud.firestore {
     match /settings/{docId} {
       allow read: if isAuth();
       allow write: if isAdmin();
+    }
+
+    // Rate-limit buckets: written only by the Admin SDK (bypasses rules).
+    // No client should ever touch these.
+    match /rateLimits/{bucketId} {
+      allow read, write: if false;
     }
   }
 }
