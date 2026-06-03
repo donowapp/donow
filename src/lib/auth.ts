@@ -102,16 +102,22 @@ export async function resendVerificationEmail() {
 export async function getCurrentUser() {
   const firebaseUser = await getFirebaseCurrentUser();
   if (!firebaseUser) return null;
-  // Unverified accounts are treated as "not signed in" for the app
-  if (!firebaseUser.emailVerified) return null;
 
   const fallback = createFallbackUser(firebaseUser.uid, firebaseUser.email ?? '');
   try {
     const snap = await withTimeout(getDoc(doc(db, 'users', firebaseUser.uid)), 6000);
-    if (snap.exists()) return snap.data() as User;
-    setDoc(doc(db, 'users', firebaseUser.uid), fallback).catch(() => {});
-    return fallback;
+    if (!snap.exists()) {
+      // No profile yet — only allow through if Firebase itself verified the email
+      if (!firebaseUser.emailVerified) return null;
+      setDoc(doc(db, 'users', firebaseUser.uid), fallback).catch(() => {});
+      return fallback;
+    }
+    const data = snap.data();
+    // Accept either Firebase-verified or Resend-verified (emailConfirmed) accounts
+    if (!firebaseUser.emailVerified && !data.emailConfirmed) return null;
+    return data as User;
   } catch {
+    if (!firebaseUser.emailVerified) return null;
     return fallback;
   }
 }

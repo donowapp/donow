@@ -15,11 +15,17 @@ service cloud.firestore {
         get(/databases/$(database)/documents/users/$(request.auth.uid)).data.role == 'admin';
     }
 
-    // Users: readable by any logged-in user; writable by owner or admin
+    // Users: readable by any logged-in user.
+    // Owners may edit only their own profile fields; sensitive fields
+    // (role, isVerified, status, emailConfirmed, counts) are admin/server only.
     match /users/{userId} {
       allow read: if isAuth();
       allow create: if isOwner(userId);
-      allow update: if isOwner(userId) || isAdmin();
+      allow update: if isAdmin() ||
+        (isOwner(userId) &&
+         request.resource.data.diff(resource.data).affectedKeys()
+           .hasOnly(['name', 'phone', 'address', 'city', 'state', 'pincode',
+                     'bio', 'profileImage', 'savedDonations', 'updatedAt']));
       allow delete: if isAdmin();
     }
 
@@ -54,10 +60,11 @@ service cloud.firestore {
       }
     }
 
-    // Notifications: only the recipient
+    // Notifications: only the recipient can read/update/delete.
+    // Creation is attributable — the creator must stamp their own uid.
     match /notifications/{notifId} {
       allow read: if isAuth() && request.auth.uid == resource.data.userId;
-      allow create: if isAuth();
+      allow create: if isAuth() && request.resource.data.createdBy == request.auth.uid;
       allow update: if isAuth() && request.auth.uid == resource.data.userId;
       allow delete: if isAuth() && request.auth.uid == resource.data.userId;
     }

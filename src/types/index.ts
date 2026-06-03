@@ -89,6 +89,7 @@ export interface Notification {
   isRead: boolean;
   donationId?: string;
   conversationId?: string;
+  createdBy?: string;
   createdAt: Date;
 }
 

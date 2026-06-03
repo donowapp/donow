@@ -1,4 +1,4 @@
-import { db } from './firebase';
+import { auth, db } from './firebase';
 import {
   addDoc,
   collection,
@@ -41,6 +41,7 @@ export async function createNotification(
 ): Promise<void> {
   await addDoc(collection(db, 'notifications'), {
     ...data,
+    createdBy: auth.currentUser?.uid ?? '',
     isRead: false,
     createdAt: new Date(),
   });

@@ -3,9 +3,13 @@ import { Resend } from 'resend';
 import { sign } from 'jsonwebtoken';
 
 const resend = new Resend(process.env.RESEND_API_KEY);
-const JWT_SECRET = process.env.EMAIL_JWT_SECRET ?? 'donow-verify-secret-change-in-prod';
+const JWT_SECRET = process.env.EMAIL_JWT_SECRET;
 
 export async function POST(request: NextRequest) {
+  if (!JWT_SECRET) {
+    console.error('[send-verification] EMAIL_JWT_SECRET is not configured');
+    return NextResponse.json({ error: 'Server misconfigured' }, { status: 500 });
+  }
   try {
     const { email, uid } = await request.json();
     if (!email || !uid) {
