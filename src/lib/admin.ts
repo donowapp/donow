@@ -189,6 +189,16 @@ const DEFAULT_SETTINGS: PlatformSettings = {
   instagramUrl: '',
   twitterUrl: '',
   whatsappNumber: '',
+  facebookUrl: '',
+  youtubeUrl: '',
+  linkedinUrl: '',
+  telegramUrl: '',
+  pinterestUrl: '',
+  threadsUrl: '',
+  googleAnalyticsId: '',
+  googleTagManagerId: '',
+  metaPixelId: '',
+  customHeadScript: '',
 };
 
 export async function getPlatformSettings(): Promise<PlatformSettings> {
@@ -217,6 +227,16 @@ export async function getPlatformSettings(): Promise<PlatformSettings> {
     instagramUrl: data.instagramUrl ?? '',
     twitterUrl: data.twitterUrl ?? '',
     whatsappNumber: data.whatsappNumber ?? '',
+    facebookUrl: data.facebookUrl ?? '',
+    youtubeUrl: data.youtubeUrl ?? '',
+    linkedinUrl: data.linkedinUrl ?? '',
+    telegramUrl: data.telegramUrl ?? '',
+    pinterestUrl: data.pinterestUrl ?? '',
+    threadsUrl: data.threadsUrl ?? '',
+    googleAnalyticsId: data.googleAnalyticsId ?? '',
+    googleTagManagerId: data.googleTagManagerId ?? '',
+    metaPixelId: data.metaPixelId ?? '',
+    customHeadScript: data.customHeadScript ?? '',
   };
 }
 

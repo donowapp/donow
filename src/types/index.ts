@@ -130,6 +130,17 @@ export interface PlatformSettings {
   instagramUrl: string;
   twitterUrl: string;
   whatsappNumber: string;
+  facebookUrl: string;
+  youtubeUrl: string;
+  linkedinUrl: string;
+  telegramUrl: string;
+  pinterestUrl: string;
+  threadsUrl: string;
+  // Analytics & tracking pixels
+  googleAnalyticsId: string;   // GA4 measurement ID, e.g. "G-XXXXXXXXXX"
+  googleTagManagerId: string;  // GTM container ID, e.g. "GTM-XXXXXXX"
+  metaPixelId: string;         // Meta/Facebook Pixel ID (numeric)
+  customHeadScript: string;    // Raw HTML/JS injected into <head> (advanced)
 }
 
 export interface Fundraiser {

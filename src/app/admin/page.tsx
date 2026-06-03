@@ -1551,9 +1551,15 @@ export default function AdminPage() {
                     <div className="rounded-2xl bg-white p-6 shadow space-y-4">
                       {[
                         { key: 'contactPhone',   label: 'Contact Phone / WhatsApp',      placeholder: '+91 98765 43210', type: 'tel'  },
-                        { key: 'instagramUrl',   label: 'Instagram URL',                  placeholder: 'https://instagram.com/donow', type: 'url' },
-                        { key: 'twitterUrl',     label: 'Twitter / X URL',               placeholder: 'https://twitter.com/donow', type: 'url' },
                         { key: 'whatsappNumber', label: 'WhatsApp Number (digits only)', placeholder: '919876543210', type: 'tel' },
+                        { key: 'facebookUrl',    label: '📘 Facebook URL',                placeholder: 'https://facebook.com/donow', type: 'url' },
+                        { key: 'instagramUrl',   label: '📸 Instagram URL',               placeholder: 'https://instagram.com/donow', type: 'url' },
+                        { key: 'twitterUrl',     label: '✖ Twitter / X URL',             placeholder: 'https://x.com/donow', type: 'url' },
+                        { key: 'youtubeUrl',     label: '▶ YouTube URL',                  placeholder: 'https://youtube.com/@donow', type: 'url' },
+                        { key: 'linkedinUrl',    label: '💼 LinkedIn URL',                placeholder: 'https://linkedin.com/company/donow', type: 'url' },
+                        { key: 'telegramUrl',    label: '✈ Telegram URL',                 placeholder: 'https://t.me/donow', type: 'url' },
+                        { key: 'pinterestUrl',   label: '📌 Pinterest URL',               placeholder: 'https://pinterest.com/donow', type: 'url' },
+                        { key: 'threadsUrl',     label: '🧵 Threads URL',                 placeholder: 'https://threads.net/@donow', type: 'url' },
                       ].map(({ key, label, placeholder, type }) => (
                         <div key={key}>
                           <label className="block text-xs font-semibold uppercase text-gray-500 mb-1">{label}</label>
@@ -1563,6 +1569,44 @@ export default function AdminPage() {
                             className="w-full rounded-lg border border-gray-300 px-4 py-2 text-sm outline-none focus:ring-2 focus:ring-teal-500" />
                         </div>
                       ))}
+                    </div>
+
+                    {/* ─ Tracking & Pixels ─ */}
+                    <div className="flex items-center gap-3 pt-2">
+                      <p className="text-[11px] font-bold uppercase tracking-widest text-gray-400 whitespace-nowrap">Tracking &amp; Pixels</p>
+                      <div className="flex-1 h-px bg-gray-200" />
+                    </div>
+
+                    <div className="rounded-2xl bg-white p-6 shadow space-y-4">
+                      <p className="text-xs text-gray-500">
+                        Paste your IDs and they&apos;ll load on every public page. Leave a field blank to disable that integration.
+                      </p>
+                      {[
+                        { key: 'googleAnalyticsId',  label: '📊 Google Analytics 4 — Measurement ID', placeholder: 'G-XXXXXXXXXX' },
+                        { key: 'googleTagManagerId', label: '🏷 Google Tag Manager — Container ID',   placeholder: 'GTM-XXXXXXX' },
+                        { key: 'metaPixelId',        label: '📘 Meta (Facebook) Pixel — ID',          placeholder: '1234567890123456' },
+                      ].map(({ key, label, placeholder }) => (
+                        <div key={key}>
+                          <label className="block text-xs font-semibold uppercase text-gray-500 mb-1">{label}</label>
+                          <input type="text" value={String(settingsData[key as keyof PlatformSettings] ?? '')}
+                            onChange={(e) => setSettingsData({ ...settingsData, [key]: e.target.value.trim() })}
+                            placeholder={placeholder}
+                            className="w-full rounded-lg border border-gray-300 px-4 py-2 text-sm font-mono outline-none focus:ring-2 focus:ring-teal-500" />
+                        </div>
+                      ))}
+                      <div>
+                        <label className="block text-xs font-semibold uppercase text-gray-500 mb-1">🧩 Custom &lt;head&gt; Script (advanced)</label>
+                        <textarea
+                          value={String(settingsData.customHeadScript ?? '')}
+                          onChange={(e) => setSettingsData({ ...settingsData, customHeadScript: e.target.value })}
+                          rows={5}
+                          placeholder={'<!-- Paste any other tracking snippet here, e.g. TikTok Pixel,\n     LinkedIn Insight Tag, Hotjar. Include the full <script>…</script>. -->'}
+                          className="w-full rounded-lg border border-gray-300 px-4 py-2 text-xs font-mono outline-none focus:ring-2 focus:ring-teal-500 resize-y"
+                        />
+                        <p className="mt-1 text-[11px] text-amber-600">
+                          ⚠ This runs as raw code on every visitor&apos;s browser. Only paste snippets from sources you trust.
+                        </p>
+                      </div>
                     </div>
 
                     {/* ─ Feature Toggles ─ */}

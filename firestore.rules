@@ -81,9 +81,11 @@ service cloud.firestore {
       allow read, write: if isAdmin();
     }
 
-    // Platform settings: any auth user can read; admins can write
+    // Platform settings: publicly readable (drives the homepage, footer
+    // social links and analytics pixels for logged-out visitors too — the
+    // doc holds no secrets). Only admins can write.
     match /settings/{docId} {
-      allow read: if isAuth();
+      allow read: if true;
       allow write: if isAdmin();
     }
 
