@@ -1097,6 +1097,7 @@ export default function AdminPage() {
                                 <button onClick={() => handleUserVerify(u.uid, !u.isVerified)} disabled={actionPending === u.uid + '-verify'} className="rounded bg-teal-100 px-2 py-1 text-xs font-semibold text-teal-700 hover:bg-teal-200 disabled:opacity-40">
                                   {u.isVerified ? 'Unverify' : 'Verify'}
                                 </button>
+                                <button onClick={() => handleDeleteUser(u.uid)} disabled={!!actionPending} className="rounded bg-red-100 px-2 py-1 text-xs font-semibold text-red-700 hover:bg-red-200 disabled:opacity-40">Delete</button>
                               </div>
                             )}
                           </td>
