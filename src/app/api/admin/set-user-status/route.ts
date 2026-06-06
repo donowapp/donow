@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { getFirestore } from 'firebase-admin/firestore';
 import { adminAuth } from '@/lib/firebase-admin';
+import { hasValidMfa } from '@/lib/admin-mfa';
 
 type Status = 'active' | 'suspended' | 'banned';
 const VALID: Status[] = ['active', 'suspended', 'banned'];
@@ -36,6 +37,11 @@ export async function POST(request: NextRequest) {
   const callerSnap = await dbAdmin.doc(`users/${callerUid}`).get();
   if (callerSnap.data()?.role !== 'admin') {
     return NextResponse.json({ error: 'Forbidden' }, { status: 403 });
+  }
+
+  // 2b. Require a valid two-factor session for this destructive action.
+  if (!hasValidMfa(request, callerUid)) {
+    return NextResponse.json({ error: 'Two-factor verification required' }, { status: 403 });
   }
 
   // 3. Validate input.

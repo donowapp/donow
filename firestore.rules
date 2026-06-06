@@ -138,5 +138,11 @@ service cloud.firestore {
     match /rateLimits/{bucketId} {
       allow read, write: if false;
     }
+
+    // Admin TOTP secrets: server-only (Admin SDK bypasses rules). Holds the
+    // shared 2FA secret, so no client must ever read or write it.
+    match /adminMfa/{uid} {
+      allow read, write: if false;
+    }
   }
 }

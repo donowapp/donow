@@ -4,6 +4,7 @@ import { useCallback, useEffect, useState } from 'react';
 import { useRouter } from 'next/navigation';
 import Link from 'next/link';
 import { useAuth } from '@/hooks/useAuth';
+import { AdminMfaGate } from '@/components/admin/AdminMfaGate';
 import {
   adminDeleteDonation,
   adminDeleteUser,
@@ -759,6 +760,7 @@ export default function AdminPage() {
   const activeAnnouncements = announcements.filter((a) => a.active).length;
 
   return (
+    <AdminMfaGate>
     <div className="min-h-screen bg-gray-100 -mx-4 sm:-mx-6 lg:-mx-8 -mt-8">
       {/* Flag modal */}
       {flagTarget && (
@@ -1725,5 +1727,6 @@ export default function AdminPage() {
         </div>
       </div>
     </div>
+    </AdminMfaGate>
   );
 }

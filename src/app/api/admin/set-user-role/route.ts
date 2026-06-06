@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { getFirestore } from 'firebase-admin/firestore';
 import { adminAuth } from '@/lib/firebase-admin';
+import { hasValidMfa } from '@/lib/admin-mfa';
 
 type Role = 'user' | 'admin';
 const VALID: Role[] = ['user', 'admin'];
@@ -36,6 +37,10 @@ export async function POST(request: NextRequest) {
 
   if (!getSuperAdminUids().has(callerUid)) {
     return NextResponse.json({ error: 'Forbidden: super-admin required' }, { status: 403 });
+  }
+
+  if (!hasValidMfa(request, callerUid)) {
+    return NextResponse.json({ error: 'Two-factor verification required' }, { status: 403 });
   }
 
   const { uid, role } = (await request.json()) as { uid?: string; role?: Role };
