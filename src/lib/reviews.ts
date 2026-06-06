@@ -1,9 +1,10 @@
 import { db } from './firebase';
 import {
-  addDoc,
   collection,
+  doc,
   getDocs,
   query,
+  setDoc,
   where,
 } from 'firebase/firestore';
 import { Review } from '@/types';
@@ -32,7 +33,11 @@ function normalizeReview(id: string, data: Record<string, unknown>): Review {
 }
 
 export async function addReview(review: Omit<Review, 'id' | 'createdAt'>): Promise<void> {
-  await addDoc(collection(db, 'reviews'), {
+  // Deterministic id = one review per reviewer per donation. A repeat submission
+  // targets the same doc, which the rules treat as an update (denied), so review
+  // bombing via duplicate reviews is impossible.
+  const id = `${review.donationId}_${review.reviewerId}`;
+  await setDoc(doc(db, 'reviews', id), {
     ...review,
     createdAt: new Date(),
   });

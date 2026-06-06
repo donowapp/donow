@@ -116,8 +116,14 @@ service cloud.firestore {
     // 1-5 rating; immutable by users; removable by admins (defamation/abuse).
     match /reviews/{reviewId} {
       allow read: if true;
+      // One review per (donation, reviewer): the doc id is pinned to
+      // "<donationId>_<reviewerId>", so a duplicate submission hits the same id
+      // and falls under `update` (denied) — no review bombing. Self-reviews are
+      // blocked. Rating must be an int 1-5.
       allow create: if isActive() &&
         request.auth.uid == request.resource.data.reviewerId &&
+        request.resource.data.reviewerId != request.resource.data.revieweeId &&
+        reviewId == request.resource.data.donationId + '_' + request.resource.data.reviewerId &&
         request.resource.data.rating is int &&
         request.resource.data.rating >= 1 &&
         request.resource.data.rating <= 5;
