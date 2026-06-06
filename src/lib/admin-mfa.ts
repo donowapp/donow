@@ -43,6 +43,23 @@ export function issueMfaToken(uid: string): string {
   return sign({ uid, purpose: 'admin_mfa' }, mfaSecret(), { expiresIn: MFA_TTL_SECONDS });
 }
 
+/** Whether this admin has completed TOTP enrollment. */
+export async function isMfaEnrolled(uid: string): Promise<boolean> {
+  const snap = await getFirestore().doc(`adminMfa/${uid}`).get();
+  return snap.exists ? Boolean(snap.data()?.enrolled) : false;
+}
+
+/**
+ * Gate for sensitive admin routes. Returns true (allowed) when the admin is NOT
+ * yet enrolled — so a freshly-promoted admin is never locked out before they've
+ * set up 2FA (the admin-panel gate pushes them to enroll). Once enrolled, a
+ * valid MFA session cookie is mandatory.
+ */
+export async function passesMfaGate(request: NextRequest, uid: string): Promise<boolean> {
+  if (!(await isMfaEnrolled(uid))) return true;
+  return hasValidMfa(request, uid);
+}
+
 /** True if the request carries a valid, unexpired MFA cookie for this uid. */
 export function hasValidMfa(request: NextRequest, uid: string): boolean {
   const secret = mfaSecret();

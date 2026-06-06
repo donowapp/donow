@@ -1,7 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { getFirestore } from 'firebase-admin/firestore';
 import { adminAuth } from '@/lib/firebase-admin';
-import { hasValidMfa } from '@/lib/admin-mfa';
+import { passesMfaGate } from '@/lib/admin-mfa';
 
 type Status = 'active' | 'suspended' | 'banned';
 const VALID: Status[] = ['active', 'suspended', 'banned'];
@@ -39,8 +39,10 @@ export async function POST(request: NextRequest) {
     return NextResponse.json({ error: 'Forbidden' }, { status: 403 });
   }
 
-  // 2b. Require a valid two-factor session for this destructive action.
-  if (!hasValidMfa(request, callerUid)) {
+  // 2b. Require a valid two-factor session for this destructive action — but
+  // only once the admin has enrolled, so a not-yet-enrolled admin isn't locked
+  // out (the admin-panel gate pushes them to enroll on their next visit).
+  if (!(await passesMfaGate(request, callerUid))) {
     return NextResponse.json({ error: 'Two-factor verification required' }, { status: 403 });
   }
 
