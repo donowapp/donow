@@ -52,7 +52,9 @@ service cloud.firestore {
          request.resource.data.diff(resource.data).affectedKeys()
            .hasOnly(['name', 'phone', 'address', 'city', 'state', 'pincode',
                      'bio', 'profileImage', 'savedDonations', 'updatedAt']));
-      allow delete: if isAdmin();
+      // Deletion happens only through the Admin SDK (self-serve /api/account/delete
+      // and the MFA-gated /api/admin/delete-user), never a raw client write.
+      allow delete: if false;
     }
 
     // Public profiles: the safe, world-readable subset of a user shown next to
@@ -81,7 +83,9 @@ service cloud.firestore {
         request.resource.data.diff(resource.data).affectedKeys()
           .hasOnly(['interestedUsers', 'viewCount', 'updatedAt'])
       ));
-      allow delete: if isAdmin() || (isActive() && resource.data.userId == request.auth.uid);
+      // Owners delete their own; admin deletion goes via the MFA-gated
+      // /api/admin/delete-donation (Admin SDK), not a raw admin client write.
+      allow delete: if isActive() && resource.data.userId == request.auth.uid;
     }
 
     // Conversations: active participants only
@@ -147,7 +151,9 @@ service cloud.firestore {
     // doc holds no secrets). Only admins can write.
     match /settings/{docId} {
       allow read: if true;
-      allow write: if isAdmin();
+      // Writes only via the MFA-gated /api/admin/settings (Admin SDK). A stolen
+      // admin token can't rewrite site-wide settings without a TOTP session.
+      allow write: if false;
     }
 
     // Rate-limit buckets: written only by the Admin SDK (bypasses rules).

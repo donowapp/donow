@@ -136,8 +136,24 @@ export async function setDonationStatus(
   await updateDoc(doc(db, 'donations', id), { status, updatedAt: new Date() });
 }
 
+// Routes a destructive admin action through a server endpoint that enforces
+// the admin role AND a valid two-factor session (MFA cookie).
+async function adminMfaFetch(path: string, body: Record<string, unknown>): Promise<void> {
+  const token = await auth.currentUser?.getIdToken();
+  if (!token) throw new Error('Not authenticated');
+  const res = await fetch(path, {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${token}` },
+    body: JSON.stringify(body),
+  });
+  if (!res.ok) {
+    const data = await res.json().catch(() => ({}));
+    throw new Error((data as { error?: string }).error ?? 'Action failed');
+  }
+}
+
 export async function adminDeleteDonation(id: string): Promise<void> {
-  await deleteDoc(doc(db, 'donations', id));
+  await adminMfaFetch('/api/admin/delete-donation', { id });
 }
 
 export async function setDonationFeatured(id: string, featured: boolean): Promise<void> {
@@ -273,7 +289,7 @@ export async function getPlatformSettings(): Promise<PlatformSettings> {
 }
 
 export async function updatePlatformSettings(settings: PlatformSettings): Promise<void> {
-  await setDoc(doc(db, 'settings', 'platform'), settings);
+  await adminMfaFetch('/api/admin/settings', { settings });
 }
 
 export async function setUserVerified(uid: string, isVerified: boolean): Promise<void> {
@@ -283,7 +299,9 @@ export async function setUserVerified(uid: string, isVerified: boolean): Promise
 }
 
 export async function adminDeleteUser(uid: string): Promise<void> {
-  await deleteDoc(doc(db, 'users', uid));
+  // Full server-side cascade (donations, profile, conversations, images, Auth),
+  // MFA-gated — not just the /users doc.
+  await adminMfaFetch('/api/admin/delete-user', { uid });
 }
 
 export interface Announcement {
