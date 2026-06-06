@@ -1,5 +1,6 @@
 import { Donation, User } from '@/types';
 import { db } from './firebase';
+import { getPublicProfile } from './profiles';
 import {
   addDoc,
   arrayRemove,
@@ -250,8 +251,7 @@ export async function getSavedDonationsByIds(ids: string[]): Promise<Donation[]>
 }
 
 export async function getDonorById(userId: string): Promise<Pick<User, 'uid' | 'name' | 'city' | 'state' | 'profileImage' | 'donationCount' | 'receivedCount' | 'rating' | 'isVerified'> | null> {
-  const userSnapshot = await getDoc(doc(db, 'users', userId));
-  if (!userSnapshot.exists()) return null;
-  const { uid, name, city, state, profileImage, donationCount, receivedCount, rating, isVerified } = userSnapshot.data() as User;
-  return { uid, name, city, state, profileImage, donationCount, receivedCount, rating, isVerified };
+  // Reads the world-readable public profile, NOT the private /users doc
+  // (which holds email/phone/address and is owner/admin-only).
+  return getPublicProfile(userId);
 }

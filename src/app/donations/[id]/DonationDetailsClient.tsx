@@ -276,7 +276,11 @@ export default function DonationDetailsClient({ donationId }: DonationDetailsCli
               <p className="mt-4 whitespace-pre-wrap text-gray-700">{donation.description}</p>
               <div className="mt-6 space-y-3 border-t pt-5 text-sm text-gray-700">
                 <div><span className="font-semibold text-gray-900">City: </span>{donation.location.city}</div>
-                <div><span className="font-semibold text-gray-900">Pickup address: </span>{donation.location.address}</div>
+                {user ? (
+                  <div><span className="font-semibold text-gray-900">Pickup address: </span>{donation.location.address}</div>
+                ) : (
+                  <div className="text-gray-500"><span className="font-semibold text-gray-900">Pickup address: </span>Sign in to view the exact address</div>
+                )}
                 <div><span className="font-semibold text-gray-900">Posted: </span>{formatDate(donation.createdAt)}</div>
                 <div><span className="font-semibold text-gray-900">Views: </span>{donation.viewCount}</div>
               </div>

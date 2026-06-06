@@ -1,4 +1,4 @@
-import { db } from './firebase';
+import { auth, db } from './firebase';
 import {
   addDoc,
   collection,
@@ -54,7 +54,19 @@ export async function setUserStatus(
   uid: string,
   status: User['status']
 ): Promise<void> {
-  await updateDoc(doc(db, 'users', uid), { status, updatedAt: new Date() });
+  // Routed through the server so the Firebase Auth account is also
+  // disabled/re-enabled (and tokens revoked on ban) — not just a Firestore flag.
+  const token = await auth.currentUser?.getIdToken();
+  if (!token) throw new Error('Not authenticated');
+  const res = await fetch('/api/admin/set-user-status', {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${token}` },
+    body: JSON.stringify({ uid, status }),
+  });
+  if (!res.ok) {
+    const data = await res.json().catch(() => ({}));
+    throw new Error(data.error ?? 'Could not update user status');
+  }
 }
 
 export async function setUserRole(
@@ -246,6 +258,8 @@ export async function updatePlatformSettings(settings: PlatformSettings): Promis
 
 export async function setUserVerified(uid: string, isVerified: boolean): Promise<void> {
   await updateDoc(doc(db, 'users', uid), { isVerified, updatedAt: new Date() });
+  // Mirror the verified badge to the public profile.
+  await setDoc(doc(db, 'publicProfiles', uid), { isVerified }, { merge: true });
 }
 
 export async function adminDeleteUser(uid: string): Promise<void> {

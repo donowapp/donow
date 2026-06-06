@@ -14,9 +14,11 @@ const CACHE_MS = 5 * 60 * 1000; // 5 min
 export async function getPublicStats(): Promise<PublicStats> {
   if (cache && Date.now() - cache.ts < CACHE_MS) return cache.data;
 
+  // Reads /publicProfiles (world-readable) rather than /users (private) so the
+  // homepage stats work for logged-out visitors under the locked-down rules.
   const [donSnap, userSnap] = await Promise.all([
     getDocs(collection(db, 'donations')),
-    getDocs(collection(db, 'users')),
+    getDocs(collection(db, 'publicProfiles')),
   ]);
 
   const cities = new Set<string>();

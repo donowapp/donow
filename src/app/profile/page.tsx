@@ -4,6 +4,7 @@ import { useEffect, useRef, useState } from 'react';
 import { useRouter } from 'next/navigation';
 import { doc, updateDoc } from 'firebase/firestore';
 import { db } from '@/lib/firebase';
+import { syncOwnPublicProfile } from '@/lib/profiles';
 import { useAuth } from '@/hooks/useAuth';
 import { Input } from '@/components/common/Input';
 import { Button } from '@/components/common/Button';
@@ -103,6 +104,13 @@ export default function ProfilePage() {
         ...form,
         ...(profileImage ? { profileImage } : {}),
         updatedAt: new Date(),
+      });
+      // Mirror display fields to the public profile.
+      await syncOwnPublicProfile(user.uid, {
+        name: form.name,
+        city: form.city,
+        state: form.state,
+        profileImage,
       });
       await checkAuth();
       setSaved(true);

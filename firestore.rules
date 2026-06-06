@@ -15,45 +15,73 @@ service cloud.firestore {
         get(/databases/$(database)/documents/users/$(request.auth.uid)).data.role == 'admin';
     }
 
-    // Users: readable by any logged-in user.
-    // Owners may edit only their own profile fields; sensitive fields
-    // (role, isVerified, status, emailConfirmed, counts) are admin/server only.
+    // The acting user is in good standing (not suspended/banned). Used to gate
+    // all content writes so moderation actually takes effect. Assumes the
+    // caller's own /users doc exists (it is created at signup before any other
+    // write happens).
+    function isActive() {
+      return isAuth() &&
+        get(/databases/$(database)/documents/users/$(request.auth.uid)).data.status == 'active';
+    }
+
+    // Users: PRIVATE. A user's full record (email, phone, home address,
+    // pincode) is readable only by the owner or an admin. Public-facing fields
+    // live in /publicProfiles. Owners may edit only their own profile fields;
+    // sensitive fields (role, isVerified, status, emailConfirmed, counts) are
+    // admin/server only.
     match /users/{userId} {
-      allow read: if isAuth();
+      allow read: if isOwner(userId) || isAdmin();
       allow create: if isOwner(userId);
       allow update: if isAdmin() ||
-        (isOwner(userId) &&
+        (isOwner(userId) && isActive() &&
          request.resource.data.diff(resource.data).affectedKeys()
            .hasOnly(['name', 'phone', 'address', 'city', 'state', 'pincode',
                      'bio', 'profileImage', 'savedDonations', 'updatedAt']));
       allow delete: if isAdmin();
     }
 
-    // Donations: publicly readable; create requires auth; update by owner, admin, or limited fields
-    match /donations/{donationId} {
+    // Public profiles: the safe, world-readable subset of a user shown next to
+    // donations (name, city/state, photo, verified badge, counts/rating).
+    // Owners may set only their display fields; trust fields (isVerified,
+    // rating, counts) are admin/server-written.
+    match /publicProfiles/{userId} {
       allow read: if true;
-      allow create: if isAuth() && request.resource.data.userId == request.auth.uid;
-      allow update: if isAuth() && (
-        resource.data.userId == request.auth.uid ||
-        isAdmin() ||
-        request.resource.data.diff(resource.data).affectedKeys()
-          .hasOnly(['interestedUsers', 'viewCount', 'updatedAt'])
-      );
-      allow delete: if isAuth() && (resource.data.userId == request.auth.uid || isAdmin());
+      allow create: if isOwner(userId) &&
+        request.resource.data.keys()
+          .hasOnly(['name', 'city', 'state', 'profileImage', 'updatedAt']);
+      allow update: if isAdmin() ||
+        (isOwner(userId) && isActive() &&
+         request.resource.data.diff(resource.data).affectedKeys()
+           .hasOnly(['name', 'city', 'state', 'profileImage', 'updatedAt']));
+      allow delete: if isAdmin();
     }
 
-    // Conversations: participants only
+    // Donations: publicly readable; create requires an active owner; update by
+    // owner, admin, or limited counter fields (by any active user).
+    match /donations/{donationId} {
+      allow read: if true;
+      allow create: if isActive() && request.resource.data.userId == request.auth.uid;
+      allow update: if isAdmin() || (isActive() && (
+        resource.data.userId == request.auth.uid ||
+        request.resource.data.diff(resource.data).affectedKeys()
+          .hasOnly(['interestedUsers', 'viewCount', 'updatedAt'])
+      ));
+      allow delete: if isAdmin() || (isActive() && resource.data.userId == request.auth.uid);
+    }
+
+    // Conversations: active participants only
     match /conversations/{convId} {
       allow read: if isAuth() && (resource == null || request.auth.uid in resource.data.participantIds);
-      allow create: if isAuth() && request.auth.uid in request.resource.data.participantIds;
-      allow update: if isAuth() && request.auth.uid in resource.data.participantIds;
+      allow create: if isActive() && request.auth.uid in request.resource.data.participantIds;
+      allow update: if isActive() && request.auth.uid in resource.data.participantIds;
       allow delete: if false;
 
       match /messages/{messageId} {
         allow read: if isAuth() &&
           request.auth.uid in get(/databases/$(database)/documents/conversations/$(convId)).data.participantIds;
-        allow create: if isAuth() && request.auth.uid == request.resource.data.senderId;
-        allow update: if isAuth() &&
+        allow create: if isActive() && request.auth.uid == request.resource.data.senderId &&
+          request.auth.uid in get(/databases/$(database)/documents/conversations/$(convId)).data.participantIds;
+        allow update: if isActive() &&
           resource.data.senderId == request.auth.uid &&
           request.resource.data.diff(resource.data).affectedKeys().hasOnly(['deleted', 'content']);
         allow delete: if false;
@@ -64,16 +92,28 @@ service cloud.firestore {
     // Creation is attributable — the creator must stamp their own uid.
     match /notifications/{notifId} {
       allow read: if isAuth() && request.auth.uid == resource.data.userId;
-      allow create: if isAuth() && request.resource.data.createdBy == request.auth.uid;
+      allow create: if isActive() && request.resource.data.createdBy == request.auth.uid;
       allow update: if isAuth() && request.auth.uid == resource.data.userId;
       allow delete: if isAuth() && request.auth.uid == resource.data.userId;
     }
 
-    // Reviews: publicly readable; create by authenticated users only; immutable
+    // Reviews: publicly readable; created by an active author with a valid
+    // 1-5 rating; immutable by users; removable by admins (defamation/abuse).
     match /reviews/{reviewId} {
       allow read: if true;
-      allow create: if isAuth() && request.auth.uid == request.resource.data.reviewerId;
-      allow update, delete: if false;
+      allow create: if isActive() &&
+        request.auth.uid == request.resource.data.reviewerId &&
+        request.resource.data.rating is int &&
+        request.resource.data.rating >= 1 &&
+        request.resource.data.rating <= 5;
+      allow update: if false;
+      allow delete: if isAdmin();
+    }
+
+    // Announcements: publicly readable broadcasts; admin-managed.
+    match /announcements/{announcementId} {
+      allow read: if true;
+      allow create, update, delete: if isAdmin();
     }
 
     // Admin action logs: admins only

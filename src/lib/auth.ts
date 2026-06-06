@@ -9,6 +9,7 @@ import {
 } from 'firebase/auth';
 import { doc, setDoc, getDoc } from 'firebase/firestore';
 import { auth, db } from './firebase';
+import { syncOwnPublicProfile } from './profiles';
 import { User } from '@/types';
 
 function createFallbackUser(uid: string, email: string, userData: Partial<User> = {}): User {
@@ -55,6 +56,13 @@ export async function signupWithEmail(email: string, password: string, userData:
   const { user } = await createUserWithEmailAndPassword(auth, email, password);
   const profile = createFallbackUser(user.uid, user.email ?? email, userData);
   setDoc(doc(db, 'users', user.uid), profile).catch(console.error);
+  // Seed the world-readable public profile (display fields only).
+  syncOwnPublicProfile(user.uid, {
+    name: profile.name,
+    city: profile.city,
+    state: profile.state,
+    profileImage: profile.profileImage,
+  }).catch(console.error);
   await sendCustomVerificationEmail(email, user.uid);
   return profile;
 }
