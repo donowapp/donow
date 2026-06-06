@@ -23,13 +23,17 @@ function createFallbackUser(uid: string, email: string, userData: Partial<User> 
     city: userData.city ?? '',
     state: userData.state ?? '',
     pincode: userData.pincode ?? '',
-    isVerified: userData.isVerified ?? false,
-    donationCount: userData.donationCount ?? 0,
-    receivedCount: userData.receivedCount ?? 0,
-    rating: userData.rating ?? 0,
-    role: userData.role ?? 'user',
-    status: userData.status ?? 'active',
-    createdAt: userData.createdAt ?? now,
+    // Trust/privilege fields are NEVER taken from caller-supplied userData —
+    // they are pinned to safe defaults. Promotion/verification/status changes
+    // happen only through server (Admin SDK) routes. (Firestore rules enforce
+    // this too; this is defense-in-depth.)
+    isVerified: false,
+    donationCount: 0,
+    receivedCount: 0,
+    rating: 0,
+    role: 'user',
+    status: 'active',
+    createdAt: now,
     updatedAt: now,
   };
 }

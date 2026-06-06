@@ -31,7 +31,18 @@ service cloud.firestore {
     // admin/server only.
     match /users/{userId} {
       allow read: if isOwner(userId) || isAdmin();
-      allow create: if isOwner(userId);
+      // Create is field-pinned: a user may only create their OWN doc and may
+      // NOT self-assign privileged/trust fields. role/status/isVerified and the
+      // reputation counters must start at safe defaults — promotion happens only
+      // via the super-admin Admin SDK route. Without this, any signed-in user
+      // could write role:'admin' to their own doc and become an admin.
+      allow create: if isOwner(userId)
+        && request.resource.data.role == 'user'
+        && request.resource.data.status == 'active'
+        && request.resource.data.isVerified == false
+        && request.resource.data.donationCount == 0
+        && request.resource.data.receivedCount == 0
+        && request.resource.data.rating == 0;
       // Admins may update anything EXCEPT role — role changes require the
       // super-admin API route (Admin SDK, bypasses rules). This prevents any
       // compromised admin account from promoting arbitrary users.
