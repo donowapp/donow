@@ -1,9 +1,8 @@
 import { Donation, User } from '@/types';
-import { db } from './firebase';
+import { auth, db } from './firebase';
 import { getPublicProfile } from './profiles';
 import { signedUpload } from './cloudinary';
 import {
-  addDoc,
   arrayRemove,
   arrayUnion,
   collection,
@@ -76,29 +75,32 @@ async function uploadDonationImages(images: File[]): Promise<string[]> {
 }
 
 export async function createDonation(data: CreateDonationData) {
+  // Images upload via the signed Cloudinary path; the donation doc itself is
+  // written by the server route, which enforces the active-account check and
+  // the configurable per-day creation limit.
   const imageUrls = await uploadDonationImages(data.images);
-  const now = new Date();
 
-  const donation = {
-    userId: data.userId,
-    title: data.title.trim(),
-    description: data.description.trim(),
-    category: data.category,
-    condition: data.condition,
-    images: imageUrls,
-    location: {
-      address: data.address.trim(),
-      city: data.city.trim(),
-    },
-    status: 'active',
-    viewCount: 0,
-    interestedUsers: [],
-    createdAt: now,
-    updatedAt: now,
-  } satisfies Omit<Donation, 'id'>;
+  const token = await auth.currentUser?.getIdToken();
+  if (!token) throw new Error('You must be signed in to create a donation.');
 
-  const donationRef = await addDoc(collection(db, 'donations'), donation);
-  return { id: donationRef.id, ...donation };
+  const res = await fetch('/api/donations/create', {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${token}` },
+    body: JSON.stringify({
+      title: data.title,
+      description: data.description,
+      category: data.category,
+      condition: data.condition,
+      address: data.address,
+      city: data.city,
+      images: imageUrls,
+    }),
+  });
+  const result = (await res.json().catch(() => ({}))) as { id?: string; error?: string };
+  if (!res.ok || !result.id) {
+    throw new Error(result.error ?? 'Could not create donation.');
+  }
+  return { id: result.id };
 }
 
 export async function getActiveDonations() {
