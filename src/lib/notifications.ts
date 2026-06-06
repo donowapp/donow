@@ -1,6 +1,5 @@
 import { auth, db } from './firebase';
 import {
-  addDoc,
   collection,
   doc,
   getDocs,
@@ -39,12 +38,19 @@ function normalizeNotification(id: string, data: Record<string, unknown>): Notif
 export async function createNotification(
   data: Omit<Notification, 'id' | 'createdAt' | 'isRead'>
 ): Promise<void> {
-  await addDoc(collection(db, 'notifications'), {
-    ...data,
-    createdBy: auth.currentUser?.uid ?? '',
-    isRead: false,
-    createdAt: new Date(),
-  });
+  // Best-effort: notifications are created server-side (client writes are denied
+  // by rules). A failure here must never break the originating action.
+  try {
+    const token = await auth.currentUser?.getIdToken();
+    if (!token) return;
+    await fetch('/api/notifications/create', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${token}` },
+      body: JSON.stringify(data),
+    });
+  } catch {
+    /* swallow — notification delivery is non-critical */
+  }
 }
 
 export function subscribeToNotifications(

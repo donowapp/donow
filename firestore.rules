@@ -107,11 +107,12 @@ service cloud.firestore {
       }
     }
 
-    // Notifications: only the recipient can read/update/delete.
-    // Creation is attributable — the creator must stamp their own uid.
+    // Notifications: only the recipient can read/update/delete. Creation is
+    // server-only (/api/notifications/create, Admin SDK) — this stops a client
+    // forging arbitrary notifications (spam/phishing) to other users.
     match /notifications/{notifId} {
       allow read: if isAuth() && request.auth.uid == resource.data.userId;
-      allow create: if isActive() && request.resource.data.createdBy == request.auth.uid;
+      allow create: if false;
       allow update: if isAuth() && request.auth.uid == resource.data.userId;
       allow delete: if isAuth() && request.auth.uid == resource.data.userId;
     }
