@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { Resend } from 'resend';
 import { sign } from 'jsonwebtoken';
+import { adminAuth } from '@/lib/firebase-admin';
 import { rateLimit } from '@/lib/rate-limit';
 
 const resend = new Resend(process.env.RESEND_API_KEY);
@@ -12,12 +13,35 @@ export async function POST(request: NextRequest) {
     return NextResponse.json({ error: 'Server misconfigured' }, { status: 500 });
   }
   try {
-    const { email, uid } = await request.json();
-    if (!email || !uid) {
-      return NextResponse.json({ error: 'email and uid required' }, { status: 400 });
+    // Require a valid Firebase ID token — uid and email are taken from it,
+    // not from the request body, so callers cannot spoof either field.
+    const authHeader = request.headers.get('authorization') ?? '';
+    const idToken = authHeader.startsWith('Bearer ') ? authHeader.slice(7) : '';
+    if (!idToken) {
+      return NextResponse.json({ error: 'Authentication required' }, { status: 401 });
+    }
+    const decoded = await adminAuth().verifyIdToken(idToken);
+    const uid = decoded.uid;
+    const email = decoded.email;
+    if (!email) {
+      return NextResponse.json({ error: 'No email address on account' }, { status: 400 });
     }
 
-    // Throttle: at most 1 email per 60s and 5 per hour, per account.
+    // Per-IP rate limit: 10 emails per hour from any single IP regardless of uid.
+    const forwarded = request.headers.get('x-forwarded-for') ?? '';
+    const ip = forwarded.split(',')[0].trim() || 'unknown';
+    const ipLimit = await rateLimit(`verify-ip:${ip}`, {
+      maxHits: 10,
+      windowMs: 60 * 60 * 1000,
+    });
+    if (!ipLimit.ok) {
+      return NextResponse.json(
+        { error: 'Too many requests from this network. Please wait before trying again.' },
+        { status: 429, headers: { 'Retry-After': String(ipLimit.retryAfter ?? 60) } }
+      );
+    }
+
+    // Per-account rate limit: at most 5 emails per hour, minimum 60 s between sends.
     const limit = await rateLimit(`verify:${uid}`, {
       maxHits: 5,
       windowMs: 60 * 60 * 1000,

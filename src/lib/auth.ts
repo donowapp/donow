@@ -63,16 +63,18 @@ export async function signupWithEmail(email: string, password: string, userData:
     state: profile.state,
     profileImage: profile.profileImage,
   }).catch(console.error);
-  await sendCustomVerificationEmail(email, user.uid);
+  await sendCustomVerificationEmail();
   return profile;
 }
 
-async function sendCustomVerificationEmail(email: string, uid: string) {
+async function sendCustomVerificationEmail() {
   try {
+    const currentUser = auth.currentUser;
+    if (!currentUser) throw new Error('Not signed in');
+    const token = await currentUser.getIdToken();
     const res = await fetch('/api/auth/send-verification', {
       method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ email, uid }),
+      headers: { Authorization: `Bearer ${token}` },
     });
     if (!res.ok) throw new Error('API error');
   } catch {
@@ -104,7 +106,7 @@ export async function resetPassword(email: string) {
 export async function resendVerificationEmail() {
   const user = auth.currentUser;
   if (!user || user.emailVerified) return;
-  await sendCustomVerificationEmail(user.email ?? '', user.uid);
+  await sendCustomVerificationEmail();
 }
 
 export async function getCurrentUser() {
