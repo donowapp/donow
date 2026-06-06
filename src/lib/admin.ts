@@ -73,7 +73,29 @@ export async function setUserRole(
   uid: string,
   role: User['role']
 ): Promise<void> {
-  await updateDoc(doc(db, 'users', uid), { role, updatedAt: new Date() });
+  // Routed through the server so only super-admin UIDs (env-pinned) can promote/demote.
+  const token = await auth.currentUser?.getIdToken();
+  if (!token) throw new Error('Not authenticated');
+  const res = await fetch('/api/admin/set-user-role', {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${token}` },
+    body: JSON.stringify({ uid, role }),
+  });
+  if (!res.ok) {
+    const data = await res.json().catch(() => ({}));
+    throw new Error((data as { error?: string }).error ?? 'Could not update role');
+  }
+}
+
+export async function checkIsSuperAdmin(): Promise<boolean> {
+  const token = await auth.currentUser?.getIdToken();
+  if (!token) return false;
+  const res = await fetch('/api/admin/is-super-admin', {
+    headers: { Authorization: `Bearer ${token}` },
+  });
+  if (!res.ok) return false;
+  const data = await res.json() as { isSuperAdmin?: boolean };
+  return data.isSuperAdmin ?? false;
 }
 
 export async function getAllDonationsAdmin(): Promise<Donation[]> {
@@ -210,7 +232,6 @@ const DEFAULT_SETTINGS: PlatformSettings = {
   googleAnalyticsId: '',
   googleTagManagerId: '',
   metaPixelId: '',
-  customHeadScript: '',
 };
 
 export async function getPlatformSettings(): Promise<PlatformSettings> {
@@ -248,7 +269,6 @@ export async function getPlatformSettings(): Promise<PlatformSettings> {
     googleAnalyticsId: data.googleAnalyticsId ?? '',
     googleTagManagerId: data.googleTagManagerId ?? '',
     metaPixelId: data.metaPixelId ?? '',
-    customHeadScript: data.customHeadScript ?? '',
   };
 }
 

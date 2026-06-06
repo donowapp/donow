@@ -5,28 +5,10 @@ import { useRouter } from 'next/navigation';
 import { doc, updateDoc } from 'firebase/firestore';
 import { db } from '@/lib/firebase';
 import { syncOwnPublicProfile } from '@/lib/profiles';
+import { signedUpload } from '@/lib/cloudinary';
 import { useAuth } from '@/hooks/useAuth';
 import { Input } from '@/components/common/Input';
 import { Button } from '@/components/common/Button';
-
-async function uploadToCloudinary(file: File): Promise<string> {
-  const cloudName = process.env.NEXT_PUBLIC_CLOUDINARY_CLOUD_NAME;
-  const uploadPreset = process.env.NEXT_PUBLIC_CLOUDINARY_UPLOAD_PRESET;
-  if (!cloudName || !uploadPreset) throw new Error('Image upload not configured.');
-
-  const formData = new FormData();
-  formData.append('file', file);
-  formData.append('upload_preset', uploadPreset);
-  formData.append('folder', 'donow/avatars');
-
-  const res = await fetch(`https://api.cloudinary.com/v1_1/${cloudName}/image/upload`, {
-    method: 'POST',
-    body: formData,
-  });
-  const data = await res.json();
-  if (!res.ok) throw new Error(data?.error?.message || 'Upload failed.');
-  return data.secure_url as string;
-}
 
 export default function ProfilePage() {
   const router = useRouter();
@@ -98,7 +80,7 @@ export default function ProfilePage() {
     try {
       let profileImage = user.profileImage;
       if (photoFile) {
-        profileImage = await uploadToCloudinary(photoFile);
+        profileImage = await signedUpload(photoFile, 'donow/avatars');
       }
       await updateDoc(doc(db, 'users', user.uid), {
         ...form,

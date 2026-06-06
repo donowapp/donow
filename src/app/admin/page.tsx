@@ -8,6 +8,7 @@ import {
   adminDeleteDonation,
   adminDeleteUser,
   Announcement,
+  checkIsSuperAdmin,
   deleteAnnouncement,
   flagDonation,
   getAllDonationsAdmin,
@@ -26,6 +27,7 @@ import {
   unflagDonation,
   updatePlatformSettings,
 } from '@/lib/admin';
+import { signedUpload } from '@/lib/cloudinary';
 import { CATEGORIES } from '@/constants/config';
 import { AdminLog, Donation, PlatformSettings, User } from '@/types';
 
@@ -89,9 +91,9 @@ function exportCSV(filename: string, rows: Record<string, string | number | bool
 
 // ─── User Details Modal ───────────────────────────────────────────────────────
 function UserModal({
-  u, currentUid, actionPending, onClose, onStatus, onRole, onVerify, onDelete,
+  u, currentUid, isSuperAdmin, actionPending, onClose, onStatus, onRole, onVerify, onDelete,
 }: {
-  u: User; currentUid: string; actionPending: string | null;
+  u: User; currentUid: string; isSuperAdmin: boolean; actionPending: string | null;
   onClose: () => void;
   onStatus: (uid: string, status: User['status']) => void;
   onRole: (uid: string, role: User['role']) => void;
@@ -175,9 +177,11 @@ function UserModal({
               {(u.status === 'suspended' || u.status === 'banned') && (
                 <button onClick={() => onStatus(u.uid, 'active')} disabled={actionPending === u.uid} className="rounded-lg bg-green-100 px-3 py-1.5 text-xs font-semibold text-green-700 hover:bg-green-200 disabled:opacity-40">Restore</button>
               )}
-              <button onClick={() => onRole(u.uid, u.role === 'admin' ? 'user' : 'admin')} disabled={actionPending === u.uid + '-role'} className="rounded-lg bg-purple-100 px-3 py-1.5 text-xs font-semibold text-purple-700 hover:bg-purple-200 disabled:opacity-40">
-                {u.role === 'admin' ? 'Remove Admin' : 'Make Admin'}
-              </button>
+              {isSuperAdmin && (
+                <button onClick={() => onRole(u.uid, u.role === 'admin' ? 'user' : 'admin')} disabled={actionPending === u.uid + '-role'} className="rounded-lg bg-purple-100 px-3 py-1.5 text-xs font-semibold text-purple-700 hover:bg-purple-200 disabled:opacity-40">
+                  {u.role === 'admin' ? 'Remove Admin' : 'Make Admin'}
+                </button>
+              )}
               <button onClick={() => onVerify(u.uid, !u.isVerified)} disabled={actionPending === u.uid + '-verify'} className="rounded-lg bg-teal-100 px-3 py-1.5 text-xs font-semibold text-teal-700 hover:bg-teal-200 disabled:opacity-40">
                 {u.isVerified ? 'Unverify' : '✓ Verify'}
               </button>
@@ -277,23 +281,15 @@ function ImageUploadCard({ title, desc, url, badge, previewNode, onChange }: {
   const [draft, setDraft] = useState(url);
   const [error, setError] = useState('');
 
-  const cloudName = process.env.NEXT_PUBLIC_CLOUDINARY_CLOUD_NAME;
-  const uploadPreset = process.env.NEXT_PUBLIC_CLOUDINARY_UPLOAD_PRESET;
-
   useEffect(() => { setDraft(url); }, [url]);
 
   const handleUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
-    if (!file || !cloudName || !uploadPreset) return;
+    if (!file) return;
     setUploading(true); setError('');
     try {
-      const form = new FormData();
-      form.append('file', file);
-      form.append('upload_preset', uploadPreset);
-      const res = await fetch(`https://api.cloudinary.com/v1_1/${cloudName}/image/upload`, { method: 'POST', body: form });
-      const data = await res.json();
-      if (data.secure_url) { setDraft(data.secure_url); onChange(data.secure_url); }
-      else setError('Upload failed. Try pasting a URL instead.');
+      const secure_url = await signedUpload(file, 'donow');
+      setDraft(secure_url); onChange(secure_url);
     } catch { setError('Upload failed. Check your connection.'); }
     finally { setUploading(false); }
   };
@@ -458,6 +454,7 @@ export default function AdminPage() {
   const [donationSearch, setDonationSearch] = useState('');
   const [moderationSearch, setModerationSearch] = useState('');
   const [moderationReasonFilter, setModerationReasonFilter] = useState('');
+  const [isSuperAdmin, setIsSuperAdmin]   = useState(false);
   const [actionPending, setActionPending] = useState<string | null>(null);
   const [selectedUsers, setSelectedUsers] = useState<Set<string>>(new Set());
   const [bulkPending, setBulkPending]     = useState(false);
@@ -490,6 +487,12 @@ export default function AdminPage() {
   useEffect(() => {
     if (!checkingAuth && !loading && !user) router.push('/login');
   }, [checkingAuth, loading, router, user]);
+
+  // ── Super-admin check ─────────────────────────────────────────────────────
+  useEffect(() => {
+    if (!user || user.role !== 'admin') return;
+    checkIsSuperAdmin().then(setIsSuperAdmin).catch(() => {});
+  }, [user]);
 
   // ── Load core data ────────────────────────────────────────────────────────
   useEffect(() => {
@@ -780,7 +783,7 @@ export default function AdminPage() {
 
       {viewUser && (
         <UserModal
-          u={viewUser} currentUid={user.uid} actionPending={actionPending}
+          u={viewUser} currentUid={user.uid} isSuperAdmin={isSuperAdmin} actionPending={actionPending}
           onClose={() => setViewUser(null)}
           onStatus={handleUserStatus}
           onRole={handleUserRole}
@@ -1026,8 +1029,12 @@ export default function AdminPage() {
                     <button onClick={() => handleBulkAction('ban')}          disabled={bulkPending} className="rounded bg-red-100 px-2.5 py-1 text-xs font-semibold text-red-700 hover:bg-red-200 disabled:opacity-40">Ban</button>
                     <button onClick={() => handleBulkAction('restore')}      disabled={bulkPending} className="rounded bg-green-100 px-2.5 py-1 text-xs font-semibold text-green-700 hover:bg-green-200 disabled:opacity-40">Restore</button>
                     <button onClick={() => handleBulkAction('verify')}       disabled={bulkPending} className="rounded bg-teal-100 px-2.5 py-1 text-xs font-semibold text-teal-700 hover:bg-teal-200 disabled:opacity-40">Verify All</button>
-                    <button onClick={() => handleBulkAction('make-admin')}   disabled={bulkPending} className="rounded bg-purple-100 px-2.5 py-1 text-xs font-semibold text-purple-700 hover:bg-purple-200 disabled:opacity-40">Make Admin</button>
-                    <button onClick={() => handleBulkAction('remove-admin')} disabled={bulkPending} className="rounded bg-gray-100 px-2.5 py-1 text-xs font-semibold text-gray-700 hover:bg-gray-200 disabled:opacity-40">Remove Admin</button>
+                    {isSuperAdmin && (
+                      <>
+                        <button onClick={() => handleBulkAction('make-admin')}   disabled={bulkPending} className="rounded bg-purple-100 px-2.5 py-1 text-xs font-semibold text-purple-700 hover:bg-purple-200 disabled:opacity-40">Make Admin</button>
+                        <button onClick={() => handleBulkAction('remove-admin')} disabled={bulkPending} className="rounded bg-gray-100 px-2.5 py-1 text-xs font-semibold text-gray-700 hover:bg-gray-200 disabled:opacity-40">Remove Admin</button>
+                      </>
+                    )}
                     <button onClick={() => setSelectedUsers(new Set())} className="ml-auto text-xs text-gray-500 hover:text-gray-800">✕ Clear</button>
                   </div>
                 )}
@@ -1594,19 +1601,6 @@ export default function AdminPage() {
                             className="w-full rounded-lg border border-gray-300 px-4 py-2 text-sm font-mono outline-none focus:ring-2 focus:ring-teal-500" />
                         </div>
                       ))}
-                      <div>
-                        <label className="block text-xs font-semibold uppercase text-gray-500 mb-1">🧩 Custom &lt;head&gt; Script (advanced)</label>
-                        <textarea
-                          value={String(settingsData.customHeadScript ?? '')}
-                          onChange={(e) => setSettingsData({ ...settingsData, customHeadScript: e.target.value })}
-                          rows={5}
-                          placeholder={'<!-- Paste any other tracking snippet here, e.g. TikTok Pixel,\n     LinkedIn Insight Tag, Hotjar. Include the full <script>…</script>. -->'}
-                          className="w-full rounded-lg border border-gray-300 px-4 py-2 text-xs font-mono outline-none focus:ring-2 focus:ring-teal-500 resize-y"
-                        />
-                        <p className="mt-1 text-[11px] text-amber-600">
-                          ⚠ This runs as raw code on every visitor&apos;s browser. Only paste snippets from sources you trust.
-                        </p>
-                      </div>
                     </div>
 
                     {/* ─ Feature Toggles ─ */}
