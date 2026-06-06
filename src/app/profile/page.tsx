@@ -6,6 +6,7 @@ import { doc, updateDoc } from 'firebase/firestore';
 import { db } from '@/lib/firebase';
 import { syncOwnPublicProfile } from '@/lib/profiles';
 import { signedUpload } from '@/lib/cloudinary';
+import { deleteOwnAccount } from '@/lib/auth';
 import { useAuth } from '@/hooks/useAuth';
 import { Input } from '@/components/common/Input';
 import { Button } from '@/components/common/Button';
@@ -20,6 +21,10 @@ export default function ProfilePage() {
   const [photoFile, setPhotoFile] = useState<File | null>(null);
   const [photoPreview, setPhotoPreview] = useState<string | null>(null);
   const fileRef = useRef<HTMLInputElement>(null);
+  const [showDeleteModal, setShowDeleteModal] = useState(false);
+  const [deleteConfirm, setDeleteConfirm] = useState('');
+  const [deleting, setDeleting] = useState(false);
+  const [deleteError, setDeleteError] = useState<string | null>(null);
 
   const [form, setForm] = useState({
     name: '',
@@ -102,6 +107,19 @@ export default function ProfilePage() {
       setError(err instanceof Error ? err.message : 'Could not save profile. Please try again.');
     } finally {
       setSaving(false);
+    }
+  };
+
+  const handleDeleteAccount = async () => {
+    if (deleteConfirm !== 'DELETE') return;
+    setDeleting(true);
+    setDeleteError(null);
+    try {
+      await deleteOwnAccount();
+      router.push('/');
+    } catch (err) {
+      setDeleteError(err instanceof Error ? err.message : 'Could not delete account. Please try again.');
+      setDeleting(false);
     }
   };
 
@@ -204,7 +222,69 @@ export default function ProfilePage() {
             </Button>
           </div>
         </form>
+
+        {/* Danger zone */}
+        <div className="mt-8 rounded-lg border border-red-200 bg-white p-6 shadow">
+          <h2 className="text-lg font-bold text-red-700">Delete account</h2>
+          <p className="mt-1 text-sm text-gray-600">
+            Permanently delete your account, your listings, messages, notifications and uploaded
+            photos. Reviews you wrote are kept but anonymised. This cannot be undone.
+          </p>
+          <button
+            type="button"
+            onClick={() => { setShowDeleteModal(true); setDeleteConfirm(''); setDeleteError(null); }}
+            className="mt-4 rounded-lg border border-red-300 px-4 py-2 text-sm font-semibold text-red-700 transition hover:bg-red-50"
+          >
+            Delete my account
+          </button>
+        </div>
       </div>
+
+      {/* Delete confirmation modal */}
+      {showDeleteModal && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 px-4">
+          <div className="w-full max-w-md rounded-lg bg-white p-6 shadow-xl">
+            <h3 className="text-xl font-bold text-gray-900">Delete your account?</h3>
+            <p className="mt-2 text-sm text-gray-600">
+              This permanently erases your profile, listings, messages, notifications and uploaded
+              images. This action is irreversible.
+            </p>
+            {deleteError && (
+              <div className="mt-3 rounded border border-red-200 bg-red-50 px-3 py-2 text-sm text-red-700">
+                {deleteError}
+              </div>
+            )}
+            <label htmlFor="delete-confirm" className="mt-4 block text-sm font-medium text-gray-700">
+              Type <span className="font-bold">DELETE</span> to confirm
+            </label>
+            <input
+              id="delete-confirm"
+              value={deleteConfirm}
+              onChange={(e) => setDeleteConfirm(e.target.value)}
+              autoComplete="off"
+              className="mt-1 w-full rounded-lg border border-gray-300 px-4 py-2 outline-none transition focus:border-transparent focus:ring-2 focus:ring-red-500"
+            />
+            <div className="mt-5 flex gap-3">
+              <button
+                type="button"
+                onClick={handleDeleteAccount}
+                disabled={deleteConfirm !== 'DELETE' || deleting}
+                className="flex-1 rounded-lg bg-red-600 px-4 py-2 text-sm font-semibold text-white transition hover:bg-red-700 disabled:cursor-not-allowed disabled:opacity-50"
+              >
+                {deleting ? 'Deleting…' : 'Permanently delete'}
+              </button>
+              <button
+                type="button"
+                onClick={() => setShowDeleteModal(false)}
+                disabled={deleting}
+                className="rounded-lg border border-gray-300 px-4 py-2 text-sm font-semibold text-gray-700 transition hover:bg-gray-50 disabled:opacity-50"
+              >
+                Cancel
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 }

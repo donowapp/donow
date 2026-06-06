@@ -10,7 +10,7 @@ export default function PrivacyPage() {
     <div className="bg-gray-50 min-h-screen px-4 py-12">
       <div className="mx-auto max-w-3xl rounded-lg bg-white p-8 shadow">
         <h1 className="mb-2 text-3xl font-bold text-gray-900">Privacy Policy</h1>
-        <p className="mb-8 text-sm text-gray-500">Last updated: May 2025</p>
+        <p className="mb-8 text-sm text-gray-500">Last updated: June 2026</p>
 
         <section className="mb-6">
           <h2 className="mb-2 text-lg font-bold text-gray-800">1. Introduction</h2>
@@ -66,11 +66,23 @@ export default function PrivacyPage() {
         </section>
 
         <section className="mb-6">
-          <h2 className="mb-2 text-lg font-bold text-gray-800">5. Data Retention</h2>
+          <h2 className="mb-2 text-lg font-bold text-gray-800">5. Data Retention &amp; Deletion</h2>
+          <p className="mb-2 text-sm leading-relaxed text-gray-600">
+            We retain your personal data only as long as your account is active or as needed to
+            provide the service. You can delete your account at any time from{' '}
+            <Link href="/profile" className="text-teal-600 hover:underline">your profile</Link>{' '}
+            (&ldquo;Delete account&rdquo;). Deletion is immediate and erases:
+          </p>
+          <ul className="mb-3 list-disc space-y-1 pl-5 text-sm leading-relaxed text-gray-600">
+            <li>Your profile, contact details and uploaded profile photo.</li>
+            <li>Your donation listings and their photos.</li>
+            <li>Your conversations, messages and notifications.</li>
+            <li>Your Firebase authentication account.</li>
+          </ul>
           <p className="text-sm leading-relaxed text-gray-600">
-            Your account data is retained as long as your account is active. You may request
-            deletion of your account and associated data by contacting us. Donated item listings
-            may remain in a completed or archived state for record-keeping.
+            Reviews you wrote about others are retained but anonymised (your name is removed) so
+            other users&rsquo; rating histories stay accurate. Aggregated, non-identifying analytics
+            may be retained. We may also retain limited records where required by law.
           </p>
         </section>
 
@@ -111,7 +123,9 @@ export default function PrivacyPage() {
             <li>Withdraw consent for non-essential data processing.</li>
           </ul>
           <p className="mt-2 text-sm text-gray-600">
-            To exercise these rights, contact us at{' '}
+            You can delete your account and data instantly from{' '}
+            <Link href="/profile" className="text-teal-600 hover:underline">your profile</Link>. For
+            any other request, contact us at{' '}
             <a href="mailto:admin@donow.co.in" className="text-teal-600 hover:underline">
               admin@donow.co.in
             </a>
@@ -119,8 +133,28 @@ export default function PrivacyPage() {
           </p>
         </section>
 
+        <section className="mb-6">
+          <h2 className="mb-2 text-lg font-bold text-gray-800">10. Grievance Officer</h2>
+          <p className="text-sm leading-relaxed text-gray-600">
+            In accordance with India&rsquo;s Digital Personal Data Protection Act, 2023 and the
+            Information Technology Act, 2000, you may contact our Grievance Officer for any
+            complaint, data-protection concern, or request regarding your personal data. We aim to
+            acknowledge grievances within 24 hours and resolve them within 30 days.
+          </p>
+          <div className="mt-3 rounded-lg bg-gray-50 p-4 text-sm text-gray-700">
+            <p><span className="font-semibold">Grievance Officer:</span> Data Protection Officer, Donow</p>
+            <p>
+              <span className="font-semibold">Email:</span>{' '}
+              <a href="mailto:grievance@donow.co.in" className="text-teal-600 hover:underline">
+                grievance@donow.co.in
+              </a>
+            </p>
+            <p><span className="font-semibold">Address:</span> Donow, India</p>
+          </div>
+        </section>
+
         <section className="mb-8">
-          <h2 className="mb-2 text-lg font-bold text-gray-800">10. Changes to This Policy</h2>
+          <h2 className="mb-2 text-lg font-bold text-gray-800">11. Changes to This Policy</h2>
           <p className="text-sm leading-relaxed text-gray-600">
             We may update this Privacy Policy periodically. We will notify users of significant
             changes. Continued use of the Platform after changes are posted constitutes acceptance.

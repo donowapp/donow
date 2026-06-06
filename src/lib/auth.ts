@@ -99,6 +99,25 @@ export async function logout() {
   await signOut(auth);
 }
 
+/**
+ * Permanently deletes the signed-in user's account and all associated data
+ * (DPDP right to erasure). Runs the server-side cascade, then signs out locally.
+ */
+export async function deleteOwnAccount(): Promise<void> {
+  const currentUser = auth.currentUser;
+  if (!currentUser) throw new Error('You must be signed in.');
+  const token = await currentUser.getIdToken();
+  const res = await fetch('/api/account/delete', {
+    method: 'POST',
+    headers: { Authorization: `Bearer ${token}` },
+  });
+  if (!res.ok) {
+    const data = await res.json().catch(() => ({}));
+    throw new Error((data as { error?: string }).error ?? 'Could not delete account.');
+  }
+  await signOut(auth);
+}
+
 export async function resetPassword(email: string) {
   await sendPasswordResetEmail(auth, email);
 }
