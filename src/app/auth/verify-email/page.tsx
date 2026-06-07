@@ -16,6 +16,8 @@ export default function VerifyEmailPage() {
   const [errMsg, setErrMsg] = useState('');
 
   useEffect(() => {
+    // One-time token validation on mount; setting state here is intentional.
+    // eslint-disable-next-line react-hooks/set-state-in-effect
     if (!token) { setState('error'); setErrMsg('Verification link is missing.'); return; }
 
     // The server validates the token AND marks the account verified (emailConfirmed).

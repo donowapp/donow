@@ -15,7 +15,9 @@ export function WelcomeModal() {
   const [open, setOpen] = useState(false);
 
   useEffect(() => {
+    // First-visit check on mount (localStorage is client-only); intentional set.
     try {
+      // eslint-disable-next-line react-hooks/set-state-in-effect
       if (!localStorage.getItem(KEY)) setOpen(true);
     } catch {
       /* storage blocked — just don't show it */

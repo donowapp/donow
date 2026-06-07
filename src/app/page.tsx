@@ -7,7 +7,6 @@ import { getFeaturedDonations } from '@/lib/donations';
 import { cld } from '@/lib/cld';
 import { WelcomeModal } from '@/components/common/WelcomeModal';
 import { getPlatformSettings } from '@/lib/admin';
-import { getPublicStats, PublicStats } from '@/lib/stats';
 import { CATEGORIES } from '@/constants/config';
 import { Donation, PlatformSettings } from '@/types';
 
@@ -77,7 +76,6 @@ export default function Home() {
   const [loadingFeatured, setLoadingFeatured] = useState(true);
   const [heroImage, setHeroImage] = useState(DEFAULT_HERO);
   const [siteSettings, setSiteSettings] = useState<PlatformSettings | null>(null);
-  const [stats, setStats] = useState<PublicStats | null>(null);
   const [storyOffset, setStoryOffset] = useState(0);
   const [cardOffset, setCardOffset] = useState(0);
   const [sectionsVisible, setSectionsVisible] = useState(true);
@@ -85,7 +83,6 @@ export default function Home() {
   useEffect(() => {
     getFeaturedDonations(8).then(setFeatured).catch(() => {}).finally(() => setLoadingFeatured(false));
     getPlatformSettings().then((s) => { if (s.heroImageUrl) setHeroImage(s.heroImageUrl); setSiteSettings(s); }).catch(() => {});
-    getPublicStats().then(setStats).catch(() => {});
   }, []);
 
   useEffect(() => {
@@ -106,7 +103,6 @@ export default function Home() {
 
       {/* ── HERO ─────────────────────────────────────────────────────────────── */}
       <section className="relative overflow-hidden text-white" style={{ minHeight: '580px' }}>
-        {/* eslint-disable-next-line @next/next/no-img-element */}
         {/* eslint-disable-next-line @next/next/no-img-element */}
         <img src={cld(heroImage, 1600)} alt="" fetchPriority="high" className="absolute inset-0 h-full w-full object-cover [object-position:right_20%] sm:[object-position:70%_25%]" onError={(e) => { (e.target as HTMLImageElement).src = DEFAULT_HERO; }} />
         <div className="absolute inset-0 bg-gradient-to-r from-black/75 via-black/45 to-black/20" />

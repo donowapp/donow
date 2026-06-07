@@ -98,6 +98,9 @@ export default function DonationDetailsClient({ donationId }: DonationDetailsCli
       .finally(() => { if (isMounted) setLoading(false); });
 
     return () => { isMounted = false; };
+    // Intentionally keyed on donationId only — re-running on every `user` change
+    // would refetch the whole page; auth-dependent bits resolve via other effects.
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [donationId]);
 
   useEffect(() => {

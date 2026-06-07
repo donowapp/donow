@@ -291,6 +291,8 @@ function ImageUploadCard({ title, desc, url, badge, previewNode, onChange }: {
   const [draft, setDraft] = useState(url);
   const [error, setError] = useState('');
 
+  // Mirror the incoming url prop into local draft state (controlled-input sync).
+  // eslint-disable-next-line react-hooks/set-state-in-effect
   useEffect(() => { setDraft(url); }, [url]);
 
   const handleUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -420,7 +422,7 @@ function HeroStatsEditor({ stats, onChange }: {
     <div className="rounded-2xl bg-white p-6 shadow space-y-3">
       <div>
         <h2 className="font-semibold text-gray-800">📊 Hero Section Stats</h2>
-        <p className="text-xs text-gray-400 mt-0.5">The 3 impact counters shown on the homepage hero (e.g. "1,50,000+ Items Donated").</p>
+        <p className="text-xs text-gray-400 mt-0.5">The 3 impact counters shown on the homepage hero (e.g. &quot;1,50,000+ Items Donated&quot;).</p>
       </div>
       <div className="space-y-3">
         {stats.map((s, i) => (
