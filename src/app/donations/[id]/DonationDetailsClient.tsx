@@ -7,7 +7,7 @@ import { Button } from '@/components/common/Button';
 import { StarRating } from '@/components/common/StarRating';
 import { CATEGORIES } from '@/constants/config';
 import { getDonationById, getDonorById, getDonationAddress, toggleInterest, toggleSavedDonation } from '@/lib/donations';
-import { getOrCreateConversation } from '@/lib/messages';
+import { getOrCreateConversation, buildConversationId, getConversation } from '@/lib/messages';
 import { getDonationReviews, hasUserReviewed, addReview, getDonorAverageRating } from '@/lib/reviews';
 import { createNotification } from '@/lib/notifications';
 import { useAuth } from '@/hooks/useAuth';
@@ -34,6 +34,7 @@ export default function DonationDetailsClient({ donationId }: DonationDetailsCli
   const [donation, setDonation] = useState<Donation | null>(null);
   const [donor, setDonor] = useState<DonorProfile | null>(null);
   const [privateAddress, setPrivateAddress] = useState<string | null>(null);
+  const [hasConversation, setHasConversation] = useState(false);
   const [selectedImage, setSelectedImage] = useState('');
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
@@ -62,11 +63,17 @@ export default function DonationDetailsClient({ donationId }: DonationDetailsCli
         setDonation(loadedDonation);
         setSelectedImage(loadedDonation.images[0] ?? '');
 
-        const [loadedDonor, donationReviews, ratingData, address] = await Promise.all([
+        const isViewerOwner = !!user && user.uid === loadedDonation.userId;
+        const [loadedDonor, donationReviews, ratingData, address, convExists] = await Promise.all([
           getDonorById(loadedDonation.userId),
           getDonationReviews(donationId),
           getDonorAverageRating(loadedDonation.userId),
           getDonationAddress(donationId), // null unless owner / has a conversation
+          user && !isViewerOwner
+            ? getConversation(buildConversationId(donationId, loadedDonation.userId, user.uid))
+                .then((c) => !!c)
+                .catch(() => false)
+            : Promise.resolve(false),
         ]);
 
         if (isMounted) {
@@ -74,6 +81,7 @@ export default function DonationDetailsClient({ donationId }: DonationDetailsCli
           setReviews(donationReviews);
           setDonorRating(ratingData);
           setPrivateAddress(address);
+          setHasConversation(convExists);
         }
       })
       .catch((e) => {
@@ -218,7 +226,19 @@ export default function DonationDetailsClient({ donationId }: DonationDetailsCli
 
   const isOwner = user?.uid === donation.userId;
   const isInterested = user ? donation.interestedUsers.includes(user.uid) : false;
-  const canReview = user && !isOwner && !hasReviewed;
+  // A review requires a real transaction (matches firestore.rules): the donation
+  // must be completed AND the reviewer must have a conversation with the donor.
+  const isCompleted = donation.status === 'completed';
+  const canReview = !!user && !isOwner && !hasReviewed && isCompleted && hasConversation;
+  // Explain why the form is hidden, so non-owners aren't left at a dead-end.
+  const reviewHint =
+    user && !isOwner && !hasReviewed
+      ? !isCompleted
+        ? 'You can leave a review once the donor marks this donation as completed.'
+        : !hasConversation
+          ? 'Only people who connected with the donor about this item can leave a review.'
+          : null
+      : null;
 
   return (
     <div className="bg-gray-50 px-4 py-8">
@@ -348,6 +368,10 @@ export default function DonationDetailsClient({ donationId }: DonationDetailsCli
           <h2 className="mb-5 text-2xl font-bold text-gray-900">
             Reviews {reviews.length > 0 && <span className="text-lg font-normal text-gray-500">({reviews.length})</span>}
           </h2>
+
+          {reviewHint && (
+            <p className="mb-6 rounded-lg bg-white p-4 text-sm text-gray-500 shadow">{reviewHint}</p>
+          )}
 
           {canReview && (
             <form onSubmit={handleSubmitReview} className="mb-6 rounded-lg bg-white p-6 shadow">
