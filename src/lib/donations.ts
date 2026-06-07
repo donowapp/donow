@@ -6,7 +6,6 @@ import {
   arrayRemove,
   arrayUnion,
   collection,
-  deleteDoc,
   doc,
   documentId,
   getDoc,
@@ -202,7 +201,17 @@ export async function markDonationCompleted(id: string) {
 }
 
 export async function deleteDonation(id: string) {
-  await deleteDoc(doc(db, 'donations', id));
+  // Server-side so the full cascade runs (reviews, conversations, private addr).
+  const token = await auth.currentUser?.getIdToken();
+  if (!token) throw new Error('You must be signed in.');
+  const res = await fetch(`/api/donations/${id}/delete`, {
+    method: 'POST',
+    headers: { Authorization: `Bearer ${token}` },
+  });
+  if (!res.ok) {
+    const d = (await res.json().catch(() => ({}))) as { error?: string };
+    throw new Error(d.error ?? 'Could not delete donation.');
+  }
 }
 
 export async function toggleInterest(donationId: string, userId: string, interested: boolean) {

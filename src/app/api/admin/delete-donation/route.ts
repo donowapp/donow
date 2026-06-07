@@ -1,10 +1,11 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { getFirestore } from 'firebase-admin/firestore';
 import { verifyAdmin, passesMfaGate } from '@/lib/admin-mfa';
+import { cleanupDonation } from '@/lib/delete-donation';
 
 /**
  * Admin donation deletion — MFA-gated. Destructive and irreversible, so it
- * requires a valid TOTP session once the admin is enrolled.
+ * requires a valid TOTP session once the admin is enrolled. Recursively removes
+ * the donation plus its reviews, conversations and private address subdoc.
  */
 export async function POST(request: NextRequest) {
   const callerUid = await verifyAdmin(request);
@@ -17,7 +18,7 @@ export async function POST(request: NextRequest) {
   if (!id) return NextResponse.json({ error: 'id required' }, { status: 400 });
 
   try {
-    await getFirestore().doc(`donations/${id}`).delete();
+    await cleanupDonation(id);
   } catch (err) {
     console.error('[admin/delete-donation]', err);
     return NextResponse.json({ error: 'Could not delete donation' }, { status: 500 });

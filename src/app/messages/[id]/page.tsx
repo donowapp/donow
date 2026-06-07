@@ -12,6 +12,7 @@ import {
   Conversation,
 } from '@/lib/messages';
 import { Message } from '@/types';
+import { SafetyNotice } from '@/components/common/SafetyNotice';
 
 function formatTime(date: Date): string {
   return new Intl.DateTimeFormat('en-IN', {
@@ -157,6 +158,7 @@ export default function ChatPage() {
 
       {/* Messages */}
       <div className="flex-1 overflow-y-auto px-4 py-4 space-y-4">
+        <SafetyNotice className="mx-auto max-w-md" />
         {messages.length === 0 && (
           <p className="text-center text-sm text-gray-400 mt-10">
             No messages yet. Say hello!

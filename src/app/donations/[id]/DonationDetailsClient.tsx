@@ -5,6 +5,7 @@ import Link from 'next/link';
 import { useRouter } from 'next/navigation';
 import { Button } from '@/components/common/Button';
 import { StarRating } from '@/components/common/StarRating';
+import { SafetyNotice } from '@/components/common/SafetyNotice';
 import { CATEGORIES } from '@/constants/config';
 import { getDonationById, getDonorById, getDonationAddress, toggleInterest, toggleSavedDonation } from '@/lib/donations';
 import { getOrCreateConversation, buildConversationId, getConversation } from '@/lib/messages';
@@ -307,6 +308,7 @@ export default function DonationDetailsClient({ donationId }: DonationDetailsCli
                 <div><span className="font-semibold text-gray-900">Posted: </span>{formatDate(donation.createdAt)}</div>
                 <div><span className="font-semibold text-gray-900">Views: </span>{donation.viewCount}</div>
               </div>
+              <SafetyNotice className="mt-5" />
             </div>
 
             <div className="rounded-lg bg-white p-6 shadow">
