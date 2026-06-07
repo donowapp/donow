@@ -124,17 +124,37 @@ export async function getActiveDonations() {
   );
 }
 
+/**
+ * One view write per donation per browser session. Re-opening the same listing
+ * (back/forward, tab revisits) no longer fires a write each time — this collapses
+ * the old "write on every open" hotspot while preserving an honest unique-ish
+ * view signal. sessionStorage is per-tab-session, so it clears on close.
+ */
+function shouldCountView(id: string): boolean {
+  if (typeof window === 'undefined') return false;
+  try {
+    const key = `vc_${id}`;
+    if (sessionStorage.getItem(key)) return false;
+    sessionStorage.setItem(key, '1');
+    return true;
+  } catch {
+    return true; // private mode / storage disabled — fall back to counting
+  }
+}
+
 export async function getDonationById(id: string) {
   const donationRef = doc(db, 'donations', id);
   const snapshot = await getDoc(donationRef);
 
   if (!snapshot.exists()) return null;
 
-  updateDoc(donationRef, {
-    viewCount: increment(1),
-  }).catch((error) => {
-    console.error('Failed to update donation view count:', error);
-  });
+  if (shouldCountView(id)) {
+    updateDoc(donationRef, {
+      viewCount: increment(1),
+    }).catch((error) => {
+      console.error('Failed to update donation view count:', error);
+    });
+  }
 
   return normalizeDonation(snapshot.id, snapshot.data() as Partial<Donation>);
 }

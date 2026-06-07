@@ -6,6 +6,7 @@ import { Button } from '@/components/common/Button';
 import { Input } from '@/components/common/Input';
 import { useAuth } from '@/hooks/useAuth';
 import { resendVerificationEmail } from '@/lib/auth';
+import { track } from '@/lib/analytics';
 import Link from 'next/link';
 
 export default function SignupPage() {
@@ -37,6 +38,7 @@ export default function SignupPage() {
     if (!validate()) return;
     try {
       await signup(form.email, form.password, { name: form.name.trim(), phone: form.phone.trim() });
+      track('sign_up', {});
       setVerificationSent(true);
     } catch {
       // error shown from store
@@ -66,7 +68,7 @@ export default function SignupPage() {
             We sent a verification link to{' '}
             <span className="font-semibold text-teal-600">{form.email}</span>
           </p>
-          <p className="mt-1 text-sm text-gray-500">You can still use the app while waiting.</p>
+          <p className="mt-1 text-sm text-gray-500">Please verify your email to start using Donow — you&apos;ll need to confirm the link before you can log in.</p>
 
           {resendMessage && (
             <p className="mt-4 text-sm text-teal-700 bg-teal-50 rounded px-3 py-2">{resendMessage}</p>

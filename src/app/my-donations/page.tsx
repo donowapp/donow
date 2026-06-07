@@ -5,6 +5,9 @@ import { useRouter } from 'next/navigation';
 import Link from 'next/link';
 import { useAuth } from '@/hooks/useAuth';
 import { getMyDonations, markDonationCompleted, deleteDonation } from '@/lib/donations';
+import { cld } from '@/lib/cld';
+import { track } from '@/lib/analytics';
+import { captureError } from '@/lib/crash';
 import { Button } from '@/components/common/Button';
 import { Donation } from '@/types';
 
@@ -51,10 +54,12 @@ export default function MyDonationsPage() {
     setActionId(id);
     try {
       await markDonationCompleted(id);
+      track('donation_completed', { donationId: id });
       setDonations((prev) =>
         prev.map((d) => (d.id === id ? { ...d, status: 'completed' as const } : d))
       );
-    } catch {
+    } catch (e) {
+      captureError(e, { action: 'markComplete', donationId: id });
       setError('Could not mark donation as completed.');
     } finally {
       setActionId(null);
@@ -128,8 +133,12 @@ export default function MyDonationsPage() {
                   {donation.images[0] ? (
                     // eslint-disable-next-line @next/next/no-img-element
                     <img
-                      src={donation.images[0]}
+                      src={cld(donation.images[0], 200)}
                       alt={donation.title}
+                      width={96}
+                      height={96}
+                      loading="lazy"
+                      decoding="async"
                       className="h-full w-full object-cover"
                     />
                   ) : (
@@ -157,6 +166,14 @@ export default function MyDonationsPage() {
                       <span>{donation.createdAt.toLocaleDateString()}</span>
                     </div>
                   </div>
+
+                  {/* Completion reminder: nudges the donor to close the loop so the
+                      recipient can review (reviews require status === 'completed'). */}
+                  {donation.status === 'active' && donation.interestedUsers.length > 0 && (
+                    <p className="mt-2 rounded-md border border-amber-200 bg-amber-50 px-3 py-2 text-xs text-amber-800">
+                      💡 Already gave this away? Tap <span className="font-semibold">Mark Complete</span> so the recipient can leave you a review.
+                    </p>
+                  )}
 
                   {/* Actions */}
                   <div className="mt-3 flex flex-wrap gap-2">

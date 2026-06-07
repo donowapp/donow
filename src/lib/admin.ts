@@ -6,8 +6,10 @@ import {
   doc,
   getDoc,
   getDocs,
+  query,
   setDoc,
   updateDoc,
+  where,
 } from 'firebase/firestore';
 import { AdminLog, Donation, PlatformSettings, User } from '@/types';
 
@@ -302,6 +304,52 @@ export async function adminDeleteUser(uid: string): Promise<void> {
   // Full server-side cascade (donations, profile, conversations, images, Auth),
   // MFA-gated — not just the /users doc.
   await adminMfaFetch('/api/admin/delete-user', { uid });
+}
+
+// ── Trust & safety reports ──────────────────────────────────────────────────
+export interface Report {
+  id: string;
+  reporterId: string;
+  targetUserId: string;
+  donationId: string;
+  messageId: string;
+  conversationId: string;
+  reason: string;
+  description: string;
+  status: 'open' | 'reviewed' | 'dismissed' | 'actioned';
+  createdAt: Date;
+}
+
+export async function getOpenReports(): Promise<Report[]> {
+  const snap = await getDocs(query(collection(db, 'reports'), where('status', '==', 'open')));
+  return snap.docs
+    .map((d) => {
+      const data = d.data();
+      return {
+        id: d.id,
+        reporterId: data.reporterId ?? '',
+        targetUserId: data.targetUserId ?? '',
+        donationId: data.donationId ?? '',
+        messageId: data.messageId ?? '',
+        conversationId: data.conversationId ?? '',
+        reason: data.reason ?? 'other',
+        description: data.description ?? '',
+        status: data.status ?? 'open',
+        createdAt: normalizeDate(data.createdAt),
+      } as Report;
+    })
+    .sort((a, b) => b.createdAt.getTime() - a.createdAt.getTime());
+}
+
+export async function resolveReport(
+  id: string,
+  status: 'dismissed' | 'actioned' | 'reviewed'
+): Promise<void> {
+  await updateDoc(doc(db, 'reports', id), {
+    status,
+    resolvedAt: new Date(),
+    resolvedBy: auth.currentUser?.uid ?? '',
+  });
 }
 
 export interface Announcement {

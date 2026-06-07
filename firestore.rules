@@ -187,6 +187,36 @@ service cloud.firestore {
       allow delete: if isAdmin();
     }
 
+    // Reports: trust & safety queue. Any active user may file a report ABOUT
+    // someone else (a donation, a user, or a message); only admins can read the
+    // queue and resolve entries. Reports are otherwise immutable and never
+    // client-deletable, so the moderation record can't be tampered with.
+    match /reports/{reportId} {
+      allow read: if isAdmin();
+      allow create: if isActive()
+        && request.auth.uid == request.resource.data.reporterId
+        && request.resource.data.reporterId != request.resource.data.targetUserId
+        && request.resource.data.status == 'open'
+        && request.resource.data.reason in
+             ['spam', 'scam', 'fake_item', 'harassment', 'inappropriate', 'other']
+        && request.resource.data.description is string
+        && request.resource.data.description.size() <= 1000;
+      // Admins resolve reports (status only); the rest of the record is frozen.
+      allow update: if isAdmin()
+        && request.resource.data.diff(resource.data).affectedKeys()
+             .hasOnly(['status', 'resolvedAt', 'resolvedBy']);
+      allow delete: if false;
+    }
+
+    // Analytics events: append-only funnel sink (mobile + any non-GA client).
+    // Anyone signed in may append their OWN events; nobody reads them from the
+    // client (analysis happens in the console / export). Immutable once written.
+    match /events/{eventId} {
+      allow read: if false;
+      allow create: if isAuth() && request.resource.data.uid == request.auth.uid;
+      allow update, delete: if false;
+    }
+
     // Announcements: publicly readable broadcasts; admin-managed.
     match /announcements/{announcementId} {
       allow read: if true;

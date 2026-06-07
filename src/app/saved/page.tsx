@@ -5,6 +5,7 @@ import { useRouter } from 'next/navigation';
 import Link from 'next/link';
 import { useAuth } from '@/hooks/useAuth';
 import { getSavedDonationsByIds, toggleSavedDonation } from '@/lib/donations';
+import { cld } from '@/lib/cld';
 import { CATEGORIES } from '@/constants/config';
 import { Button } from '@/components/common/Button';
 import { Donation } from '@/types';
@@ -92,7 +93,7 @@ export default function SavedPage() {
                 <Link href={`/donations/${donation.id}`}>
                   <div
                     className="h-48 bg-gray-200 bg-cover bg-center"
-                    style={{ backgroundImage: donation.images[0] ? `url(${donation.images[0]})` : undefined }}
+                    style={{ backgroundImage: donation.images[0] ? `url(${cld(donation.images[0], 400)})` : undefined }}
                   />
                   <div className="p-5">
                     <div className="mb-3 flex items-center justify-between gap-3">

@@ -4,6 +4,8 @@ import { useEffect, useState } from 'react';
 import Link from 'next/link';
 import { Button } from '@/components/common/Button';
 import { getFeaturedDonations } from '@/lib/donations';
+import { cld } from '@/lib/cld';
+import { WelcomeModal } from '@/components/common/WelcomeModal';
 import { getPlatformSettings } from '@/lib/admin';
 import { getPublicStats, PublicStats } from '@/lib/stats';
 import { CATEGORIES } from '@/constants/config';
@@ -100,12 +102,13 @@ export default function Home() {
 
   return (
     <div className="bg-slate-50">
+      <WelcomeModal />
 
       {/* ── HERO ─────────────────────────────────────────────────────────────── */}
       <section className="relative overflow-hidden text-white" style={{ minHeight: '580px' }}>
         {/* eslint-disable-next-line @next/next/no-img-element */}
         {/* eslint-disable-next-line @next/next/no-img-element */}
-        <img src={heroImage} alt="" className="absolute inset-0 h-full w-full object-cover [object-position:right_20%] sm:[object-position:70%_25%]" onError={(e) => { (e.target as HTMLImageElement).src = DEFAULT_HERO; }} />
+        <img src={cld(heroImage, 1600)} alt="" fetchPriority="high" className="absolute inset-0 h-full w-full object-cover [object-position:right_20%] sm:[object-position:70%_25%]" onError={(e) => { (e.target as HTMLImageElement).src = DEFAULT_HERO; }} />
         <div className="absolute inset-0 bg-gradient-to-r from-black/75 via-black/45 to-black/20" />
         <div className="absolute bottom-0 left-0 right-0 h-28 bg-gradient-to-t from-black/50 to-transparent" />
         <div className="relative z-10 mx-auto max-w-5xl px-4 py-20 sm:py-24">
@@ -193,7 +196,7 @@ export default function Home() {
                     style={{ scrollSnapAlign: 'start' }}
                   >
                     <div className="h-40 bg-gray-200 bg-cover bg-center relative overflow-hidden"
-                      style={{ backgroundImage: donation.images[0] ? `url(${donation.images[0]})` : undefined }}>
+                      style={{ backgroundImage: donation.images[0] ? `url(${cld(donation.images[0], 400)})` : undefined }}>
                       <div className="absolute inset-0 bg-gradient-to-t from-black/30 to-transparent opacity-0 group-hover:opacity-100 transition" />
                     </div>
                     <div className="p-4">
@@ -227,7 +230,7 @@ export default function Home() {
                 style={{ aspectRatio: '1 / 1' }}
               >
                 {/* eslint-disable-next-line @next/next/no-img-element */}
-                <img src={CATEGORY_IMAGES[cat.id]} alt={cat.name} className="absolute inset-0 h-full w-full object-cover transition duration-300 group-hover:scale-110" />
+                <img src={CATEGORY_IMAGES[cat.id]} alt={cat.name} loading="lazy" decoding="async" className="absolute inset-0 h-full w-full object-cover transition duration-300 group-hover:scale-110" />
                 <div className="absolute inset-0 bg-gradient-to-t from-black/75 via-black/20 to-transparent" />
                 <span className="absolute top-2 right-2 text-xl drop-shadow">{cat.icon}</span>
                 <div className="absolute bottom-0 left-0 right-0 px-2 pb-3 text-center">
@@ -309,7 +312,7 @@ export default function Home() {
               <div key={i} className="group flex flex-col rounded-2xl bg-white border border-gray-100 shadow-md transition hover:-translate-y-1 hover:shadow-xl overflow-hidden">
                 <div className="relative h-52 overflow-hidden">
                   {/* eslint-disable-next-line @next/next/no-img-element */}
-                  <img src={story.img} alt={story.name} className="h-full w-full object-cover object-top transition group-hover:scale-105" />
+                  <img src={story.img} alt={story.name} loading="lazy" decoding="async" className="h-full w-full object-cover object-top transition group-hover:scale-105" />
                   <div className="absolute inset-0 bg-gradient-to-t from-black/50 to-transparent" />
                   <span className="absolute bottom-3 right-3 text-3xl drop-shadow">{story.emoji}</span>
                 </div>
@@ -346,7 +349,7 @@ export default function Home() {
               <div key={i} className={`flex items-start gap-4 rounded-2xl border-2 p-4 transition hover:shadow-lg hover:-translate-y-0.5 ${card.color}`}>
                 <div className="relative flex-shrink-0">
                   {/* eslint-disable-next-line @next/next/no-img-element */}
-                  <img src={card.photo} alt={card.name} className="h-14 w-14 rounded-full object-cover shadow-md border-2 border-white" />
+                  <img src={card.photo} alt={card.name} width={56} height={56} loading="lazy" decoding="async" className="h-14 w-14 rounded-full object-cover shadow-md border-2 border-white" />
                   <span className="absolute -bottom-1 -right-1 flex h-5 w-5 items-center justify-center rounded-full bg-teal-500 shadow border-2 border-white">
                     <svg className="h-2.5 w-2.5 text-white" fill="currentColor" viewBox="0 0 20 20"><path fillRule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clipRule="evenodd"/></svg>
                   </span>

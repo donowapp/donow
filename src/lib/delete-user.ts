@@ -77,7 +77,6 @@ export async function deleteUserData(uid: string): Promise<void> {
   if (profileImage) imageUrls.push(profileImage);
 
   const refsToDelete = [
-    ...donationsSnap.docs.map((d) => d.ref),
     db.doc(`users/${uid}`),
     db.doc(`publicProfiles/${uid}`),
   ];
@@ -94,6 +93,12 @@ export async function deleteUserData(uid: string): Promise<void> {
     for (const ref of refsToDelete.slice(i, i + 400)) batch.delete(ref);
     await batch.commit();
   }
+
+  // Donations: recursiveDelete so each donation's subcollections go too — most
+  // importantly donations/{id}/private/location, which holds the donor's EXACT
+  // street address. A plain doc delete would orphan that PII. (cleanupDonation
+  // already uses recursiveDelete for the self-delete path; this matches it.)
+  await Promise.all(donationsSnap.docs.map((d) => db.recursiveDelete(d.ref)));
 
   // Reviews WRITTEN by the user → anonymise so other donors' aggregates stand.
   const reviewsBySnap = await db.collection('reviews').where('reviewerId', '==', uid).get();

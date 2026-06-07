@@ -6,6 +6,7 @@ import { usePathname, useRouter } from 'next/navigation';
 import { useAuth } from '@/hooks/useAuth';
 import { subscribeToConversations } from '@/lib/messages';
 import { subscribeToNotifications } from '@/lib/notifications';
+import { cld } from '@/lib/cld';
 
 export default function Navbar() {
   const pathname = usePathname();
@@ -137,8 +138,12 @@ export default function Navbar() {
                   {user.profileImage ? (
                     // eslint-disable-next-line @next/next/no-img-element
                     <img
-                      src={user.profileImage}
+                      src={cld(user.profileImage, 96)}
                       alt={user.name}
+                      width={24}
+                      height={24}
+                      loading="lazy"
+                      decoding="async"
                       className="w-6 h-6 rounded-full object-cover border border-teal-300"
                     />
                   ) : (
@@ -184,7 +189,7 @@ export default function Navbar() {
                 >
                   {user.profileImage ? (
                     // eslint-disable-next-line @next/next/no-img-element
-                    <img src={user.profileImage} alt={user.name} className="w-8 h-8 rounded-full object-cover border-2 border-teal-300 flex-shrink-0" />
+                    <img src={cld(user.profileImage, 96)} alt={user.name} width={32} height={32} loading="lazy" decoding="async" className="w-8 h-8 rounded-full object-cover border-2 border-teal-300 flex-shrink-0" />
                   ) : (
                     <span className="flex h-8 w-8 flex-shrink-0 items-center justify-center rounded-full bg-teal-800 text-sm font-bold text-white">
                       {(user.name || 'U').charAt(0).toUpperCase()}

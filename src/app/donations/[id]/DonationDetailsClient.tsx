@@ -11,6 +11,10 @@ import { getDonationById, getDonorById, getDonationAddress, toggleInterest, togg
 import { getOrCreateConversation, buildConversationId, getConversation } from '@/lib/messages';
 import { getDonationReviews, hasUserReviewed, addReview, getDonorAverageRating } from '@/lib/reviews';
 import { createNotification } from '@/lib/notifications';
+import { cld } from '@/lib/cld';
+import { track } from '@/lib/analytics';
+import { captureError } from '@/lib/crash';
+import { ReportDialog } from '@/components/common/ReportDialog';
 import { useAuth } from '@/hooks/useAuth';
 import { Donation, User, Review } from '@/types';
 
@@ -52,6 +56,7 @@ export default function DonationDetailsClient({ donationId }: DonationDetailsCli
   const [reviewComment, setReviewComment] = useState('');
   const [submittingReview, setSubmittingReview] = useState(false);
   const [reviewError, setReviewError] = useState<string | null>(null);
+  const [showReport, setShowReport] = useState(false);
 
   useEffect(() => {
     let isMounted = true;
@@ -63,6 +68,7 @@ export default function DonationDetailsClient({ donationId }: DonationDetailsCli
 
         setDonation(loadedDonation);
         setSelectedImage(loadedDonation.images[0] ?? '');
+        track('donation_viewed', { donationId, category: loadedDonation.category });
 
         const isViewerOwner = !!user && user.uid === loadedDonation.userId;
         const [loadedDonor, donationReviews, ratingData, address, convExists] = await Promise.all([
@@ -83,6 +89,7 @@ export default function DonationDetailsClient({ donationId }: DonationDetailsCli
           setDonorRating(ratingData);
           setPrivateAddress(address);
           setHasConversation(convExists);
+          if (address && !isViewerOwner) track('address_revealed', { donationId });
         }
       })
       .catch((e) => {
@@ -110,6 +117,7 @@ export default function DonationDetailsClient({ donationId }: DonationDetailsCli
     try {
       await toggleInterest(donation.id, user.uid, !isInterested);
       if (!isInterested) {
+        track('interest_expressed', { donationId: donation.id });
         createNotification({
           userId: donation.userId,
           type: 'interest',
@@ -128,6 +136,10 @@ export default function DonationDetailsClient({ donationId }: DonationDetailsCli
             }
           : prev
       );
+    } catch (e) {
+      // Non-critical: don't blank the page (setError renders a full-page error).
+      // Log for observability; the optimistic state simply isn't applied.
+      captureError(e, { action: 'toggleInterest', donationId: donation.id });
     } finally {
       setTogglingInterest(false);
     }
@@ -141,8 +153,10 @@ export default function DonationDetailsClient({ donationId }: DonationDetailsCli
         donation.id, donation.userId, user.uid,
         donor.name || 'Donor', user.name || 'User', donation.title
       );
+      track('chat_started', { donationId: donation.id });
       router.push(`/messages/${convId}`);
-    } catch {
+    } catch (e) {
+      captureError(e, { action: 'messageDonor', donationId: donation.id });
       setStartingChat(false);
     }
   };
@@ -175,6 +189,7 @@ export default function DonationDetailsClient({ donationId }: DonationDetailsCli
         rating: reviewRating,
         comment: reviewComment.trim(),
       });
+      track('review_submitted', { donationId: donation.id, rating: reviewRating });
       createNotification({
         userId: donation.userId,
         type: 'review',
@@ -265,7 +280,7 @@ export default function DonationDetailsClient({ donationId }: DonationDetailsCli
           <div>
             <div
               className="h-[420px] rounded-lg bg-gray-200 bg-cover bg-center shadow"
-              style={{ backgroundImage: selectedImage ? `url(${selectedImage})` : undefined }}
+              style={{ backgroundImage: selectedImage ? `url(${cld(selectedImage, 1000)})` : undefined }}
             />
             {donation.images.length > 1 && (
               <div className="mt-4 grid grid-cols-5 gap-3">
@@ -277,7 +292,7 @@ export default function DonationDetailsClient({ donationId }: DonationDetailsCli
                     className={`h-20 rounded border bg-cover bg-center ${
                       selectedImage === imageUrl ? 'border-teal-600 ring-2 ring-teal-200' : 'border-gray-200'
                     }`}
-                    style={{ backgroundImage: `url(${imageUrl})` }}
+                    style={{ backgroundImage: `url(${cld(imageUrl, 200)})` }}
                     aria-label="View donation image"
                   />
                 ))}
@@ -361,9 +376,28 @@ export default function DonationDetailsClient({ donationId }: DonationDetailsCli
                   <Button className="w-full">Login to Message</Button>
                 </Link>
               )}
+
+              {user && !isOwner && (
+                <button
+                  type="button"
+                  onClick={() => setShowReport(true)}
+                  className="mt-4 w-full text-center text-xs font-medium text-gray-400 hover:text-red-500"
+                >
+                  ⚑ Report this listing
+                </button>
+              )}
             </div>
           </aside>
         </div>
+
+        {donation && (
+          <ReportDialog
+            open={showReport}
+            onClose={() => setShowReport(false)}
+            title="Report this listing"
+            target={{ targetUserId: donation.userId, donationId: donation.id }}
+          />
+        )}
 
         {/* Reviews */}
         <div className="mt-10">

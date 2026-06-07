@@ -98,7 +98,7 @@ export interface AdminLog {
   adminId: string;
   adminName: string;
   action: string;
-  targetType: 'user' | 'donation' | 'settings';
+  targetType: 'user' | 'donation' | 'settings' | 'report';
   targetId: string;
   details: string;
   createdAt: Date;

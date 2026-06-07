@@ -3,6 +3,7 @@
 import { useEffect, useState } from 'react';
 import { useSearchParams, useRouter } from 'next/navigation';
 import Link from 'next/link';
+import { track } from '@/lib/analytics';
 
 type State = 'loading' | 'success' | 'error';
 
@@ -26,6 +27,7 @@ export default function VerifyEmailPage() {
     })
       .then(async (res) => {
         if (!res.ok) throw new Error('Invalid or expired verification link.');
+        track('email_verified', {});
         setState('success');
         setTimeout(() => router.replace('/login'), 3000);
       })

@@ -7,6 +7,8 @@ import { Input } from '@/components/common/Input';
 import { CATEGORIES, CONDITIONS } from '@/constants/config';
 import { createDonation } from '@/lib/donations';
 import { useAuth } from '@/hooks/useAuth';
+import { track } from '@/lib/analytics';
+import { captureError } from '@/lib/crash';
 import { Donation } from '@/types';
 
 const MAX_IMAGES = 5;
@@ -127,9 +129,13 @@ export default function CreateDonationPage() {
         images,
       });
 
+      track('donation_created', { category: formData.category, images: images.length });
       router.push(`/donations/${donation.id}`);
     } catch (submitError) {
-      console.error('Create donation error:', submitError);
+      captureError(submitError, { action: 'createDonation' });
+      // Image uploads run first inside createDonation, so a failure here is most
+      // often an upload failure — record it on the funnel.
+      if (images.length > 0) track('upload_failed', { where: 'create_donation' });
       setError(
         submitError instanceof Error
           ? submitError.message

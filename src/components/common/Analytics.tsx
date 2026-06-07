@@ -3,6 +3,7 @@
 import { useEffect, useState } from 'react';
 import Script from 'next/script';
 import { getPlatformSettings } from '@/lib/admin';
+import { initObservability } from '@/lib/crash';
 
 type Tracking = {
   googleAnalyticsId: string;
@@ -14,6 +15,7 @@ export default function Analytics() {
   const [t, setT] = useState<Tracking | null>(null);
 
   useEffect(() => {
+    initObservability();
     getPlatformSettings()
       .then((s) =>
         setT({

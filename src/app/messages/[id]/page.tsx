@@ -13,6 +13,7 @@ import {
 } from '@/lib/messages';
 import { Message } from '@/types';
 import { SafetyNotice } from '@/components/common/SafetyNotice';
+import { ReportDialog } from '@/components/common/ReportDialog';
 
 function formatTime(date: Date): string {
   return new Intl.DateTimeFormat('en-IN', {
@@ -43,6 +44,7 @@ export default function ChatPage() {
   const [input, setInput] = useState('');
   const [sending, setSending] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  const [showReport, setShowReport] = useState(false);
   const bottomRef = useRef<HTMLDivElement>(null);
   const lastSendRef = useRef<number>(0);
   const MAX_MESSAGE_LENGTH = 1000;
@@ -154,7 +156,26 @@ export default function ChatPage() {
             </Link>
           )}
         </div>
+        {conversation && otherId && (
+          <button
+            type="button"
+            onClick={() => setShowReport(true)}
+            className="ml-auto text-xs font-medium text-gray-400 hover:text-red-500"
+            title="Report user"
+          >
+            ⚑ Report
+          </button>
+        )}
       </div>
+
+      {conversation && otherId && (
+        <ReportDialog
+          open={showReport}
+          onClose={() => setShowReport(false)}
+          title="Report this user"
+          target={{ targetUserId: otherId, conversationId: convId, donationId: conversation.donationId }}
+        />
+      )}
 
       {/* Messages */}
       <div className="flex-1 overflow-y-auto px-4 py-4 space-y-4">

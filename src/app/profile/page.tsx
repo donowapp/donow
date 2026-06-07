@@ -6,6 +6,7 @@ import { doc, updateDoc } from 'firebase/firestore';
 import { db } from '@/lib/firebase';
 import { syncOwnPublicProfile } from '@/lib/profiles';
 import { signedUpload } from '@/lib/cloudinary';
+import { cld } from '@/lib/cld';
 import { deleteOwnAccount } from '@/lib/auth';
 import { useAuth } from '@/hooks/useAuth';
 import { Input } from '@/components/common/Input';
@@ -160,8 +161,11 @@ export default function ProfilePage() {
               {avatarSrc ? (
                 // eslint-disable-next-line @next/next/no-img-element
                 <img
-                  src={avatarSrc}
+                  src={cld(avatarSrc, 200)}
                   alt="Profile"
+                  width={96}
+                  height={96}
+                  decoding="async"
                   className="w-24 h-24 rounded-full object-cover border-4 border-teal-100"
                 />
               ) : (

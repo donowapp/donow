@@ -16,6 +16,9 @@ import {
   getAllUsers,
   getAdminLogs,
   getAnnouncements,
+  getOpenReports,
+  resolveReport,
+  Report,
   getPlatformSettings,
   logAdminAction,
   sendAnnouncement,
@@ -29,7 +32,13 @@ import {
   updatePlatformSettings,
 } from '@/lib/admin';
 import { signedUpload } from '@/lib/cloudinary';
+import { cld } from '@/lib/cld';
+import { REPORT_REASONS } from '@/lib/reports';
 import { CATEGORIES } from '@/constants/config';
+
+const REASON_LABEL: Record<string, string> = Object.fromEntries(
+  REPORT_REASONS.map((r) => [r.value, r.label])
+);
 import { AdminLog, Donation, PlatformSettings, User } from '@/types';
 
 type Tab = 'overview' | 'users' | 'donations' | 'moderation' | 'featured' | 'analytics' | 'announcements' | 'settings' | 'logs';
@@ -108,7 +117,7 @@ function UserModal({
         <div className="flex items-center gap-4 bg-gradient-to-r from-gray-900 to-slate-800 px-6 py-5">
           {u.profileImage ? (
             // eslint-disable-next-line @next/next/no-img-element
-            <img src={u.profileImage} alt={u.name} className="h-14 w-14 rounded-full object-cover flex-shrink-0 border-2 border-teal-400" />
+            <img src={cld(u.profileImage, 112)} alt={u.name} width={56} height={56} loading="lazy" decoding="async" className="h-14 w-14 rounded-full object-cover flex-shrink-0 border-2 border-teal-400" />
           ) : (
             <div className="h-14 w-14 rounded-full bg-teal-600 flex items-center justify-center text-2xl font-bold text-white flex-shrink-0">
               {u.name.charAt(0).toUpperCase() || '?'}
@@ -217,7 +226,7 @@ function SidebarNav({ tab, setTab, setSidebarOpen, userName, userEmail, userImag
         <div className="flex items-center gap-3 mb-2">
           {userImage ? (
             // eslint-disable-next-line @next/next/no-img-element
-            <img src={userImage} alt={userName} className="h-10 w-10 rounded-full object-cover border-2 border-teal-400 flex-shrink-0" />
+            <img src={cld(userImage, 96)} alt={userName} width={40} height={40} loading="lazy" decoding="async" className="h-10 w-10 rounded-full object-cover border-2 border-teal-400 flex-shrink-0" />
           ) : (
             <div className="h-10 w-10 rounded-full bg-teal-600 flex items-center justify-center font-bold text-white flex-shrink-0">
               {(userName || 'A').charAt(0).toUpperCase()}
@@ -448,6 +457,7 @@ export default function AdminPage() {
   const [sidebarOpen, setSidebarOpen]     = useState(false);
   const [users, setUsers]                 = useState<User[]>([]);
   const [donations, setDonations]         = useState<Donation[]>([]);
+  const [reports, setReports]             = useState<Report[]>([]);
   const [dataLoading, setDataLoading]     = useState(false);
   const [dataLoaded, setDataLoaded]       = useState(false);
   const [userSearch, setUserSearch]       = useState('');
@@ -500,8 +510,8 @@ export default function AdminPage() {
     if (!user || user.role !== 'admin' || dataLoaded) return;
     // eslint-disable-next-line react-hooks/set-state-in-effect
     setDataLoading(true);
-    Promise.all([getAllUsers(), getAllDonationsAdmin()])
-      .then(([u, d]) => { setUsers(u); setDonations(d); setDataLoaded(true); })
+    Promise.all([getAllUsers(), getAllDonationsAdmin(), getOpenReports().catch(() => [])])
+      .then(([u, d, r]) => { setUsers(u); setDonations(d); setReports(r as Report[]); setDataLoaded(true); })
       .catch(() => {})
       .finally(() => setDataLoading(false));
   }, [user, dataLoaded]);
@@ -629,6 +639,27 @@ export default function AdminPage() {
       await adminDeleteDonation(id);
       setDonations((prev) => prev.filter((d) => d.id !== id));
       auditLog('donation_delete', 'donation', id, 'Deleted');
+    } finally { setActionPending(null); }
+  };
+
+  const handleResolveReport = async (id: string, status: 'dismissed' | 'actioned') => {
+    setActionPending('report-' + id);
+    try {
+      await resolveReport(id, status);
+      setReports((prev) => prev.filter((r) => r.id !== id));
+      auditLog('report_resolve', 'report', id, `Report ${status}`);
+    } finally { setActionPending(null); }
+  };
+
+  const handleBanFromReport = async (report: Report) => {
+    if (!confirm('Ban this user? They will be signed out and blocked from the platform.')) return;
+    setActionPending('report-' + report.id);
+    try {
+      await setUserStatus(report.targetUserId, 'banned');
+      setUsers((prev) => prev.map((u) => u.uid === report.targetUserId ? { ...u, status: 'banned' as User['status'] } : u));
+      await resolveReport(report.id, 'actioned');
+      setReports((prev) => prev.filter((r) => r.id !== report.id));
+      auditLog('user_ban', 'user', report.targetUserId, `Banned from report (${report.reason})`);
     } finally { setActionPending(null); }
   };
 
@@ -1145,7 +1176,7 @@ export default function AdminPage() {
                     <div key={d.id} className={`flex items-start gap-4 p-4 hover:bg-gray-50 ${d.flagged ? 'bg-red-50' : ''}`}>
                       {d.images[0] ? (
                         // eslint-disable-next-line @next/next/no-img-element
-                        <img src={d.images[0]} alt={d.title} className="h-14 w-14 flex-shrink-0 rounded-xl object-cover bg-gray-100" />
+                        <img src={cld(d.images[0], 112)} alt={d.title} width={56} height={56} loading="lazy" decoding="async" className="h-14 w-14 flex-shrink-0 rounded-xl object-cover bg-gray-100" />
                       ) : (
                         <div className="h-14 w-14 flex-shrink-0 rounded-xl bg-gray-100 flex items-center justify-center text-2xl">📦</div>
                       )}
@@ -1178,6 +1209,50 @@ export default function AdminPage() {
             {/* ── MODERATION ── */}
             {!dataLoading && tab === 'moderation' && (
               <div className="space-y-4">
+                {/* User reports queue (trust & safety) */}
+                {reports.length > 0 && (
+                  <div className="overflow-hidden rounded-2xl bg-white shadow">
+                    <div className="border-b bg-red-50 px-4 py-3">
+                      <h3 className="font-bold text-red-800">⚑ User Reports ({reports.length})</h3>
+                      <p className="text-xs text-red-600">Filed by users about listings, people, or messages.</p>
+                    </div>
+                    <div className="divide-y">
+                      {reports.map((r) => (
+                        <div key={r.id} className="p-4 hover:bg-gray-50">
+                          <div className="flex items-start justify-between gap-3">
+                            <div className="min-w-0">
+                              <span className="inline-block rounded-full bg-red-100 px-2 py-0.5 text-xs font-semibold text-red-700">
+                                {REASON_LABEL[r.reason] ?? r.reason}
+                              </span>
+                              <p className="mt-1 text-sm text-gray-800">
+                                {r.description || <span className="italic text-gray-400">No description provided</span>}
+                              </p>
+                              <p className="mt-1 text-xs text-gray-400">
+                                Reporter {r.reporterId.slice(0, 6)}… · Target {r.targetUserId.slice(0, 6)}… · {fmt(r.createdAt)}
+                              </p>
+                              {r.donationId && (
+                                <Link href={`/donations/${r.donationId}`} className="mt-1 inline-block text-xs text-teal-600 hover:underline">
+                                  View reported listing →
+                                </Link>
+                              )}
+                            </div>
+                            <div className="flex flex-shrink-0 flex-col gap-1.5">
+                              {r.donationId && (
+                                <button onClick={() => handleDeleteDonation(r.donationId)} disabled={actionPending === r.donationId + '-del'}
+                                  className="rounded-lg bg-red-100 px-3 py-1.5 text-xs font-semibold text-red-700 hover:bg-red-200 disabled:opacity-40">Delete listing</button>
+                              )}
+                              <button onClick={() => handleBanFromReport(r)} disabled={actionPending === 'report-' + r.id}
+                                className="rounded-lg bg-red-600 px-3 py-1.5 text-xs font-semibold text-white hover:bg-red-700 disabled:opacity-40">Ban user</button>
+                              <button onClick={() => handleResolveReport(r.id, 'dismissed')} disabled={actionPending === 'report-' + r.id}
+                                className="rounded-lg bg-gray-100 px-3 py-1.5 text-xs font-semibold text-gray-600 hover:bg-gray-200 disabled:opacity-40">Dismiss</button>
+                            </div>
+                          </div>
+                        </div>
+                      ))}
+                    </div>
+                  </div>
+                )}
+
                 <div className="grid grid-cols-3 gap-3">
                   {[
                     { label: 'Pending Review', val: flaggedDonations.length, color: flaggedDonations.length > 0 ? 'text-orange-500' : 'text-gray-400' },
@@ -1212,7 +1287,7 @@ export default function AdminPage() {
                       <div key={d.id} className="flex items-start gap-4 p-4 hover:bg-gray-50">
                         {d.images[0] ? (
                           // eslint-disable-next-line @next/next/no-img-element
-                          <img src={d.images[0]} alt={d.title} className="h-16 w-16 flex-shrink-0 rounded-xl object-cover" />
+                          <img src={cld(d.images[0], 128)} alt={d.title} width={64} height={64} loading="lazy" decoding="async" className="h-16 w-16 flex-shrink-0 rounded-xl object-cover" />
                         ) : (
                           <div className="h-16 w-16 flex-shrink-0 rounded-xl bg-gray-100 flex items-center justify-center text-3xl">📦</div>
                         )}
