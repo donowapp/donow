@@ -54,7 +54,9 @@ export async function POST(request: NextRequest) {
       );
     }
 
-    const token = sign({ uid, email }, JWT_SECRET, { expiresIn: '24h' });
+    // `purpose` namespaces this token so it can't be replayed against another
+    // endpoint that shares EMAIL_JWT_SECRET (e.g. the admin MFA cookie).
+    const token = sign({ uid, email, purpose: 'email_verify' }, JWT_SECRET, { expiresIn: '24h' });
     const link = `https://donow.co.in/auth/verify-email?t=${encodeURIComponent(token)}`;
 
     await resend.emails.send({

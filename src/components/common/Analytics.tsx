@@ -27,7 +27,13 @@ export default function Analytics() {
 
   if (!t) return null;
 
-  const { googleAnalyticsId: ga, googleTagManagerId: gtm, metaPixelId: pixel } = t;
+  // Hard allow-list the formats before these values are interpolated into inline
+  // <Script> bodies. Anything not matching is dropped, so a malicious settings
+  // value can never break out of the string literal and inject script (XSS).
+  const valid = (v: string, re: RegExp) => (re.test(v.trim()) ? v.trim() : '');
+  const ga = valid(t.googleAnalyticsId, /^(G|UA|AW|GT)-[A-Z0-9-]{1,20}$/i);
+  const gtm = valid(t.googleTagManagerId, /^GTM-[A-Z0-9]{1,12}$/i);
+  const pixel = valid(t.metaPixelId, /^[0-9]{6,20}$/);
 
   return (
     <>

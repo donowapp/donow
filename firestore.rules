@@ -81,9 +81,21 @@ service cloud.firestore {
       // per-day limit and active-account check are actually enforced.
       allow create: if false;
       allow update: if isAdmin() || (isActive() && (
-        resource.data.userId == request.auth.uid ||
-        request.resource.data.diff(resource.data).affectedKeys()
-          .hasOnly(['interestedUsers', 'viewCount', 'updatedAt'])
+        // Owner edits their own donation — but ownership and createdAt are immutable.
+        (resource.data.userId == request.auth.uid &&
+         request.resource.data.userId == resource.data.userId &&
+         request.resource.data.createdAt == resource.data.createdAt) ||
+        // Any active user may ONLY bump viewCount by 1 and/or toggle their OWN
+        // entry in interestedUsers — no foreign uids, no arbitrary counters,
+        // no other fields. Prevents tampering with another donation's counters.
+        (request.resource.data.diff(resource.data).affectedKeys()
+           .hasOnly(['interestedUsers', 'viewCount', 'updatedAt']) &&
+         request.resource.data.viewCount >= resource.data.viewCount &&
+         request.resource.data.viewCount <= resource.data.viewCount + 1 &&
+         request.resource.data.interestedUsers.removeAll(resource.data.interestedUsers)
+           .hasOnly([request.auth.uid]) &&
+         resource.data.interestedUsers.removeAll(request.resource.data.interestedUsers)
+           .hasOnly([request.auth.uid]))
       ));
       // Owners delete their own; admin deletion goes via the MFA-gated
       // /api/admin/delete-donation (Admin SDK), not a raw admin client write.
@@ -94,7 +106,10 @@ service cloud.firestore {
     match /conversations/{convId} {
       allow read: if isAuth() && (resource == null || request.auth.uid in resource.data.participantIds);
       allow create: if isActive() && request.auth.uid in request.resource.data.participantIds;
-      allow update: if isActive() && request.auth.uid in resource.data.participantIds;
+      // Participants may update (unread counts, last message) but may NOT alter
+      // the participant set — otherwise one party could eject the other.
+      allow update: if isActive() && request.auth.uid in resource.data.participantIds &&
+        request.resource.data.participantIds == resource.data.participantIds;
       allow delete: if false;
 
       match /messages/{messageId} {
@@ -125,12 +140,18 @@ service cloud.firestore {
       allow read: if true;
       // One review per (donation, reviewer): the doc id is pinned to
       // "<donationId>_<reviewerId>", so a duplicate submission hits the same id
-      // and falls under `update` (denied) — no review bombing. Self-reviews are
-      // blocked. Rating must be an int 1-5.
+      // and falls under `update` (denied). Self-reviews are blocked, and the
+      // reviewee MUST be the real owner of the donation being reviewed — pinned
+      // via a cross-doc read. Without this, a reviewer could aim reviews at an
+      // arbitrary victim across many donationIds and bomb their aggregate rating
+      // (which is keyed on revieweeId), bypassing the per-donation dedup.
+      // Rating must be an int 1-5.
       allow create: if isActive() &&
         request.auth.uid == request.resource.data.reviewerId &&
         request.resource.data.reviewerId != request.resource.data.revieweeId &&
         reviewId == request.resource.data.donationId + '_' + request.resource.data.reviewerId &&
+        get(/databases/$(database)/documents/donations/$(request.resource.data.donationId)).data.userId
+          == request.resource.data.revieweeId &&
         request.resource.data.rating is int &&
         request.resource.data.rating >= 1 &&
         request.resource.data.rating <= 5;
@@ -144,9 +165,13 @@ service cloud.firestore {
       allow create, update, delete: if isAdmin();
     }
 
-    // Admin action logs: admins only
+    // Admin action logs: append-only audit trail. Admins can read and add
+    // entries, but no one may edit or delete them (so a rogue admin can't
+    // tamper with the record of their own actions).
     match /adminLogs/{logId} {
-      allow read, write: if isAdmin();
+      allow read: if isAdmin();
+      allow create: if isAdmin();
+      allow update, delete: if false;
     }
 
     // Platform settings: publicly readable (drives the homepage, footer

@@ -5,17 +5,19 @@ import { auth } from './firebase';
  * The unsigned upload preset is not used; the server signs every upload
  * so only authenticated Firebase users can write to our Cloudinary account.
  */
-export async function signedUpload(file: File, folder: string): Promise<string> {
+export async function signedUpload(file: File, kind: 'item' | 'avatar' | 'platform' = 'item'): Promise<string> {
   const cloudName = process.env.NEXT_PUBLIC_CLOUDINARY_CLOUD_NAME;
   if (!cloudName) throw new Error('Image upload is not configured.');
 
   const token = await auth.currentUser?.getIdToken();
   if (!token) throw new Error('You must be signed in to upload images.');
 
+  // The server decides the destination folder from the verified uid + kind;
+  // callers can't pick an arbitrary folder.
   const signRes = await fetch('/api/cloudinary/sign', {
     method: 'POST',
     headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${token}` },
-    body: JSON.stringify({ folder }),
+    body: JSON.stringify({ kind }),
   });
   if (!signRes.ok) throw new Error('Could not authorize image upload.');
   const { signature, timestamp, api_key, folder: safeFolder } = await signRes.json() as {

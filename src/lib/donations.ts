@@ -71,7 +71,7 @@ function normalizeDonation(id: string, data: Partial<Donation>) {
 }
 
 async function uploadDonationImages(images: File[]): Promise<string[]> {
-  return Promise.all(images.map((image) => signedUpload(image, 'donow')));
+  return Promise.all(images.map((image) => signedUpload(image, 'item')));
 }
 
 export async function createDonation(data: CreateDonationData) {

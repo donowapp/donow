@@ -12,11 +12,16 @@ export async function POST(request: NextRequest) {
   }
 
   // 1) Validate the token. A failure here means the link is bad/expired (400).
-  let payload: { uid: string; email: string };
+  let payload: { uid: string; email: string; purpose?: string };
   try {
     const { token } = await request.json();
-    payload = verify(token, JWT_SECRET) as { uid: string; email: string };
+    payload = verify(token, JWT_SECRET) as { uid: string; email: string; purpose?: string };
   } catch {
+    return NextResponse.json({ error: 'Invalid or expired link' }, { status: 400 });
+  }
+  // Only accept tokens minted for email verification — not, say, an MFA-session
+  // token that happens to be signed with the same secret.
+  if (payload.purpose !== 'email_verify') {
     return NextResponse.json({ error: 'Invalid or expired link' }, { status: 400 });
   }
 

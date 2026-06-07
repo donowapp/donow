@@ -289,7 +289,7 @@ function ImageUploadCard({ title, desc, url, badge, previewNode, onChange }: {
     if (!file) return;
     setUploading(true); setError('');
     try {
-      const secure_url = await signedUpload(file, 'donow');
+      const secure_url = await signedUpload(file, 'platform');
       setDraft(secure_url); onChange(secure_url);
     } catch { setError('Upload failed. Check your connection.'); }
     finally { setUploading(false); }

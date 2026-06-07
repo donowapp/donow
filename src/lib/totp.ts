@@ -51,22 +51,25 @@ function hotp(secret: string, counter: number): string {
 
 /**
  * Verifies a 6-digit code against the secret, tolerating ±1 time step (±30s)
- * for clock drift. Uses constant-time comparison.
+ * for clock drift. Uses constant-time comparison. Returns the matching time-step
+ * counter (so callers can reject replay of an already-used code), or null if the
+ * code is invalid.
  */
-export function verifyTOTP(secret: string, token: string, window = 1): boolean {
+export function verifyTOTP(secret: string, token: string, window = 1): number | null {
   const cleaned = (token ?? '').replace(/\D/g, '');
-  if (cleaned.length !== 6) return false;
+  if (cleaned.length !== 6) return null;
   const counter = Math.floor(Date.now() / 1000 / 30);
   for (let errorWindow = -window; errorWindow <= window; errorWindow++) {
-    const expected = hotp(secret, counter + errorWindow);
+    const step = counter + errorWindow;
+    const expected = hotp(secret, step);
     if (
       expected.length === cleaned.length &&
       crypto.timingSafeEqual(Buffer.from(expected), Buffer.from(cleaned))
     ) {
-      return true;
+      return step;
     }
   }
-  return false;
+  return null;
 }
 
 /** Builds the otpauth:// URI an authenticator app scans. */

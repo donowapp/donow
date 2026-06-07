@@ -36,6 +36,29 @@ export async function POST(request: NextRequest) {
     return NextResponse.json({ error: 'Your account cannot post donations.' }, { status: 403 });
   }
 
+  // Validate the body BEFORE consuming a daily slot, so a malformed request
+  // never burns the user's own quota.
+  const b = (await request.json()) as {
+    title?: string; description?: string; category?: string; condition?: string;
+    address?: string; city?: string; images?: string[];
+  };
+  if (!b.title?.trim() || !b.description?.trim() ||
+      !b.category || !CATEGORIES.has(b.category) ||
+      !b.condition || !CONDITIONS.has(b.condition)) {
+    return NextResponse.json({ error: 'Missing or invalid donation fields' }, { status: 400 });
+  }
+  // Only accept Cloudinary URLs from our cloud that live in THIS user's own
+  // upload folder. Stops a user from storing (and later weaponising) URLs that
+  // point at other users' assets or arbitrary external hosts.
+  const cloud = process.env.NEXT_PUBLIC_CLOUDINARY_CLOUD_NAME ?? '';
+  const ownPrefix = `https://res.cloudinary.com/${cloud}/`;
+  const images = Array.isArray(b.images)
+    ? b.images
+        .filter((u): u is string =>
+          typeof u === 'string' && u.startsWith(ownPrefix) && u.includes(`/donow/u/${uid}/`))
+        .slice(0, 10)
+    : [];
+
   // Daily cap from platform settings (default 5).
   const settingsSnap = await db.doc('settings/platform').get();
   const rawMax = settingsSnap.exists ? Number(settingsSnap.data()?.maxDonationsPerDay) : 5;
@@ -47,17 +70,6 @@ export async function POST(request: NextRequest) {
       { status: 429 }
     );
   }
-
-  const b = (await request.json()) as {
-    title?: string; description?: string; category?: string; condition?: string;
-    address?: string; city?: string; images?: string[];
-  };
-  if (!b.title?.trim() || !b.description?.trim() ||
-      !b.category || !CATEGORIES.has(b.category) ||
-      !b.condition || !CONDITIONS.has(b.condition)) {
-    return NextResponse.json({ error: 'Missing or invalid donation fields' }, { status: 400 });
-  }
-  const images = Array.isArray(b.images) ? b.images.filter((u) => typeof u === 'string').slice(0, 10) : [];
 
   const now = new Date();
   const donation = {

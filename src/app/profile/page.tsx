@@ -85,7 +85,7 @@ export default function ProfilePage() {
     try {
       let profileImage = user.profileImage;
       if (photoFile) {
-        profileImage = await signedUpload(photoFile, 'donow/avatars');
+        profileImage = await signedUpload(photoFile, 'avatar');
       }
       await updateDoc(doc(db, 'users', user.uid), {
         ...form,

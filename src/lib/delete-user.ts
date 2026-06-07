@@ -22,13 +22,20 @@ function publicIdFromUrl(url: string): string | null {
   return m ? m[1] : null;
 }
 
-async function destroyCloudinaryAssets(urls: string[]): Promise<void> {
+async function destroyCloudinaryAssets(urls: string[], uid: string): Promise<void> {
   const cloudName = process.env.NEXT_PUBLIC_CLOUDINARY_CLOUD_NAME;
   const apiKey = process.env.CLOUDINARY_API_KEY;
   const apiSecret = process.env.CLOUDINARY_API_SECRET;
   if (!cloudName || !apiKey || !apiSecret) return;
 
-  const publicIds = urls.map(publicIdFromUrl).filter((id): id is string => Boolean(id));
+  // CRITICAL: only ever destroy assets that live in THIS user's own folder.
+  // Donation/profile image URLs are attacker-controllable (a user can store a
+  // URL pointing at someone else's image), so without this prefix check a user
+  // could delete other users' Cloudinary assets via the deletion cascade.
+  const ownPrefix = `donow/u/${uid}/`;
+  const publicIds = urls
+    .map(publicIdFromUrl)
+    .filter((id): id is string => Boolean(id) && (id as string).startsWith(ownPrefix));
 
   await Promise.all(
     publicIds.map(async (publicId) => {
@@ -105,8 +112,8 @@ export async function deleteUserData(uid: string): Promise<void> {
     .get();
   await Promise.all(convSnap.docs.map((c) => db.recursiveDelete(c.ref)));
 
-  // Cloudinary assets (best-effort).
-  await destroyCloudinaryAssets(imageUrls);
+  // Cloudinary assets (best-effort) — only this user's own folder.
+  await destroyCloudinaryAssets(imageUrls, uid);
 
   // Auth account LAST — if anything above threw, the account still exists to retry.
   await adminAuth().deleteUser(uid);
