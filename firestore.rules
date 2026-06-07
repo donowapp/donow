@@ -51,7 +51,8 @@ service cloud.firestore {
         (isOwner(userId) && isActive() &&
          request.resource.data.diff(resource.data).affectedKeys()
            .hasOnly(['name', 'phone', 'address', 'city', 'state', 'pincode',
-                     'bio', 'profileImage', 'savedDonations', 'updatedAt']));
+                     'bio', 'profileImage', 'savedDonations', 'expoPushToken',
+                     'updatedAt']));
       // Deletion happens only through the Admin SDK (self-serve /api/account/delete
       // and the MFA-gated /api/admin/delete-user), never a raw client write.
       allow delete: if false;
