@@ -42,12 +42,28 @@ export async function POST(request: NextRequest) {
     folder = 'donow/platform';
   }
 
+  // Restrict accepted formats at Cloudinary itself: signing `allowed_formats`
+  // means the upload is rejected unless it's one of these raster image types —
+  // this blocks SVG (script-bearing), PDFs, videos and other non-image payloads.
+  // The client MUST send the identical allowed_formats value or the signature
+  // fails. (Per-file size cap + "deliver SVG as attachment off" are set in the
+  // Cloudinary console; client-side we also reject oversized files pre-upload.)
+  const allowedFormats = 'jpg,jpeg,png,webp,heic';
+
   const timestamp = Math.round(Date.now() / 1000);
-  const paramsToSign = `folder=${folder}&timestamp=${timestamp}`;
+  // Params must be signed in alphabetical order.
+  const paramsToSign = `allowed_formats=${allowedFormats}&folder=${folder}&timestamp=${timestamp}`;
   const signature = crypto
     .createHash('sha256')
     .update(paramsToSign + apiSecret)
     .digest('hex');
 
-  return NextResponse.json({ signature, timestamp, api_key: apiKey, cloud_name: cloudName, folder });
+  return NextResponse.json({
+    signature,
+    timestamp,
+    api_key: apiKey,
+    cloud_name: cloudName,
+    folder,
+    allowed_formats: allowedFormats,
+  });
 }

@@ -24,6 +24,12 @@ service cloud.firestore {
         get(/databases/$(database)/documents/users/$(request.auth.uid)).data.status == 'active';
     }
 
+    // Deterministic conversation id the apps use: donationId_<sorted uids>.
+    // Lets review rules prove a conversation exists between the two parties.
+    function convIdFor(donationId, a, b) {
+      return donationId + '_' + (a < b ? a + '_' + b : b + '_' + a);
+    }
+
     // Users: PRIVATE. A user's full record (email, phone, home address,
     // pincode) is readable only by the owner or an admin. Public-facing fields
     // live in /publicProfiles. Owners may edit only their own profile fields;
@@ -139,20 +145,26 @@ service cloud.firestore {
     // 1-5 rating; immutable by users; removable by admins (defamation/abuse).
     match /reviews/{reviewId} {
       allow read: if true;
-      // One review per (donation, reviewer): the doc id is pinned to
-      // "<donationId>_<reviewerId>", so a duplicate submission hits the same id
-      // and falls under `update` (denied). Self-reviews are blocked, and the
-      // reviewee MUST be the real owner of the donation being reviewed — pinned
-      // via a cross-doc read. Without this, a reviewer could aim reviews at an
-      // arbitrary victim across many donationIds and bomb their aggregate rating
-      // (which is keyed on revieweeId), bypassing the per-donation dedup.
-      // Rating must be an int 1-5.
+      // A review is only allowed when there was a real transaction:
+      //  - one review per (donation, reviewer): doc id pinned to
+      //    "<donationId>_<reviewerId>" (a repeat hits `update`, denied);
+      //  - no self-reviews;
+      //  - the reviewee MUST own the donation (cross-doc read), so a reviewer
+      //    can't aim reviews at an arbitrary victim;
+      //  - the donation MUST be completed; and
+      //  - a conversation MUST exist between the two parties for that donation.
+      //  Together these stop review farming / reputation manipulation.
+      //  Rating must be an int 1-5.
       allow create: if isActive() &&
         request.auth.uid == request.resource.data.reviewerId &&
         request.resource.data.reviewerId != request.resource.data.revieweeId &&
         reviewId == request.resource.data.donationId + '_' + request.resource.data.reviewerId &&
         get(/databases/$(database)/documents/donations/$(request.resource.data.donationId)).data.userId
           == request.resource.data.revieweeId &&
+        get(/databases/$(database)/documents/donations/$(request.resource.data.donationId)).data.status
+          == 'completed' &&
+        exists(/databases/$(database)/documents/conversations/$(convIdFor(
+          request.resource.data.donationId, request.auth.uid, request.resource.data.revieweeId))) &&
         request.resource.data.rating is int &&
         request.resource.data.rating >= 1 &&
         request.resource.data.rating <= 5;

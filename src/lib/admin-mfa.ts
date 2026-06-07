@@ -50,13 +50,17 @@ export async function isMfaEnrolled(uid: string): Promise<boolean> {
 }
 
 /**
- * Gate for sensitive admin routes. Returns true (allowed) when the admin is NOT
- * yet enrolled — so a freshly-promoted admin is never locked out before they've
- * set up 2FA (the admin-panel gate pushes them to enroll). Once enrolled, a
- * valid MFA session cookie is mandatory.
+ * Gate for sensitive admin routes. TOTP enrollment is MANDATORY: an admin who
+ * has not enrolled is denied (so a stolen ID token of a never-enrolled admin
+ * can't perform privileged actions). This does not lock anyone out — the
+ * setup/verify routes are NOT gated by this function, so an admin can always
+ * enroll, then act. Once enrolled, a valid MFA session cookie is required.
+ *
+ * Recovery: a super-admin clears the admin's `adminMfa/<uid>` doc (console or a
+ * dedicated route) to let them re-enroll with a new authenticator.
  */
 export async function passesMfaGate(request: NextRequest, uid: string): Promise<boolean> {
-  if (!(await isMfaEnrolled(uid))) return true;
+  if (!(await isMfaEnrolled(uid))) return false;
   return hasValidMfa(request, uid);
 }
 
