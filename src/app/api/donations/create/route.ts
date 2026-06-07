@@ -72,6 +72,7 @@ export async function POST(request: NextRequest) {
   }
 
   const now = new Date();
+  const address = (b.address ?? '').trim().slice(0, 300);
   const donation = {
     userId: uid,
     title: b.title.trim().slice(0, 200),
@@ -79,7 +80,9 @@ export async function POST(request: NextRequest) {
     category: b.category,
     condition: b.condition,
     images,
-    location: { address: (b.address ?? '').trim(), city: (b.city ?? '').trim() },
+    // PRIV-1: only the city is public; the exact address goes to a gated
+    // private subdoc revealed once a conversation is opened.
+    location: { city: (b.city ?? '').trim().slice(0, 120) },
     status: 'active',
     viewCount: 0,
     interestedUsers: [],
@@ -89,6 +92,9 @@ export async function POST(request: NextRequest) {
 
   try {
     const ref = await db.collection('donations').add(donation);
+    if (address) {
+      await ref.collection('private').doc('location').set({ address, updatedAt: now });
+    }
     return NextResponse.json({ id: ref.id });
   } catch (err) {
     console.error('[donations/create]', err);

@@ -6,7 +6,7 @@ import Link from 'next/link';
 import { Button } from '@/components/common/Button';
 import { Input } from '@/components/common/Input';
 import { CATEGORIES, CONDITIONS } from '@/constants/config';
-import { getDonationById, updateDonation } from '@/lib/donations';
+import { getDonationById, getDonationAddress, updateDonation } from '@/lib/donations';
 import { useAuth } from '@/hooks/useAuth';
 import { Donation } from '@/types';
 
@@ -35,8 +35,8 @@ export default function EditDonationPage() {
 
   useEffect(() => {
     if (!id) return;
-    getDonationById(id)
-      .then((d) => {
+    Promise.all([getDonationById(id), getDonationAddress(id)])
+      .then(([d, address]) => {
         if (!d) { setError('Donation not found.'); return; }
         setDonation(d);
         setForm({
@@ -44,7 +44,7 @@ export default function EditDonationPage() {
           description: d.description,
           category: d.category,
           condition: d.condition,
-          address: d.location.address,
+          address: address ?? '', // exact address now lives in the private subdoc
           city: d.location.city,
         });
       })

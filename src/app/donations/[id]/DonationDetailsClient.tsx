@@ -6,7 +6,7 @@ import { useRouter } from 'next/navigation';
 import { Button } from '@/components/common/Button';
 import { StarRating } from '@/components/common/StarRating';
 import { CATEGORIES } from '@/constants/config';
-import { getDonationById, getDonorById, toggleInterest, toggleSavedDonation } from '@/lib/donations';
+import { getDonationById, getDonorById, getDonationAddress, toggleInterest, toggleSavedDonation } from '@/lib/donations';
 import { getOrCreateConversation } from '@/lib/messages';
 import { getDonationReviews, hasUserReviewed, addReview, getDonorAverageRating } from '@/lib/reviews';
 import { createNotification } from '@/lib/notifications';
@@ -33,6 +33,7 @@ export default function DonationDetailsClient({ donationId }: DonationDetailsCli
 
   const [donation, setDonation] = useState<Donation | null>(null);
   const [donor, setDonor] = useState<DonorProfile | null>(null);
+  const [privateAddress, setPrivateAddress] = useState<string | null>(null);
   const [selectedImage, setSelectedImage] = useState('');
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
@@ -61,16 +62,18 @@ export default function DonationDetailsClient({ donationId }: DonationDetailsCli
         setDonation(loadedDonation);
         setSelectedImage(loadedDonation.images[0] ?? '');
 
-        const [loadedDonor, donationReviews, ratingData] = await Promise.all([
+        const [loadedDonor, donationReviews, ratingData, address] = await Promise.all([
           getDonorById(loadedDonation.userId),
           getDonationReviews(donationId),
           getDonorAverageRating(loadedDonation.userId),
+          getDonationAddress(donationId), // null unless owner / has a conversation
         ]);
 
         if (isMounted) {
           setDonor(loadedDonor);
           setReviews(donationReviews);
           setDonorRating(ratingData);
+          setPrivateAddress(address);
         }
       })
       .catch((e) => {
@@ -276,10 +279,10 @@ export default function DonationDetailsClient({ donationId }: DonationDetailsCli
               <p className="mt-4 whitespace-pre-wrap text-gray-700">{donation.description}</p>
               <div className="mt-6 space-y-3 border-t pt-5 text-sm text-gray-700">
                 <div><span className="font-semibold text-gray-900">City: </span>{donation.location.city}</div>
-                {user ? (
-                  <div><span className="font-semibold text-gray-900">Pickup address: </span>{donation.location.address}</div>
+                {privateAddress ? (
+                  <div><span className="font-semibold text-gray-900">Pickup address: </span>{privateAddress}</div>
                 ) : (
-                  <div className="text-gray-500"><span className="font-semibold text-gray-900">Pickup address: </span>Sign in to view the exact address</div>
+                  <div className="text-gray-500"><span className="font-semibold text-gray-900">Pickup address: </span>{user ? 'Shared once you connect with the donor' : 'Sign in and connect with the donor to view the exact address'}</div>
                 )}
                 <div><span className="font-semibold text-gray-900">Posted: </span>{formatDate(donation.createdAt)}</div>
                 <div><span className="font-semibold text-gray-900">Views: </span>{donation.viewCount}</div>

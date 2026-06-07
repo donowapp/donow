@@ -12,10 +12,19 @@ import {
   getDoc,
   getDocs,
   increment,
+  limit as fbLimit,
+  orderBy,
   query,
   updateDoc,
   where,
 } from 'firebase/firestore';
+
+// Read caps: bound each list query (newest-first) instead of scanning the whole
+// collection. Client-side search/filter runs over this recent window — large-
+// scale needs server-side search before these caps are lifted/paginated.
+const ACTIVE_LIST_CAP = 300;
+const MY_LIST_CAP = 100;
+const FEATURED_SCAN_CAP = 60;
 
 export interface CreateDonationData {
   userId: string;
@@ -106,15 +115,14 @@ export async function createDonation(data: CreateDonationData) {
 export async function getActiveDonations() {
   const donationsQuery = query(
     collection(db, 'donations'),
-    where('status', '==', 'active')
+    where('status', '==', 'active'),
+    orderBy('createdAt', 'desc'),
+    fbLimit(ACTIVE_LIST_CAP)
   );
   const snapshot = await getDocs(donationsQuery);
-
-  return snapshot.docs
-    .map((donationDoc) =>
-      normalizeDonation(donationDoc.id, donationDoc.data() as Partial<Donation>)
-    )
-    .sort((a, b) => b.createdAt.getTime() - a.createdAt.getTime());
+  return snapshot.docs.map((d) =>
+    normalizeDonation(d.id, d.data() as Partial<Donation>)
+  );
 }
 
 export async function getDonationById(id: string) {
@@ -135,12 +143,12 @@ export async function getDonationById(id: string) {
 export async function getMyDonations(userId: string) {
   const donationsQuery = query(
     collection(db, 'donations'),
-    where('userId', '==', userId)
+    where('userId', '==', userId),
+    orderBy('createdAt', 'desc'),
+    fbLimit(MY_LIST_CAP)
   );
   const snapshot = await getDocs(donationsQuery);
-  return snapshot.docs
-    .map((d) => normalizeDonation(d.id, d.data() as Partial<Donation>))
-    .sort((a, b) => b.createdAt.getTime() - a.createdAt.getTime());
+  return snapshot.docs.map((d) => normalizeDonation(d.id, d.data() as Partial<Donation>));
 }
 
 export interface UpdateDonationData {
@@ -153,17 +161,37 @@ export interface UpdateDonationData {
 }
 
 export async function updateDonation(id: string, data: UpdateDonationData) {
+  // Only the city is public; the exact address is written to the gated private
+  // subdoc via the owner-only server route (never to the public doc).
   await updateDoc(doc(db, 'donations', id), {
     title: data.title.trim(),
     description: data.description.trim(),
     category: data.category,
     condition: data.condition,
-    location: {
-      address: data.address.trim(),
-      city: data.city.trim(),
-    },
+    location: { city: data.city.trim() },
     updatedAt: new Date(),
   });
+  const token = await auth.currentUser?.getIdToken();
+  if (token) {
+    await fetch(`/api/donations/${id}/address`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${token}` },
+      body: JSON.stringify({ address: data.address }),
+    }).catch(() => {});
+  }
+}
+
+/**
+ * Reads a donation's private exact address. Returns null when the caller isn't
+ * allowed to see it yet (no conversation) — Firestore rules enforce the gate.
+ */
+export async function getDonationAddress(id: string): Promise<string | null> {
+  try {
+    const snap = await getDoc(doc(db, 'donations', id, 'private', 'location'));
+    return snap.exists() ? ((snap.data().address as string) ?? null) : null;
+  } catch {
+    return null;
+  }
 }
 
 export async function markDonationCompleted(id: string) {
@@ -185,7 +213,12 @@ export async function toggleInterest(donationId: string, userId: string, interes
 }
 
 export async function getFeaturedDonations(limit = 6): Promise<Donation[]> {
-  const q = query(collection(db, 'donations'), where('status', '==', 'active'));
+  const q = query(
+    collection(db, 'donations'),
+    where('status', '==', 'active'),
+    orderBy('createdAt', 'desc'),
+    fbLimit(FEATURED_SCAN_CAP)
+  );
   const snap = await getDocs(q);
   const all = snap.docs.map((d) => normalizeDonation(d.id, d.data() as Partial<Donation>));
   const pinned = all.filter((d) => d.featured);

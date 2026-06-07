@@ -107,6 +107,21 @@ service cloud.firestore {
       // Owners delete their own; admin deletion goes via the MFA-gated
       // /api/admin/delete-donation (Admin SDK), not a raw admin client write.
       allow delete: if isActive() && resource.data.userId == request.auth.uid;
+
+      // Private exact address (PRIV-1): the public donation doc holds only city;
+      // the precise pickup address lives here and is revealed ONLY to the owner
+      // or to someone who has opened a conversation about this donation. Written
+      // server-side only (Admin SDK).
+      match /private/{doc} {
+        allow read: if isAuth() && (
+          request.auth.uid == get(/databases/$(database)/documents/donations/$(donationId)).data.userId ||
+          exists(/databases/$(database)/documents/conversations/$(convIdFor(
+            donationId,
+            request.auth.uid,
+            get(/databases/$(database)/documents/donations/$(donationId)).data.userId)))
+        );
+        allow write: if false;
+      }
     }
 
     // Conversations: active participants only
