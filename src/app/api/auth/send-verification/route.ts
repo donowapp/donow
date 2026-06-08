@@ -33,6 +33,7 @@ export async function POST(request: NextRequest) {
     const ipLimit = await rateLimit(`verify-ip:${ip}`, {
       maxHits: 10,
       windowMs: 60 * 60 * 1000,
+      failClosed: true,
     });
     if (!ipLimit.ok) {
       return NextResponse.json(
@@ -46,6 +47,7 @@ export async function POST(request: NextRequest) {
       maxHits: 5,
       windowMs: 60 * 60 * 1000,
       minGapMs: 60 * 1000,
+      failClosed: true,
     });
     if (!limit.ok) {
       return NextResponse.json(

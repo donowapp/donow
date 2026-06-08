@@ -19,8 +19,8 @@ export async function POST(request: NextRequest) {
   const fwd = request.headers.get('x-forwarded-for') ?? '';
   const ip = fwd.split(',')[0].trim() || 'unknown';
   const [byUid, byIp] = await Promise.all([
-    rateLimit(`totp:${uid}`, { maxHits: 5, windowMs: 5 * 60 * 1000 }),
-    rateLimit(`totp-ip:${ip}`, { maxHits: 20, windowMs: 5 * 60 * 1000 }),
+    rateLimit(`totp:${uid}`, { maxHits: 5, windowMs: 5 * 60 * 1000, failClosed: true }),
+    rateLimit(`totp-ip:${ip}`, { maxHits: 20, windowMs: 5 * 60 * 1000, failClosed: true }),
   ]);
   if (!byUid.ok || !byIp.ok) {
     return NextResponse.json(

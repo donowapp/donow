@@ -14,10 +14,27 @@ import { adminAuth } from './firebase-admin';
 export const MFA_COOKIE = 'admin_mfa';
 export const MFA_TTL_SECONDS = 8 * 60 * 60; // 8 hours
 
-function mfaSecret(): string {
-  // Dedicated secret if provided, else reuse the email JWT secret so the
-  // feature works without additional configuration.
+// The secret NEW MFA cookies are signed with: the dedicated ADMIN_MFA_SECRET if
+// set, otherwise (zero-config / backward compat) the email JWT secret.
+function mfaSigningSecret(): string {
   return process.env.ADMIN_MFA_SECRET || process.env.EMAIL_JWT_SECRET || '';
+}
+
+// Secrets a presented cookie is allowed to be verified against, newest first:
+//  - ADMIN_MFA_SECRET      : current dedicated secret
+//  - ADMIN_MFA_SECRET_OLD  : previous secret during a rotation (zero-downtime —
+//                            cookies signed before the rotation stay valid until
+//                            they expire, then this can be removed)
+//  - EMAIL_JWT_SECRET      : backward compat for cookies issued before the
+//                            dedicated secret existed (and so rotating
+//                            EMAIL_JWT_SECRET no longer force-logs-out admins
+//                            once ADMIN_MFA_SECRET is configured)
+function mfaVerifySecrets(): string[] {
+  return [
+    process.env.ADMIN_MFA_SECRET,
+    process.env.ADMIN_MFA_SECRET_OLD,
+    process.env.EMAIL_JWT_SECRET,
+  ].filter((s): s is string => Boolean(s));
 }
 
 /**
@@ -40,7 +57,7 @@ export async function verifyAdmin(request: NextRequest): Promise<string | null> 
 }
 
 export function issueMfaToken(uid: string): string {
-  return sign({ uid, purpose: 'admin_mfa' }, mfaSecret(), { expiresIn: MFA_TTL_SECONDS });
+  return sign({ uid, purpose: 'admin_mfa' }, mfaSigningSecret(), { expiresIn: MFA_TTL_SECONDS });
 }
 
 /** Whether this admin has completed TOTP enrollment. */
@@ -66,14 +83,18 @@ export async function passesMfaGate(request: NextRequest, uid: string): Promise<
 
 /** True if the request carries a valid, unexpired MFA cookie for this uid. */
 export function hasValidMfa(request: NextRequest, uid: string): boolean {
-  const secret = mfaSecret();
-  if (!secret) return false;
   const cookie = request.cookies.get(MFA_COOKIE)?.value;
   if (!cookie) return false;
-  try {
-    const payload = verify(cookie, secret) as { uid?: string; purpose?: string };
-    return payload.purpose === 'admin_mfa' && payload.uid === uid;
-  } catch {
-    return false;
+  // Accept the cookie if it verifies against ANY currently-trusted secret
+  // (current, rotating-previous, or legacy email secret). New cookies are
+  // always re-signed with mfaSigningSecret() on the next successful TOTP check.
+  for (const secret of mfaVerifySecrets()) {
+    try {
+      const payload = verify(cookie, secret) as { uid?: string; purpose?: string };
+      if (payload.purpose === 'admin_mfa' && payload.uid === uid) return true;
+    } catch {
+      /* try the next secret */
+    }
   }
+  return false;
 }

@@ -10,14 +10,23 @@ export interface RateLimitResult {
  * Firestore-backed sliding-window rate limiter. Works across serverless
  * instances (unlike an in-memory Map) because the state lives in Firestore.
  *
- * @param key      Unique bucket key, e.g. `verify:<uid>`.
- * @param maxHits  Max attempts allowed within the window.
- * @param windowMs Window length in milliseconds.
- * @param minGapMs Minimum spacing between two consecutive attempts.
+ * @param key        Unique bucket key, e.g. `verify:<uid>`.
+ * @param maxHits    Max attempts allowed within the window.
+ * @param windowMs   Window length in milliseconds.
+ * @param minGapMs   Minimum spacing between two consecutive attempts.
+ * @param failClosed When the limiter's own backend (Firestore) errors:
+ *                   - false (default): fail OPEN — allow the request. Use for
+ *                     non-security abuse limits (donation/day, notifications) so
+ *                     a transient outage never blocks legitimate traffic.
+ *                   - true: fail CLOSED — deny the request. Use for
+ *                     security-sensitive endpoints (TOTP, email verification) so
+ *                     a forced backend outage can't be used to bypass
+ *                     brute-force / abuse throttles.
  */
 export async function rateLimit(
   key: string,
-  { maxHits, windowMs, minGapMs = 0 }: { maxHits: number; windowMs: number; minGapMs?: number }
+  { maxHits, windowMs, minGapMs = 0, failClosed = false }:
+    { maxHits: number; windowMs: number; minGapMs?: number; failClosed?: boolean }
 ): Promise<RateLimitResult> {
   adminAuth(); // ensures the admin app is initialised
   const ref = getFirestore().doc(`rateLimits/${key.replace(/\//g, '_')}`);
@@ -46,7 +55,8 @@ export async function rateLimit(
       return { ok: true };
     });
   } catch {
-    // Fail open: a rate-limiter outage must not block legitimate verification.
-    return { ok: true };
+    // Backend (Firestore) error. Security-sensitive callers fail CLOSED so an
+    // induced outage can't bypass the throttle; others fail OPEN for availability.
+    return failClosed ? { ok: false, retryAfter: 30 } : { ok: true };
   }
 }

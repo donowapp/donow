@@ -6,12 +6,19 @@ import {
   doc,
   getDoc,
   getDocs,
+  limit,
+  orderBy,
   query,
   setDoc,
   updateDoc,
   where,
 } from 'firebase/firestore';
 import { AdminLog, Donation, PlatformSettings, User } from '@/types';
+
+// Hard cap on admin list reads so the dashboard can never trigger an unbounded
+// full-collection scan (cost + latency). Ordered newest-first; older records are
+// reachable via search/CSV export rather than scrolling the whole collection.
+const ADMIN_LIST_LIMIT = 1000;
 
 type FirestoreTimestamp = { toDate: () => Date };
 
@@ -23,7 +30,9 @@ function normalizeDate(value: unknown): Date {
 }
 
 export async function getAllUsers(): Promise<User[]> {
-  const snap = await getDocs(collection(db, 'users'));
+  const snap = await getDocs(
+    query(collection(db, 'users'), orderBy('createdAt', 'desc'), limit(ADMIN_LIST_LIMIT))
+  );
   return snap.docs
     .map((d) => {
       const data = d.data() as Partial<User>;
@@ -101,7 +110,9 @@ export async function checkIsSuperAdmin(): Promise<boolean> {
 }
 
 export async function getAllDonationsAdmin(): Promise<Donation[]> {
-  const snap = await getDocs(collection(db, 'donations'));
+  const snap = await getDocs(
+    query(collection(db, 'donations'), orderBy('createdAt', 'desc'), limit(ADMIN_LIST_LIMIT))
+  );
   return snap.docs
     .map((d) => {
       const data = d.data() as Partial<Donation>;

@@ -220,7 +220,34 @@ service cloud.firestore {
         && request.resource.data.uid == request.auth.uid
         && request.resource.data.keys().hasOnly(['uid', 'event', 'props', 'platform', 'createdAt'])
         && request.resource.data.event is string
-        && request.resource.data.event.size() <= 40;
+        && request.resource.data.event.size() <= 40
+        // Bound the doc so this append-only sink can't be abused as cheap
+        // unbounded storage (denial-of-wallet): props must be a small map and
+        // platform a short string.
+        && (!('props' in request.resource.data)
+            || (request.resource.data.props is map && request.resource.data.props.size() <= 20))
+        && (!('platform' in request.resource.data)
+            || (request.resource.data.platform is string && request.resource.data.platform.size() <= 20));
+      allow update, delete: if false;
+    }
+
+    // Error reports: append-only crash/error sink (captureError on web + mobile).
+    // Authed users append their OWN bounded error records; only admins read them
+    // (triage in the console). Immutable once written. The shape is pinned and
+    // size-capped so it can't be abused as unbounded client-writable storage.
+    match /errors/{errorId} {
+      allow read: if isAdmin();
+      allow create: if isAuth()
+        && request.resource.data.uid == request.auth.uid
+        && request.resource.data.keys().hasOnly(['uid', 'message', 'kind', 'context', 'platform', 'createdAt'])
+        && request.resource.data.message is string
+        && request.resource.data.message.size() <= 2000
+        && (!('kind' in request.resource.data)
+            || (request.resource.data.kind is string && request.resource.data.kind.size() <= 40))
+        && (!('context' in request.resource.data)
+            || (request.resource.data.context is map && request.resource.data.context.size() <= 20))
+        && (!('platform' in request.resource.data)
+            || (request.resource.data.platform is string && request.resource.data.platform.size() <= 20));
       allow update, delete: if false;
     }
 
