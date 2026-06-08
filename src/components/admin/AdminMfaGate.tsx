@@ -1,12 +1,24 @@
 'use client';
 
 import { useEffect, useState, useCallback } from 'react';
+import { onAuthStateChanged, type User as FirebaseUser } from 'firebase/auth';
 import { auth } from '@/lib/firebase';
 
-type Phase = 'loading' | 'enroll' | 'verify' | 'done';
+type Phase = 'loading' | 'enroll' | 'verify' | 'done' | 'error';
+
+// Resolve once Firebase auth has restored the signed-in user. On a fresh load
+// of /admin, `auth.currentUser` is briefly null while persistence rehydrates;
+// firing the status request before then sends an empty token and gets a 403.
+function waitForAuthUser(): Promise<FirebaseUser | null> {
+  if (auth.currentUser) return Promise.resolve(auth.currentUser);
+  return new Promise((resolve) => {
+    const unsub = onAuthStateChanged(auth, (u) => { unsub(); resolve(u); });
+  });
+}
 
 async function authedFetch(path: string, init?: RequestInit): Promise<Response> {
-  const token = await auth.currentUser?.getIdToken();
+  const user = auth.currentUser ?? (await waitForAuthUser());
+  const token = await user?.getIdToken();
   return fetch(path, {
     ...init,
     headers: { ...(init?.headers ?? {}), Authorization: `Bearer ${token ?? ''}` },
@@ -35,23 +47,29 @@ export function AdminMfaGate({ children }: { children: React.ReactNode }) {
     setPhase('enroll');
   }, []);
 
-  useEffect(() => {
-    let mounted = true;
-    (async () => {
-      try {
-        const res = await authedFetch('/api/admin/totp/status');
-        if (!res.ok) throw new Error();
-        const data = await res.json() as { enrolled?: boolean; verified?: boolean };
-        if (!mounted) return;
-        if (data.verified) setPhase('done');
-        else if (data.enrolled) setPhase('verify');
-        else await beginEnroll();
-      } catch {
-        if (mounted) setError('Could not load two-factor status. Refresh to retry.');
-      }
-    })();
-    return () => { mounted = false; };
+  const loadStatus = useCallback(async () => {
+    setError(null);
+    setPhase('loading');
+    try {
+      const res = await authedFetch('/api/admin/totp/status');
+      if (!res.ok) throw new Error(`status ${res.status}`);
+      const data = await res.json() as { enrolled?: boolean; verified?: boolean };
+      if (data.verified) setPhase('done');
+      else if (data.enrolled) setPhase('verify');
+      else await beginEnroll();
+    } catch {
+      // Never sit on the spinner forever: surface the failure and let the admin
+      // retry. A 403 here means the server could not verify the admin session
+      // (e.g. a misconfigured Firebase Admin credential on the server).
+      setError('Could not verify your admin session with the server. If this persists, the server-side Firebase Admin credentials may be misconfigured.');
+      setPhase('error');
+    }
   }, [beginEnroll]);
+
+  // Run once on mount (and on manual Retry, via loadStatus identity) to fetch
+  // the admin's MFA status. loadStatus sets 'loading' synchronously by design.
+  // eslint-disable-next-line react-hooks/set-state-in-effect
+  useEffect(() => { loadStatus(); }, [loadStatus]);
 
   const submitCode = async () => {
     setBusy(true);
@@ -80,6 +98,25 @@ export function AdminMfaGate({ children }: { children: React.ReactNode }) {
     return (
       <div className="min-h-[60vh] flex items-center justify-center">
         <div className="inline-block animate-spin rounded-full h-10 w-10 border-b-2 border-teal-600" />
+      </div>
+    );
+  }
+
+  if (phase === 'error') {
+    return (
+      <div className="min-h-[60vh] flex items-center justify-center bg-gray-50 px-4">
+        <div className="max-w-sm rounded-2xl bg-white p-8 text-center shadow">
+          <p className="mb-3 text-4xl">⚠️</p>
+          <h1 className="text-xl font-bold text-gray-900">Couldn&apos;t load admin two-factor</h1>
+          <p className="mt-2 text-sm text-gray-600">{error ?? 'Something went wrong.'}</p>
+          <button
+            type="button"
+            onClick={loadStatus}
+            className="mt-5 rounded-lg bg-teal-600 px-5 py-2.5 font-semibold text-white transition hover:bg-teal-700"
+          >
+            Retry
+          </button>
+        </div>
       </div>
     );
   }
