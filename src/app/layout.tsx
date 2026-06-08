@@ -67,7 +67,12 @@ export default function RootLayout({
               </div>
             </div>
             <div className="border-t border-gray-800 pt-6 flex flex-col gap-4 sm:flex-row items-center justify-between text-xs text-gray-500">
-              <p>&copy; 2025 Donow. All rights reserved. Made with ❤️ for India.</p>
+              <div className="flex flex-col gap-1">
+                <p>&copy; 2025 Donow. All rights reserved. Made with ❤️ for India.</p>
+                <p className="text-[11px] text-gray-600">
+                  {`web · ${(process.env.VERCEL_GIT_COMMIT_SHA ?? 'dev').slice(0, 7)}`}
+                </p>
+              </div>
               <FooterSocial />
               <div className="flex items-center gap-3">
                 <span className="rounded-full bg-green-900/50 border border-green-700/40 px-2.5 py-1 text-green-400 font-semibold">✓ 100% Free</span>
