@@ -213,7 +213,14 @@ service cloud.firestore {
     // client (analysis happens in the console / export). Immutable once written.
     match /events/{eventId} {
       allow read: if false;
-      allow create: if isAuth() && request.resource.data.uid == request.auth.uid;
+      // Authed users append only their OWN events, and the doc shape is pinned so
+      // this can't be abused as arbitrary client-writable storage or stuffed with
+      // oversized docs. (Raw volume is further bounded by App Check + monitoring.)
+      allow create: if isAuth()
+        && request.resource.data.uid == request.auth.uid
+        && request.resource.data.keys().hasOnly(['uid', 'event', 'props', 'platform', 'createdAt'])
+        && request.resource.data.event is string
+        && request.resource.data.event.size() <= 40;
       allow update, delete: if false;
     }
 
