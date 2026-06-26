@@ -34,7 +34,10 @@ export default function LoginPage() {
     }
     try {
       await login(email.trim().toLowerCase(), password);
-      router.push('/dashboard');
+      // Admins land straight in the admin panel; everyone else on the dashboard.
+      // Read fresh store state (the closure's `user` is stale right after login).
+      const signedIn = useAuth.getState().user;
+      router.push(signedIn?.role === 'admin' ? '/admin' : '/dashboard');
     } catch {
       // error state handled by the store
     }
