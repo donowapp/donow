@@ -13,11 +13,25 @@ export const viewport: Viewport = {
 };
 
 export const metadata: Metadata = {
+  metadataBase: new URL('https://donow.co.in'),
   title: 'Donow - Free Donation Platform',
   description: 'Connect donors with people in need. Free donations for India.',
   icons: {
     icon: [{ url: '/icon.svg', type: 'image/svg+xml' }],
     apple: [{ url: '/apple-icon.png', type: 'image/png' }],
+  },
+  openGraph: {
+    title: 'Donow - Free Donation Platform',
+    description: 'Connect donors with people in need. Free donations for India — no fees, no middlemen.',
+    url: 'https://donow.co.in',
+    siteName: 'Donow',
+    locale: 'en_IN',
+    type: 'website',
+  },
+  twitter: {
+    card: 'summary_large_image',
+    title: 'Donow - Free Donation Platform',
+    description: 'Connect donors with people in need. Free donations for India.',
   },
 };
 
@@ -68,7 +82,7 @@ export default function RootLayout({
             </div>
             <div className="border-t border-gray-800 pt-6 flex flex-col gap-4 sm:flex-row items-center justify-between text-xs text-gray-500">
               <div className="flex flex-col gap-1">
-                <p>&copy; 2025 Donow. All rights reserved. Made with ❤️ for India.</p>
+                <p>&copy; {new Date().getFullYear()} Donow. All rights reserved. Made with ❤️ for India.</p>
                 <p className="text-[11px] text-gray-600">
                   {`web · ${(process.env.VERCEL_GIT_COMMIT_SHA ?? 'dev').slice(0, 7)}`}
                 </p>

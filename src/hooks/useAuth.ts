@@ -22,9 +22,11 @@ function getErrorMessage(error: unknown): string {
     switch (code) {
       case 'auth/wrong-password':
       case 'auth/invalid-credential':
-        return 'Incorrect email or password';
+      // Deliberately identical to the wrong-password message: distinguishing
+      // "no such account" from "wrong password" lets attackers enumerate which
+      // emails are registered. Both map to one generic message.
       case 'auth/user-not-found':
-        return 'No account found with this email';
+        return 'Incorrect email or password';
       case 'auth/email-not-verified':
         return 'Your email is not verified. Click the link we sent to your inbox.';
       case 'auth/too-many-requests':

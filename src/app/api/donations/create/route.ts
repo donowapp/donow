@@ -67,7 +67,7 @@ export async function POST(request: NextRequest) {
   if (!limit.ok) {
     return NextResponse.json(
       { error: `Daily limit reached (${maxPerDay} donations/day). Try again later.` },
-      { status: 429 }
+      { status: 429, headers: { 'Retry-After': String(limit.retryAfter ?? 3600) } }
     );
   }
 

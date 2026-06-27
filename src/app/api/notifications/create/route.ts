@@ -63,7 +63,10 @@ export async function POST(request: NextRequest) {
   // Per-sender throttle: at most 60 notifications/hour.
   const limit = await rateLimit(`notif:${uid}`, { maxHits: 60, windowMs: 60 * 60 * 1000 });
   if (!limit.ok) {
-    return NextResponse.json({ error: 'Too many notifications' }, { status: 429 });
+    return NextResponse.json(
+      { error: 'Too many notifications' },
+      { status: 429, headers: { 'Retry-After': String(limit.retryAfter ?? 60) } }
+    );
   }
 
   try {

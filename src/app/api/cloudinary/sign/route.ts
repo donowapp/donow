@@ -2,6 +2,7 @@ import { NextRequest, NextResponse } from 'next/server';
 import crypto from 'crypto';
 import { getFirestore } from 'firebase-admin/firestore';
 import { adminAuth } from '@/lib/firebase-admin';
+import { rateLimit } from '@/lib/rate-limit';
 
 /**
  * Generates a short-lived Cloudinary signed-upload signature.
@@ -22,6 +23,17 @@ export async function POST(request: NextRequest) {
     uid = (await adminAuth().verifyIdToken(token)).uid;
   } catch {
     return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
+  }
+
+  // Throttle signature minting so an authed account can't drive unlimited
+  // Cloudinary uploads (storage/bandwidth cost abuse). 50/hr comfortably covers
+  // legitimate multi-image donations (≤10 images) plus retries.
+  const upLimit = await rateLimit(`upload:${uid}`, { maxHits: 50, windowMs: 60 * 60 * 1000 });
+  if (!upLimit.ok) {
+    return NextResponse.json(
+      { error: 'Too many uploads. Please wait before trying again.' },
+      { status: 429, headers: { 'Retry-After': String(upLimit.retryAfter ?? 60) } }
+    );
   }
 
   const apiSecret = process.env.CLOUDINARY_API_SECRET;
